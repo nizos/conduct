@@ -24,6 +24,9 @@ pnpm-debug.log*
 .DS_Store
 *.swp
 
+# Claude Code (local agent state, plugin settings, tdd-guard data)
+.claude/
+
 # Testing
 coverage/
 .nyc_output/
