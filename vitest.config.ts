@@ -6,9 +6,6 @@ const root = path.resolve(import.meta.dirname)
 
 export default defineConfig({
   test: {
-    reporters: [
-      'default',
-      ['tdd-guard-vitest', { projectRoot: root }],
-    ],
+    reporters: ['default', ['tdd-guard-vitest', { projectRoot: root }]],
   },
 })
