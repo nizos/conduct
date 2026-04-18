@@ -1,6 +1,8 @@
 {
   "name": "Conduct",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
