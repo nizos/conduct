@@ -26,6 +26,7 @@
     "lint:check": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "checks": "npm run lint:check && npm run format:check && npm run typecheck && npm test",
     "prepare": "husky"
   },
   "lint-staged": {
