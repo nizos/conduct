@@ -1,0 +1,20 @@
+{
+  "name": "Conduct",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["Anthropic.claude-code"]
+    }
+  },
+  "mounts": [
+    "source=conduct-claude-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+  },
+  "remoteUser": "node",
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code@latest"
+}
