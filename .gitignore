@@ -31,6 +31,6 @@ coverage/
 # Conduct session state (runtime-only)
 .conduct/
 
-# Local notes that should not be committed
-vision.md
+# Internal docs (vision, plans, design notes, scratch)
+docs/internal/
 TODO.md
