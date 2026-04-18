@@ -8,7 +8,7 @@ Process discipline for coding agents.
 
 ## Overview
 
-Conduct evaluates actions your coding agent attempts against configurable rules. Each rule returns allow, block, or modify, along with a reason the agent can act on. Rules hook into the agent's native extension points, starting with Claude Code.
+Conduct evaluates actions your coding agent attempts against configurable rules. Each rule returns allow, block, or modify, along with a reason the agent can act on. Rules are agent-agnostic; a thin adapter plugs into each agent's native extension points.
 
 ## Status
 
@@ -16,7 +16,7 @@ Early development. API subject to change.
 
 ## Background
 
-[tdd-guard](https://github.com/nizos/tdd-guard) enforces test-driven development as a Claude Code hook. Conduct generalizes that approach so it can express rules beyond TDD.
+[tdd-guard](https://github.com/nizos/tdd-guard) enforces test-driven development as a Claude Code hook. Conduct generalizes that approach beyond TDD and across coding agents.
 
 ## License
 
