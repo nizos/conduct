@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+
+# Testing
+coverage/
+.nyc_output/
+
+# Conduct session state (runtime-only)
+.conduct/
+
+# Local notes that should not be committed
+vision.md
+TODO.md
