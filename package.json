@@ -1,0 +1,17 @@
+{
+  "name": "@nizos/conduct",
+  "version": "0.0.0",
+  "description": "Process discipline for coding agents.",
+  "license": "MIT",
+  "author": "Nizar Selander",
+  "repository": "github:nizos/conduct",
+  "bugs": "https://github.com/nizos/conduct/issues",
+  "homepage": "https://github.com/nizos/conduct#readme",
+  "keywords": [
+    "claude-code",
+    "hooks",
+    "agent",
+    "policy",
+    "guardrails"
+  ]
+}
