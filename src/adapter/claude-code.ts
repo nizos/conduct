@@ -1,7 +1,7 @@
 import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
 
-import type { Decision } from '../engine.js'
-import type { Action } from '../rule.js'
+import type { Decision } from '../engine'
+import type { Action } from '../rule'
 
 export function toAction(payload: PreToolUseHookInput): Action {
   const { file_path } = payload.tool_input as { file_path: string }

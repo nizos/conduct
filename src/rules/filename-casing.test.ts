@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { filenameCasing, type Style } from './filename-casing.js'
+import { filenameCasing, type Style } from './filename-casing'
 
 describe('filename-casing', () => {
   describe('kebab-case', () => {

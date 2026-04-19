@@ -1,4 +1,4 @@
-import type { Action, RuleResult } from '../rule.js'
+import type { Action, RuleResult } from '../rule'
 
 export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
 

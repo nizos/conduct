@@ -1,4 +1,4 @@
-import type { Action, RuleResult } from './rule.js'
+import type { Action, RuleResult } from './rule'
 
 export type Rule = (action: Action) => RuleResult
 
