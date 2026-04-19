@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { filenameCasing, type FilenameCasingInput } from './filename-casing.js'
+import { filenameCasing, type Style } from './filename-casing.js'
 
 describe('filename-casing', () => {
   describe('kebab-case', () => {
@@ -18,7 +18,7 @@ describe('filename-casing', () => {
     ])('blocks a $casing filename', ({ path }) => {
       const { result } = setup({ path, style })
 
-      expect(result).toEqual({ kind: 'violation' })
+      expect(result).toMatchObject({ kind: 'violation' })
     })
   })
 
@@ -37,7 +37,7 @@ describe('filename-casing', () => {
     ])('blocks a $casing filename', ({ path }) => {
       const { result } = setup({ path, style })
 
-      expect(result).toEqual({ kind: 'violation' })
+      expect(result).toMatchObject({ kind: 'violation' })
     })
   })
 
@@ -53,18 +53,27 @@ describe('filename-casing', () => {
     it('blocks a camelCase filename', () => {
       const { result } = setup({ path: 'src/userProfile.ts', style })
 
-      expect(result).toEqual({ kind: 'violation' })
+      expect(result).toMatchObject({ kind: 'violation' })
+    })
+  })
+
+  it('includes the path in the violation reason', () => {
+    const { result } = setup({
+      path: 'src/userProfile.ts',
+      style: 'kebab-case',
+    })
+
+    expect(result).toMatchObject({
+      kind: 'violation',
+      reason: expect.stringContaining('src/userProfile.ts'),
     })
   })
 })
 
-function setup({
-  path,
-  style,
-}: {
-  path: string
-  style: FilenameCasingInput['options']['style']
-}) {
-  const result = filenameCasing({ action: { path }, options: { style } })
+function setup({ path, style }: { path: string; style: Style }) {
+  const result = filenameCasing({
+    action: { type: 'write', path },
+    options: { style },
+  })
   return { result }
 }

@@ -1,18 +1,20 @@
-export type FilenameCasingInput = {
-  action: { path: string }
+import type { Action, RuleResult } from '../rule.js'
+
+export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
+
+export function filenameCasing(input: {
+  action: Action
   options: { style: Style }
+}): RuleResult {
+  const { path } = input.action
+  const { style } = input.options
+  if (detectors[style](path)) {
+    return { kind: 'violation', reason: `${path} does not match ${style}` }
+  }
+  return pass
 }
 
-export function filenameCasing(input: FilenameCasingInput): Result {
-  return detectors[input.options.style](input.action.path) ? violation : pass
-}
-
-type Style = 'kebab-case' | 'camelCase' | 'snake_case'
-
-type Result = { kind: 'pass' } | { kind: 'violation' }
-
-const pass: Result = { kind: 'pass' }
-const violation: Result = { kind: 'violation' }
+const pass: RuleResult = { kind: 'pass' }
 
 const violatesKebab = (path: string): boolean => /[A-Z_]/.test(path)
 const violatesCamel = (path: string): boolean =>
