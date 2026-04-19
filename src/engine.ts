@@ -1,11 +1,4 @@
-import type { Action, RuleResult } from './rule'
-
-export type Rule = (action: Action) => RuleResult
-
-export type RuleDefinition<O> = (input: {
-  action: Action
-  options: O
-}) => RuleResult
+import type { Action, Rule, RuleDefinition } from './rule'
 
 export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
 
