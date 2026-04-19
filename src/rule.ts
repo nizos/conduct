@@ -6,7 +6,7 @@ export type RuleResult =
 
 export type Rule = (action: Action) => RuleResult
 
-export type RuleDefinition<O> = (input: {
+export type RuleDefinition<Options> = (input: {
   action: Action
-  options: O
+  options: Options
 }) => RuleResult

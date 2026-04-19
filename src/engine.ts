@@ -2,7 +2,10 @@ import type { Action, Rule, RuleDefinition } from './rule'
 
 export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
 
-export function configure<O>(rule: RuleDefinition<O>, options: O): Rule {
+export function configure<Options>(
+  rule: RuleDefinition<Options>,
+  options: Options,
+): Rule {
   return (action) => rule({ action, options })
 }
 
