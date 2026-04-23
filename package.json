@@ -55,6 +55,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
+    "jiti": "^2.6.1",
     "picomatch": "^4.0.4"
   }
 }
