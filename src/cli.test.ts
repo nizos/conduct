@@ -16,6 +16,28 @@ describe('cli', () => {
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
   })
+
+  it('throws for codex until response translation is implemented', async () => {
+    const payload = readFileSync(
+      'test/fixtures/codex/bash-npm-install.json',
+      'utf8',
+    )
+
+    await expect(run(payload, { agent: 'codex' })).rejects.toThrow(
+      /codex.*toResponse/i,
+    )
+  })
+
+  it('throws for github-copilot until response translation is implemented', async () => {
+    const payload = readFileSync(
+      'test/fixtures/github-copilot/bash-npm-install.json',
+      'utf8',
+    )
+
+    await expect(run(payload, { agent: 'github-copilot' })).rejects.toThrow(
+      /github-copilot.*toResponse/i,
+    )
+  })
 })
 
 async function setup(fixtureName: string) {
@@ -23,7 +45,7 @@ async function setup(fixtureName: string) {
     `test/fixtures/claude-code/${fixtureName}`,
     'utf8',
   )
-  const raw = await run(payload)
+  const raw = await run(payload, { agent: 'claude-code' })
   const response = JSON.parse(raw)
   return { response }
 }
