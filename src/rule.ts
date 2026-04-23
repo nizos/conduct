@@ -22,18 +22,6 @@ export type RuleResult =
 
 /**
  * A rule as the engine consumes it: a function from Action to RuleResult.
- * Produced by binding options to a RuleDefinition via `configure`.
+ * Rule modules export factories of the form `(options) => Rule`.
  */
 export type Rule = (action: Action) => RuleResult
-
-/**
- * The authored form of a rule — a function that takes the action and
- * its configured options. The engine wraps this with `configure` to
- * produce a `Rule` it can invoke with just an action.
- *
- * @typeParam Options - the shape of the rule's configuration
- */
-export type RuleDefinition<Options> = (input: {
-  action: Action
-  options: Options
-}) => RuleResult

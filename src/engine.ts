@@ -1,4 +1,4 @@
-import type { Action, Rule, RuleDefinition } from './rule'
+import type { Action, Rule } from './rule'
 
 /**
  * The engine's decision after evaluating rules against an action.
@@ -8,20 +8,6 @@ import type { Action, Rule, RuleDefinition } from './rule'
  *   via its adapter's response format.
  */
 export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
-
-/**
- * Bind options to a rule definition, producing a `Rule` the engine can
- * invoke with just an action.
- *
- * @example
- * configure(filenameCasing, { style: 'kebab-case' })
- */
-export function configure<Options>(
-  rule: RuleDefinition<Options>,
-  options: Options,
-): Rule {
-  return (action) => rule({ action, options })
-}
 
 /**
  * Run rules against an action, returning the first violation as a block

@@ -1,4 +1,4 @@
-import type { Action, RuleResult } from '../rule'
+import type { Rule } from '../rule'
 
 /**
  * Blocks a command whose text contains the configured literal match.
@@ -8,18 +8,19 @@ import type { Action, RuleResult } from '../rule'
  * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
  * @example
- * configure(forbidCommandPattern, {
+ * forbidCommandPattern({
  *   match: 'npm install',
  *   reason: 'Use pnpm install instead',
  * })
  */
-export function forbidCommandPattern(input: {
-  action: Action
-  options: { match: string; reason: string }
-}): RuleResult {
-  const { action, options } = input
-  if (action.type === 'command' && action.command.includes(options.match)) {
-    return { kind: 'violation', reason: options.reason }
+export function forbidCommandPattern(options: {
+  match: string
+  reason: string
+}): Rule {
+  return (action) => {
+    if (action.type === 'command' && action.command.includes(options.match)) {
+      return { kind: 'violation', reason: options.reason }
+    }
+    return { kind: 'pass' }
   }
-  return { kind: 'pass' }
 }

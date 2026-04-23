@@ -1,4 +1,4 @@
-import type { Action, RuleResult } from '../rule'
+import type { Rule, RuleResult } from '../rule'
 
 /**
  * Supported filename casing styles.
@@ -14,20 +14,18 @@ export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
  * currently emit hook events for file writes — see PreToolUse docs.)
  *
  * @example
- * configure(filenameCasing, { style: 'kebab-case' })
+ * filenameCasing({ style: 'kebab-case' })
  */
-export function filenameCasing(input: {
-  action: Action
-  options: { style: Style }
-}): RuleResult {
-  const { action } = input
-  if (action.type !== 'write') return pass
-  const { path } = action
-  const { style } = input.options
-  if (detectors[style](path)) {
-    return { kind: 'violation', reason: `${path} does not match ${style}` }
+export function filenameCasing(options: { style: Style }): Rule {
+  const { style } = options
+  return (action) => {
+    if (action.type !== 'write') return pass
+    const { path } = action
+    if (detectors[style](path)) {
+      return { kind: 'violation', reason: `${path} does not match ${style}` }
+    }
+    return pass
   }
-  return pass
 }
 
 const pass: RuleResult = { kind: 'pass' }

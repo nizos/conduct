@@ -1,6 +1,6 @@
 import picomatch from 'picomatch'
 
-import type { Action, RuleResult } from '../rule'
+import type { Rule } from '../rule'
 
 /**
  * Blocks a write whose content contains the configured literal match.
@@ -13,23 +13,25 @@ import type { Action, RuleResult } from '../rule'
  * currently emit hook events for file writes — see PreToolUse docs.)
  *
  * @example
- * configure(forbidContentPattern, {
+ * forbidContentPattern({
  *   paths: ['src/**', '!src/**\/*.test.ts'],
  *   match: 'setTimeout',
  *   reason: 'Avoid timers in production code',
  * })
  */
-export function forbidContentPattern(input: {
-  action: Action
-  options: { paths?: string[]; match: string; reason: string }
-}): RuleResult {
-  const { action, options } = input
-  if (action.type !== 'write') return { kind: 'pass' }
-  if (options.paths && !pathMatches(action.path, options.paths)) {
-    return { kind: 'pass' }
+export function forbidContentPattern(options: {
+  paths?: string[]
+  match: string
+  reason: string
+}): Rule {
+  return (action) => {
+    if (action.type !== 'write') return { kind: 'pass' }
+    if (options.paths && !pathMatches(action.path, options.paths)) {
+      return { kind: 'pass' }
+    }
+    if (!action.content.includes(options.match)) return { kind: 'pass' }
+    return { kind: 'violation', reason: options.reason }
   }
-  if (!action.content.includes(options.match)) return { kind: 'pass' }
-  return { kind: 'violation', reason: options.reason }
 }
 
 function pathMatches(path: string, patterns: string[]): boolean {

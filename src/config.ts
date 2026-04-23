@@ -4,7 +4,7 @@ import type { Rule } from './rule'
 
 /**
  * A project's Conduct configuration — the rules active for the session.
- * Each entry is a `Rule` produced by `configure(ruleDefinition, options)`.
+ * Each entry is a `Rule` produced by calling a rule factory with options.
  */
 export type Config = {
   rules: Rule[]
@@ -16,11 +16,11 @@ export type Config = {
  * rule list.
  *
  * @example
- * import { configure, defineConfig } from '@nizos/conduct'
+ * import { defineConfig } from '@nizos/conduct'
  * import { filenameCasing } from '@nizos/conduct/rules/filename-casing'
  *
  * export default defineConfig({
- *   rules: [configure(filenameCasing, { style: 'kebab-case' })],
+ *   rules: [filenameCasing({ style: 'kebab-case' })],
  * })
  */
 export function defineConfig(config: Config): Config {

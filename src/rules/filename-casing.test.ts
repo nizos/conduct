@@ -70,19 +70,15 @@ describe('filename-casing', () => {
   })
 
   it('passes a non-write action without inspecting path', () => {
-    const result = filenameCasing({
-      action: { type: 'command', command: 'npm install' },
-      options: { style: 'camelCase' },
-    })
+    const rule = filenameCasing({ style: 'camelCase' })
+    const result = rule({ type: 'command', command: 'npm install' })
 
     expect(result).toEqual({ kind: 'pass' })
   })
 })
 
 function setup({ path, style }: { path: string; style: Style }) {
-  const result = filenameCasing({
-    action: { type: 'write', path, content: '' },
-    options: { style },
-  })
+  const rule = filenameCasing({ style })
+  const result = rule({ type: 'write', path, content: '' })
   return { result }
 }
