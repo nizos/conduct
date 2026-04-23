@@ -21,7 +21,7 @@ export function filenameCasing(options: { style: Style }): Rule {
   return (action) => {
     if (action.type !== 'write') return pass
     const { path } = action
-    if (detectors[style](path)) {
+    if (violations[style](path)) {
       return { kind: 'violation', reason: `${path} does not match ${style}` }
     }
     return pass
@@ -35,7 +35,7 @@ const violatesCamel = (path: string): boolean =>
   path.includes('-') || /\/[A-Z]/.test(path)
 const violatesSnake = (path: string): boolean => /[A-Z]/.test(path)
 
-const detectors = {
+const violations = {
   'kebab-case': violatesKebab,
   camelCase: violatesCamel,
   snake_case: violatesSnake,

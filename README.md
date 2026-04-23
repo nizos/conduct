@@ -48,8 +48,6 @@ export default defineConfig({
 
 Each rule is a factory called with its options. The engine evaluates them in order against every action the agent attempts; the first violation blocks the action and surfaces `reason` back to the agent.
 
-Prefer subpath imports if you only need one rule — e.g. `import { filenameCasing } from '@nizos/conduct/rules/filename-casing'`.
-
 ## Background
 
 [tdd-guard](https://github.com/nizos/tdd-guard) enforces test-driven development as a Claude Code hook. Conduct generalizes that approach beyond TDD and across coding agents.
