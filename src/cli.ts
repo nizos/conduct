@@ -11,7 +11,7 @@ type Adapter = {
 }
 
 const adapters = {
-  'claude-code': claudeCode as Adapter,
+  'claude-code': claudeCode,
   codex,
   'github-copilot': githubCopilot,
 } satisfies Record<string, Adapter>
@@ -23,6 +23,12 @@ export async function run(
   options: { agent: Agent },
 ): Promise<string> {
   const adapter = adapters[options.agent]
+  if (!adapter) {
+    const known = Object.keys(adapters).join(', ')
+    throw new Error(
+      `unknown agent: ${String(options.agent)}. Expected one of: ${known}`,
+    )
+  }
   const payload = JSON.parse(rawPayload) as unknown
   const action = adapter.toAction(payload)
   const config = await loadConfig(findConfig(process.cwd()))

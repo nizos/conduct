@@ -38,6 +38,17 @@ describe('cli', () => {
       /github-copilot.*toResponse/i,
     )
   })
+
+  it('throws a clear error for an unknown agent', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-new-file.json',
+      'utf8',
+    )
+
+    await expect(
+      run(payload, { agent: 'bogus' as unknown as 'claude-code' }),
+    ).rejects.toThrow(/unknown agent.*bogus/i)
+  })
 })
 
 async function setup(fixtureName: string) {
