@@ -15,6 +15,9 @@
     "guardrails"
   ],
   "type": "module",
+  "bin": {
+    "conduct": "bin/conduct.mjs"
+  },
   "engines": {
     "node": ">=22"
   },
