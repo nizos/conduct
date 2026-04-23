@@ -23,6 +23,16 @@ describe('forbid-command-pattern', () => {
     expect(result).toEqual({ kind: 'pass' })
   })
 
+  it('blocks a command that matches a configured regex', () => {
+    const rule = forbidCommandPattern({
+      match: /rm\s+-rf/,
+      reason: 'Avoid destructive rm',
+    })
+    const result = rule({ type: 'command', command: 'rm -rf dist' })
+
+    expect(result).toMatchObject({ kind: 'violation' })
+  })
+
   it('uses the configured reason in the violation', () => {
     const rule = forbidCommandPattern({
       match: 'npm install',

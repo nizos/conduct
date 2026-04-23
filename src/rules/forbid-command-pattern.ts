@@ -1,8 +1,9 @@
 import type { Rule } from '../rule'
 
 /**
- * Blocks a command whose text contains the configured literal match.
- * Passes non-command actions and non-matching commands through.
+ * Blocks a command whose text matches `match` — a literal substring or
+ * a RegExp. Passes non-command actions and non-matching commands
+ * through.
  *
  * Applies to: command actions (bash / shell tool calls).
  * Supported agents: Claude Code, Codex, GitHub Copilot.
@@ -12,15 +13,27 @@ import type { Rule } from '../rule'
  *   match: 'npm install',
  *   reason: 'Use pnpm install instead',
  * })
+ *
+ * @example
+ * forbidCommandPattern({
+ *   match: /rm\s+-rf/,
+ *   reason: 'Avoid destructive rm',
+ * })
  */
 export function forbidCommandPattern(options: {
-  match: string
+  match: string | RegExp
   reason: string
 }): Rule {
   return (action) => {
-    if (action.type === 'command' && action.command.includes(options.match)) {
-      return { kind: 'violation', reason: options.reason }
+    if (action.type !== 'command') return { kind: 'pass' }
+    if (!commandMatches(action.command, options.match)) {
+      return { kind: 'pass' }
     }
-    return { kind: 'pass' }
+    return { kind: 'violation', reason: options.reason }
   }
+}
+
+function commandMatches(command: string, match: string | RegExp): boolean {
+  if (typeof match === 'string') return command.includes(match)
+  return command.search(match) !== -1
 }
