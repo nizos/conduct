@@ -43,6 +43,7 @@
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@types/node": "^25.6.0",
+    "@types/picomatch": "^4.0.3",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
@@ -52,5 +53,8 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "picomatch": "^4.0.4"
   }
 }
