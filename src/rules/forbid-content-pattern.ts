@@ -2,6 +2,23 @@ import picomatch from 'picomatch'
 
 import type { Action, RuleResult } from '../rule'
 
+/**
+ * Blocks a write whose content contains the configured literal match.
+ * When `paths` is set, only writes to matching paths are checked.
+ * Patterns follow gitignore-style semantics: globs include, and a
+ * leading `!` negates (excludes) matching paths.
+ *
+ * Applies to: write actions.
+ * Supported agents: Claude Code. (Codex and GitHub Copilot don't
+ * currently emit hook events for file writes — see PreToolUse docs.)
+ *
+ * @example
+ * configure(forbidContentPattern, {
+ *   paths: ['src/**', '!src/**\/*.test.ts'],
+ *   match: 'setTimeout',
+ *   reason: 'Avoid timers in production code',
+ * })
+ */
 export function forbidContentPattern(input: {
   action: Action
   options: { paths?: string[]; match: string; reason: string }

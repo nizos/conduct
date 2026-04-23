@@ -1,7 +1,21 @@
 import type { Action, RuleResult } from '../rule'
 
+/**
+ * Supported filename casing styles.
+ */
 export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
 
+/**
+ * Blocks a write whose filename doesn't match the configured casing
+ * style. Passes non-write actions through.
+ *
+ * Applies to: write actions.
+ * Supported agents: Claude Code. (Codex and GitHub Copilot don't
+ * currently emit hook events for file writes — see PreToolUse docs.)
+ *
+ * @example
+ * configure(filenameCasing, { style: 'kebab-case' })
+ */
 export function filenameCasing(input: {
   action: Action
   options: { style: Style }
