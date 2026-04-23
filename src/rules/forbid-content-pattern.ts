@@ -3,10 +3,10 @@ import picomatch from 'picomatch'
 import type { Rule } from '../rule'
 
 /**
- * Blocks a write whose content contains the configured literal match.
- * When `paths` is set, only writes to matching paths are checked.
- * Patterns follow gitignore-style semantics: globs include, and a
- * leading `!` negates (excludes) matching paths.
+ * Blocks a write whose content matches `match` — a literal substring or
+ * a RegExp. When `paths` is set, only writes to matching paths are
+ * checked. Path patterns follow gitignore-style semantics: globs
+ * include, and a leading `!` negates (excludes) matching paths.
  *
  * Applies to: write actions.
  * Supported agents: Claude Code. (Codex and GitHub Copilot don't
@@ -18,10 +18,17 @@ import type { Rule } from '../rule'
  *   match: 'setTimeout',
  *   reason: 'Avoid timers in production code',
  * })
+ *
+ * @example
+ * forbidContentPattern({
+ *   paths: ['**\/*.md'],
+ *   match: /\p{Extended_Pictographic}/u,
+ *   reason: 'No emojis in markdown',
+ * })
  */
 export function forbidContentPattern(options: {
   paths?: string[]
-  match: string
+  match: string | RegExp
   reason: string
 }): Rule {
   return (action) => {
@@ -29,9 +36,14 @@ export function forbidContentPattern(options: {
     if (options.paths && !pathMatches(action.path, options.paths)) {
       return { kind: 'pass' }
     }
-    if (!action.content.includes(options.match)) return { kind: 'pass' }
+    if (!contentMatches(action.content, options.match)) return { kind: 'pass' }
     return { kind: 'violation', reason: options.reason }
   }
+}
+
+function contentMatches(content: string, match: string | RegExp): boolean {
+  if (typeof match === 'string') return content.includes(match)
+  return content.search(match) !== -1
 }
 
 function pathMatches(path: string, patterns: string[]): boolean {
