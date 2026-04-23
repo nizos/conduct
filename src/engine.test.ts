@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
-import { evaluate } from './engine'
-import { filenameCasing } from './rules/filename-casing'
+import { evaluate } from './engine.js'
+import { filenameCasing } from './rules/filename-casing.js'
 
 describe('engine', () => {
   it('allows a write whose filename matches the configured style', () => {

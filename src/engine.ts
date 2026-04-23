@@ -1,4 +1,4 @@
-import type { Action, Rule } from './rule'
+import type { Action, Rule } from './rule.js'
 
 /**
  * The engine's decision after evaluating rules against an action.

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { run } from './cli'
+import { run } from './cli.js'
 
 describe('cli', () => {
   it('denies a write whose filename violates kebab-case', async () => {

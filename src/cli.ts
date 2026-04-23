@@ -1,9 +1,9 @@
-import type { Action } from './rule'
-import * as claudeCode from './adapter/claude-code'
-import * as codex from './adapter/codex'
-import * as githubCopilot from './adapter/github-copilot'
-import { findConfig, loadConfig } from './config'
-import { evaluate, type Decision } from './engine'
+import type { Action } from './rule.js'
+import * as claudeCode from './adapter/claude-code.js'
+import * as codex from './adapter/codex.js'
+import * as githubCopilot from './adapter/github-copilot.js'
+import { findConfig, loadConfig } from './config.js'
+import { evaluate, type Decision } from './engine.js'
 
 type Adapter = {
   toAction: (payload: unknown) => Action

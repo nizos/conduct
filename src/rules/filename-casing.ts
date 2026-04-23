@@ -1,4 +1,4 @@
-import type { Rule, RuleResult } from '../rule'
+import type { Rule, RuleResult } from '../rule.js'
 
 /**
  * Supported filename casing styles.

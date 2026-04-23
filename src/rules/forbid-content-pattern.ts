@@ -1,6 +1,6 @@
 import picomatch from 'picomatch'
 
-import type { Rule } from '../rule'
+import type { Rule } from '../rule.js'
 
 /**
  * Blocks a write whose content matches `match` — a literal substring or

@@ -35,7 +35,7 @@ function runCli(stdin: string): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,
-      ['bin/conduct.mjs', '--agent', 'claude-code'],
+      ['dist/bin.js', '--agent', 'claude-code'],
       { cwd: path.resolve(), stdio: ['pipe', 'pipe', 'pipe'] },
     )
     let stdout = ''

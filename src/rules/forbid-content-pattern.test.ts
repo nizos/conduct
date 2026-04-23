@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { forbidContentPattern } from './forbid-content-pattern'
+import { forbidContentPattern } from './forbid-content-pattern.js'
 
 describe('forbid-content-pattern', () => {
   it('blocks a write whose content matches the configured pattern', () => {

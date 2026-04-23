@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { forbidCommandPattern } from './forbid-command-pattern'
+import { forbidCommandPattern } from './forbid-command-pattern.js'
 
 describe('forbid-command-pattern', () => {
   it('blocks a command that matches the configured pattern', () => {

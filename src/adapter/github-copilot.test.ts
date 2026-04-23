@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { toAction } from './github-copilot'
+import { toAction } from './github-copilot.js'
 
 describe('github-copilot adapter', () => {
   it('tags the action type as command for a bash payload', () => {

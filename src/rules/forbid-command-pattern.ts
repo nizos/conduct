@@ -1,4 +1,4 @@
-import type { Rule } from '../rule'
+import type { Rule } from '../rule.js'
 
 /**
  * Blocks a command whose text matches `match` — a literal substring or

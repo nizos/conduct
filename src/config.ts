@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { createJiti } from 'jiti'
 
-import type { Rule } from './rule'
+import type { Rule } from './rule.js'
 
 /**
  * A project's Conduct configuration — the rules active for the session.

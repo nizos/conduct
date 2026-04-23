@@ -16,12 +16,25 @@
   ],
   "type": "module",
   "bin": {
-    "conduct": "bin/conduct.mjs"
+    "conduct": "dist/bin.js"
   },
+  "exports": {
+    ".": "./dist/config.js",
+    "./engine": "./dist/engine.js",
+    "./rule": "./dist/rule.js",
+    "./rules/filename-casing": "./dist/rules/filename-casing.js",
+    "./rules/forbid-command-pattern": "./dist/rules/forbid-command-pattern.js",
+    "./rules/forbid-content-pattern": "./dist/rules/forbid-content-pattern.js"
+  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/bin.js",
+    "pretest": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -30,7 +43,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "checks": "npm run lint:check && npm run format:check && npm run typecheck && npm test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run checks"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

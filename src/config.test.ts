@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { describe, it, expect } from 'vitest'
 
-import { defineConfig, findConfig, loadConfig } from './config'
+import { defineConfig, findConfig, loadConfig } from './config.js'
 
 describe('defineConfig', () => {
   it('returns the config as-is', () => {

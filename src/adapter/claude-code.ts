@@ -1,7 +1,7 @@
 import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
 
-import type { Decision } from '../engine'
-import type { Action } from '../rule'
+import type { Decision } from '../engine.js'
+import type { Action } from '../rule.js'
 
 export function toAction(payload: PreToolUseHookInput): Action {
   if (payload.tool_name === 'Bash') {
