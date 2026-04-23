@@ -1,13 +1,15 @@
+import path from 'node:path'
+
 import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
 
 import { toAction, toResponse } from './adapter/claude-code'
-import { configure, evaluate } from './engine'
-import { filenameCasing } from './rules/filename-casing'
+import { loadConfig } from './config'
+import { evaluate } from './engine'
 
-export function run(rawPayload: string): string {
+export async function run(rawPayload: string): Promise<string> {
   const payload = JSON.parse(rawPayload) as PreToolUseHookInput
   const action = toAction(payload)
-  const rules = [configure(filenameCasing, { style: 'kebab-case' })]
-  const decision = evaluate(action, rules)
+  const config = await loadConfig(path.resolve('conduct.config.ts'))
+  const decision = evaluate(action, config.rules)
   return toResponse(decision)
 }
