@@ -1,0 +1,13 @@
+{
+  "session_id": "sess_abc123",
+  "transcript_path": "/tmp/codex/transcript.jsonl",
+  "cwd": "/workspaces/conduct",
+  "hook_event_name": "PreToolUse",
+  "model": "gpt-5",
+  "turn_id": "turn_123",
+  "tool_name": "Bash",
+  "tool_use_id": "tool_abc",
+  "tool_input": {
+    "command": "npm install"
+  }
+}
