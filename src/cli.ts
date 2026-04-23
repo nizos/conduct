@@ -1,10 +1,8 @@
-import path from 'node:path'
-
 import type { Action } from './rule'
 import * as claudeCode from './adapter/claude-code'
 import * as codex from './adapter/codex'
 import * as githubCopilot from './adapter/github-copilot'
-import { loadConfig } from './config'
+import { findConfig, loadConfig } from './config'
 import { evaluate, type Decision } from './engine'
 
 type Adapter = {
@@ -27,7 +25,7 @@ export async function run(
   const adapter = adapters[options.agent]
   const payload = JSON.parse(rawPayload) as unknown
   const action = adapter.toAction(payload)
-  const config = await loadConfig(path.resolve('conduct.config.ts'))
+  const config = await loadConfig(findConfig(process.cwd()))
   const decision = evaluate(action, config.rules)
   return adapter.toResponse(decision)
 }

@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs'
+import path from 'node:path'
+
 import { createJiti } from 'jiti'
 
 import type { Rule } from './rule'
@@ -36,4 +39,15 @@ export async function loadConfig(filepath: string): Promise<Config> {
   const jiti = createJiti(import.meta.url)
   const module = (await jiti.import(filepath)) as { default: Config }
   return module.default
+}
+
+export function findConfig(startDir: string): string {
+  let dir = startDir
+  while (true) {
+    const candidate = path.join(dir, 'conduct.config.ts')
+    if (existsSync(candidate)) return candidate
+    const parent = path.dirname(dir)
+    if (parent === dir) throw new Error('conduct.config.ts not found')
+    dir = parent
+  }
 }
