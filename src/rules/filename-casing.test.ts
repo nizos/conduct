@@ -68,6 +68,15 @@ describe('filename-casing', () => {
       reason: expect.stringContaining('src/userProfile.ts'),
     })
   })
+
+  it('passes a non-write action without inspecting path', () => {
+    const result = filenameCasing({
+      action: { type: 'command', command: 'npm install' },
+      options: { style: 'camelCase' },
+    })
+
+    expect(result).toEqual({ kind: 'pass' })
+  })
 })
 
 function setup({ path, style }: { path: string; style: Style }) {

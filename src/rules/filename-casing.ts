@@ -6,7 +6,9 @@ export function filenameCasing(input: {
   action: Action
   options: { style: Style }
 }): RuleResult {
-  const { path } = input.action
+  const { action } = input
+  if (action.type !== 'write') return pass
+  const { path } = action
   const { style } = input.options
   if (detectors[style](path)) {
     return { kind: 'violation', reason: `${path} does not match ${style}` }

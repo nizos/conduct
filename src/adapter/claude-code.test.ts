@@ -8,13 +8,25 @@ describe('claude-code adapter', () => {
   it('extracts the file path from a Write payload', () => {
     const { action, payload } = setup('write-new-file.json')
 
-    expect(action.path).toBe(payload.tool_input.file_path)
+    expect(action).toMatchObject({ path: payload.tool_input.file_path })
   })
 
   it('tags the action type as write for a Write payload', () => {
     const { action } = setup('write-new-file.json')
 
     expect(action.type).toBe('write')
+  })
+
+  it('tags the action type as command for a Bash payload', () => {
+    const { action } = setup('bash-npm-install.json')
+
+    expect(action.type).toBe('command')
+  })
+
+  it('extracts the command text from a Bash payload', () => {
+    const { action, payload } = setup('bash-npm-install.json')
+
+    expect(action).toMatchObject({ command: payload.tool_input.command })
   })
 
   it('builds an allow response from an allow decision', () => {
