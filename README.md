@@ -19,10 +19,12 @@ Early development. API subject to change.
 Rules live in `conduct.config.ts` at your project root:
 
 ```ts
-import { defineConfig } from '@nizos/conduct'
-import { filenameCasing } from '@nizos/conduct/rules/filename-casing'
-import { forbidCommandPattern } from '@nizos/conduct/rules/forbid-command-pattern'
-import { forbidContentPattern } from '@nizos/conduct/rules/forbid-content-pattern'
+import {
+  defineConfig,
+  filenameCasing,
+  forbidCommandPattern,
+  forbidContentPattern,
+} from '@nizos/conduct'
 
 export default defineConfig({
   rules: [
@@ -45,6 +47,8 @@ export default defineConfig({
 ```
 
 Each rule is a factory called with its options. The engine evaluates them in order against every action the agent attempts; the first violation blocks the action and surfaces `reason` back to the agent.
+
+Prefer subpath imports if you only need one rule — e.g. `import { filenameCasing } from '@nizos/conduct/rules/filename-casing'`.
 
 ## Background
 

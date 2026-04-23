@@ -19,12 +19,30 @@
     "conduct": "dist/bin.js"
   },
   "exports": {
-    ".": "./dist/config.js",
-    "./engine": "./dist/engine.js",
-    "./rule": "./dist/rule.js",
-    "./rules/filename-casing": "./dist/rules/filename-casing.js",
-    "./rules/forbid-command-pattern": "./dist/rules/forbid-command-pattern.js",
-    "./rules/forbid-content-pattern": "./dist/rules/forbid-content-pattern.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "default": "./dist/engine.js"
+    },
+    "./rule": {
+      "types": "./dist/rule.d.ts",
+      "default": "./dist/rule.js"
+    },
+    "./rules/filename-casing": {
+      "types": "./dist/rules/filename-casing.d.ts",
+      "default": "./dist/rules/filename-casing.js"
+    },
+    "./rules/forbid-command-pattern": {
+      "types": "./dist/rules/forbid-command-pattern.d.ts",
+      "default": "./dist/rules/forbid-command-pattern.js"
+    },
+    "./rules/forbid-content-pattern": {
+      "types": "./dist/rules/forbid-content-pattern.d.ts",
+      "default": "./dist/rules/forbid-content-pattern.js"
+    }
   },
   "files": [
     "dist"

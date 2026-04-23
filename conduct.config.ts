@@ -1,5 +1,4 @@
-import { defineConfig } from './src/config'
-import { filenameCasing } from './src/rules/filename-casing'
+import { defineConfig, filenameCasing } from './src/index.js'
 
 export default defineConfig({
   rules: [filenameCasing({ style: 'kebab-case' })],
