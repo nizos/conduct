@@ -17,6 +17,12 @@ describe('claude-code adapter', () => {
     expect(action.type).toBe('write')
   })
 
+  it('extracts the content from a Write payload', () => {
+    const { action, payload } = setup('write-new-file.json')
+
+    expect(action).toMatchObject({ content: payload.tool_input.content })
+  })
+
   it('tags the action type as command for a Bash payload', () => {
     const { action } = setup('bash-npm-install.json')
 

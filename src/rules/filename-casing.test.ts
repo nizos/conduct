@@ -81,7 +81,7 @@ describe('filename-casing', () => {
 
 function setup({ path, style }: { path: string; style: Style }) {
   const result = filenameCasing({
-    action: { type: 'write', path },
+    action: { type: 'write', path, content: '' },
     options: { style },
   })
   return { result }

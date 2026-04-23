@@ -8,8 +8,11 @@ export function toAction(payload: PreToolUseHookInput): Action {
     const { command } = payload.tool_input as { command: string }
     return { type: 'command', command }
   }
-  const { file_path } = payload.tool_input as { file_path: string }
-  return { type: 'write', path: file_path }
+  const { file_path, content } = payload.tool_input as {
+    file_path: string
+    content: string
+  }
+  return { type: 'write', path: file_path, content }
 }
 
 export function toResponse(decision: Decision): string {

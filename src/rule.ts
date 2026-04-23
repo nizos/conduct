@@ -1,5 +1,5 @@
 export type Action =
-  | { type: 'write'; path: string }
+  | { type: 'write'; path: string; content: string }
   | { type: 'command'; command: string }
 
 export type RuleResult =
