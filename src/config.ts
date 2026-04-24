@@ -15,7 +15,7 @@ import type { AiClient, Rule } from './rule.js'
  *   which piggybacks on the user's Claude Code subscription.
  */
 export type Config = {
-  rules: Rule[]
+  rules: readonly Rule[]
   ai?: AiClient
 }
 

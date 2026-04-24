@@ -7,7 +7,7 @@ import type { Action, Decision, Rule } from './rule.js'
  */
 export async function evaluate(
   action: Action,
-  rules: Rule[],
+  rules: readonly Rule[],
   ctx?: unknown,
 ): Promise<Decision> {
   for (const rule of rules) {
@@ -27,7 +27,7 @@ export async function evaluate(
  */
 export async function evaluateSafely(
   action: Action,
-  rules: Rule[],
+  rules: readonly Rule[],
   ctx?: unknown,
 ): Promise<Decision> {
   try {

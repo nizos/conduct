@@ -26,7 +26,7 @@ export async function run(
 export async function dispatch(
   adapter: Adapter,
   rawPayload: string,
-  rules: Rule[],
+  rules: readonly Rule[],
   ai: AiClient,
 ): Promise<string> {
   let payload: unknown
