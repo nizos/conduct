@@ -19,9 +19,21 @@ const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
 {"verdict":"pass"|"violation","reason":"<short explanation>"}
 Return JSON only. No prose, no code fences.`
 
-function formatEvent(e: SessionEvent): string {
-  if (e.kind === 'prompt') return `User: ${e.text}`
-  return `${e.tool}(${JSON.stringify(e.input)}) → ${e.output}`
+function formatEvent(event: SessionEvent): string {
+  if (event.kind === 'prompt') return `User: ${event.text}`
+  return `${event.tool}(${JSON.stringify(event.input)}) → ${event.output}`
+}
+
+function buildPrompt(
+  rubric: string,
+  historyBlock: string,
+  action: { path: string; content: string },
+): string {
+  const sections = [rubric]
+  if (historyBlock) sections.push(`Recent session:\n${historyBlock}`)
+  sections.push(`Pending action:\nFile: ${action.path}\n\n${action.content}`)
+  sections.push(RESPONSE_SPEC)
+  return sections.join('\n\n')
 }
 
 export function enforceTdd(
@@ -35,18 +47,11 @@ export function enforceTdd(
     const ctx = rawCtx as RuleContext
     if (!ctx.ai) return { kind: 'pass' as const }
     const events = (await ctx.history?.()) ?? []
-    const historyBlock = events.map(formatEvent).filter(Boolean).join('\n')
-    const prompt = [
-      rubric,
-      historyBlock && `Recent session:\n${historyBlock}`,
-      `Pending action:\nFile: ${action.path}\n\n${action.content}`,
-      RESPONSE_SPEC,
-    ]
-      .filter(Boolean)
-      .join('\n\n')
-    const v = await ctx.ai.reason(prompt)
-    if (v.verdict === 'violation') {
-      return { kind: 'violation' as const, reason: v.reason }
+    const historyBlock = events.map(formatEvent).join('\n')
+    const prompt = buildPrompt(rubric, historyBlock, action)
+    const verdict = await ctx.ai.reason(prompt)
+    if (verdict.verdict === 'violation') {
+      return { kind: 'violation' as const, reason: verdict.reason }
     }
     return { kind: 'pass' as const }
   }
