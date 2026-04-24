@@ -48,14 +48,15 @@ function formatEvent(e: SessionEvent): string {
   return e.output ?? ''
 }
 
-export function enforceTdd() {
+export function enforceTdd(options: { instructions?: string } = {}) {
+  const rubric = options.instructions ?? SYSTEM_RUBRIC
   return async (action: Action, rawCtx?: unknown) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
     const ctx = rawCtx as RuleContext
     const events = (await ctx.history?.()) ?? []
     const historyBlock = events.map(formatEvent).filter(Boolean).join('\n')
     const prompt = [
-      SYSTEM_RUBRIC,
+      rubric,
       historyBlock && `Recent session:\n${historyBlock}`,
       `Pending action:\nFile: ${action.path}\n\n${action.content}`,
       RESPONSE_SPEC,

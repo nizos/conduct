@@ -157,6 +157,25 @@ describe('enforce-tdd', () => {
     expect(capturedPrompt).toContain('npm test')
   })
 
+  it('uses custom instructions when provided', async () => {
+    let capturedPrompt = ''
+    const ctx = fakeCtx({
+      ai: {
+        reason: async (prompt: string) => {
+          capturedPrompt = prompt
+          return { verdict: 'pass' as const, reason: '' }
+        },
+      },
+    })
+    const rule = enforceTdd({
+      instructions: 'CUSTOM: only dog-driven development allowed',
+    })
+
+    await rule({ type: 'write', path: 'src/foo.ts', content: 'x' }, ctx)
+
+    expect(capturedPrompt).toContain('CUSTOM: only dog-driven development')
+  })
+
   it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
     let capturedPrompt = ''
     const ctx = fakeCtx({
