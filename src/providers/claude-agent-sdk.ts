@@ -8,8 +8,10 @@ type QueryFn = (args: {
   prompt: string
   options?: {
     maxTurns?: number
+    allowedTools?: string[]
     disallowedTools?: string[]
     thinking?: { type: 'disabled' | 'enabled' }
+    permissionMode?: 'default' | 'dontAsk' | 'acceptEdits' | 'bypassPermissions'
     env?: Record<string, string | undefined>
   }
 }) => AsyncIterable<Msg>
@@ -33,6 +35,8 @@ async function getResultText(
     options: {
       maxTurns: 1,
       thinking: { type: 'disabled' },
+      permissionMode: 'dontAsk',
+      allowedTools: [],
       env: cleanEnv(),
       disallowedTools: [
         'Bash',

@@ -52,6 +52,16 @@ describe('claudeAgentSdk', () => {
     expect(capture.last?.options?.thinking).toEqual({ type: 'disabled' })
   })
 
+  it('hard-denies any tool use via dontAsk + empty allowedTools', async () => {
+    const capture = captureQuery()
+    const client = claudeAgentSdk({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.permissionMode).toBe('dontAsk')
+    expect(capture.last?.options?.allowedTools).toEqual([])
+  })
+
   it('parses a verdict from a fenced code block', async () => {
     const client = claudeAgentSdk({
       queryFn: fakeQuery('```json\n{"verdict":"pass","reason":"fine"}\n```'),
@@ -90,8 +100,10 @@ type CapturedArgs = {
   prompt: string
   options?: {
     maxTurns?: number
+    allowedTools?: string[]
     disallowedTools?: string[]
     thinking?: { type: 'disabled' | 'enabled' }
+    permissionMode?: string
     env?: Record<string, string | undefined>
   }
 }
