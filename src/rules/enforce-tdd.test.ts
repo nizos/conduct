@@ -121,6 +121,42 @@ describe('enforce-tdd', () => {
     expect(capturedPrompt).toContain('2 tests failed')
   })
 
+  it('includes tool names and user prompts in the history block', async () => {
+    let capturedPrompt = ''
+    const ctx = fakeCtx({
+      ai: {
+        reason: async (prompt: string) => {
+          capturedPrompt = prompt
+          return { verdict: 'pass' as const, reason: '' }
+        },
+      },
+      history: async () => [
+        { kind: 'prompt', text: 'add a test for the adder' },
+        {
+          kind: 'action',
+          tool: 'Bash',
+          input: { command: 'npm test' },
+          output: '2 tests failed',
+          toolUseId: 'tu_1',
+        },
+      ],
+    })
+    const rule = enforceTdd()
+
+    await rule(
+      {
+        type: 'write',
+        path: 'src/calc.ts',
+        content: 'export const add = () => 0',
+      },
+      ctx,
+    )
+
+    expect(capturedPrompt).toContain('add a test for the adder')
+    expect(capturedPrompt).toContain('Bash')
+    expect(capturedPrompt).toContain('npm test')
+  })
+
   it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
     let capturedPrompt = ''
     const ctx = fakeCtx({
