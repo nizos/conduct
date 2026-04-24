@@ -2,6 +2,7 @@ import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
 
 import type { Decision } from '../engine.js'
 import type { Action } from '../rule.js'
+import { readTranscript } from './claude-code-transcript.js'
 
 export function toAction(payload: unknown): Action {
   const input = payload as PreToolUseHookInput
@@ -21,6 +22,10 @@ export function toAction(payload: unknown): Action {
     content: string
   }
   return { type: 'write', path: file_path, content }
+}
+
+export function buildContext(payload: { transcript_path: string }) {
+  return { history: () => readTranscript(payload.transcript_path) }
 }
 
 export function toResponse(decision: Decision): string {

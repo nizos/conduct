@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { toAction, toResponse } from './claude-code.js'
+import { buildContext, toAction, toResponse } from './claude-code.js'
 
 describe('claude-code adapter', () => {
   it('extracts the file path from a Write payload', () => {
@@ -69,6 +69,16 @@ describe('claude-code adapter', () => {
     expect(response.hookSpecificOutput.permissionDecisionReason).toBe(
       'out of scope',
     )
+  })
+
+  it('builds a context whose history reads from the payload transcript_path', async () => {
+    const ctx = buildContext({
+      transcript_path: 'test/fixtures/transcripts/basic.jsonl',
+    })
+
+    const events = await ctx.history()
+
+    expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
 })
 
