@@ -1,13 +1,4 @@
-import type { Action, Rule } from './rule.js'
-
-/**
- * The engine's decision after evaluating rules against an action.
- *
- * - `allow` — no rule objected; the action may proceed.
- * - `block` — a rule objected; `reason` is surfaced back to the agent
- *   via its adapter's response format.
- */
-export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
+import type { Action, Decision, Rule } from './rule.js'
 
 /**
  * Run rules against an action, returning the first violation as a block

@@ -1,9 +1,9 @@
-import type { Action, AiClient, Rule } from './rule.js'
+import type { Action, AiClient, Decision, Rule } from './rule.js'
 import * as claudeCode from './adapter/claude-code.js'
 import * as codex from './adapter/codex.js'
 import * as githubCopilot from './adapter/github-copilot.js'
 import { findConfig, loadConfig } from './config.js'
-import { evaluate, type Decision } from './engine.js'
+import { evaluate } from './engine.js'
 import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
 
 type Adapter = {

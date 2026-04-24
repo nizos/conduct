@@ -1,5 +1,4 @@
-import type { Decision } from '../engine.js'
-import type { Action } from '../rule.js'
+import type { Action, Decision } from '../rule.js'
 
 export function toAction(payload: unknown): Action {
   const { tool_input } = payload as { tool_input: { command: string } }

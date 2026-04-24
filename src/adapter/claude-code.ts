@@ -1,7 +1,6 @@
 import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
 
-import type { Decision } from '../engine.js'
-import type { Action, AiClient } from '../rule.js'
+import type { Action, AiClient, Decision } from '../rule.js'
 import { readTranscript } from './claude-code-transcript.js'
 
 export function toAction(payload: unknown): Action {

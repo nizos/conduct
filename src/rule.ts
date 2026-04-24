@@ -21,6 +21,15 @@ export type RuleResult =
   | { kind: 'violation'; reason: string }
 
 /**
+ * The engine's decision after evaluating rules against an action.
+ *
+ * - `allow` — no rule objected; the action may proceed.
+ * - `block` — a rule objected; `reason` is surfaced back to the agent
+ *   via its adapter's response format.
+ */
+export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
+
+/**
  * A rule as the engine consumes it: a function from Action (+ an
  * optional context injected by the engine) to RuleResult. Rules may be
  * synchronous or asynchronous; the engine awaits the returned value
