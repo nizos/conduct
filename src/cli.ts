@@ -1,11 +1,11 @@
 import type { Action, AiClient, Rule } from './rule.js'
-import type { Adapter } from './adapter/adapter.js'
-import { adapters, type Agent } from './adapter/registry.js'
+import type { Adapter } from './adapters/adapter.js'
+import { adapters, type Agent } from './adapters/registry.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluateSafely } from './engine.js'
 import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
 
-export type { Agent } from './adapter/registry.js'
+export type { Agent } from './adapters/registry.js'
 
 export async function run(
   rawPayload: string,

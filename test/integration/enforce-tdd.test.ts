@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import * as claudeCode from '../../src/adapter/claude-code.js'
+import * as claudeCode from '../../src/adapters/claude-code.js'
 import { dispatch } from '../../src/cli.js'
 import { claudeAgentSdk } from '../../src/providers/claude-agent-sdk.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'

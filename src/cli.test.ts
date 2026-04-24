@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
-import * as claudeCode from './adapter/claude-code.js'
+import * as claudeCode from './adapters/claude-code.js'
 import type { AiClient, Rule } from './rule.js'
 
 const stubAi: AiClient = {
