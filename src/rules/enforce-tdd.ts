@@ -36,6 +36,35 @@ function buildPrompt(
   return sections.join('\n\n')
 }
 
+/**
+ * Blocks a write unless the session's recent history shows a failing
+ * test that the pending implementation would address, and the write
+ * is the minimum implementation needed to make that test pass. Uses
+ * an AI validator (via `ctx.ai.reason`) to judge the pending action
+ * against the transcript.
+ *
+ * Applies to: write actions.
+ * Supported agents: Claude Code. (The rule requires `ctx.ai` and
+ * `ctx.history` — Codex and GitHub Copilot adapters don't currently
+ * supply these.)
+ *
+ * Cost note: every matching write triggers an AI call, which is the
+ * most expensive rule in the library. Scope with `paths` so the rule
+ * only fires on the code you care about.
+ *
+ * @param options.instructions — overrides the built-in TDD rubric
+ *   the validator is given. Defaults to a two-rule spec (failing test
+ *   observed; minimum implementation).
+ * @param options.paths — gitignore-style path globs to scope which
+ *   writes are checked. Leading `!` negates. When omitted, every
+ *   write is checked.
+ *
+ * @example
+ * enforceTdd()
+ *
+ * @example
+ * enforceTdd({ paths: ['src/**', '!src/**\/*.test.ts'] })
+ */
 export function enforceTdd(
   options: { instructions?: string; paths?: string[] } = {},
 ) {
