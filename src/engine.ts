@@ -18,3 +18,22 @@ export async function evaluate(
   }
   return { kind: 'allow' }
 }
+
+/**
+ * Fail-closed wrapper around {@link evaluate}. A rule that throws
+ * becomes a block decision with the error message, rather than
+ * escaping as an unhandled rejection. The CLI dispatch pipeline uses
+ * this so a buggy rule cannot crash the hook.
+ */
+export async function evaluateSafely(
+  action: Action,
+  rules: Rule[],
+  ctx?: unknown,
+): Promise<Decision> {
+  try {
+    return await evaluate(action, rules, ctx)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    return { kind: 'block', reason: `rule error: ${reason}` }
+  }
+}

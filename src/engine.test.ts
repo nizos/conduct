@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { evaluate } from './engine.js'
+import { evaluate, evaluateSafely } from './engine.js'
 import { filenameCasing } from './rules/filename-casing.js'
 import type { Rule } from './rule.js'
 
@@ -44,5 +44,20 @@ describe('engine', () => {
     await evaluate({ type: 'command', command: 'x' }, [capturing], ctx)
 
     expect(received).toBe(ctx)
+  })
+
+  it('evaluateSafely turns a rule crash into a block decision', async () => {
+    const crashing: Rule = () => {
+      throw new Error('kaboom')
+    }
+
+    const decision = await evaluateSafely({ type: 'command', command: 'x' }, [
+      crashing,
+    ])
+
+    expect(decision).toEqual({
+      kind: 'block',
+      reason: 'rule error: kaboom',
+    })
   })
 })

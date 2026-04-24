@@ -1,8 +1,8 @@
-import type { Action, AiClient, Decision, Rule } from './rule.js'
+import type { Action, AiClient, Rule } from './rule.js'
 import type { Adapter } from './adapter/adapter.js'
 import { adapters, type Agent } from './adapter/registry.js'
 import { findConfig, loadConfig } from './config.js'
-import { evaluate } from './engine.js'
+import { evaluateSafely } from './engine.js'
 import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
 
 export type { Agent } from './adapter/registry.js'
@@ -52,19 +52,6 @@ export async function dispatch(
     })
   }
   const ctx = { ...(baseCtx as object), ai }
-  const decision = await safeEvaluate(action, rules, ctx)
+  const decision = await evaluateSafely(action, rules, ctx)
   return adapter.toResponse(decision)
-}
-
-async function safeEvaluate(
-  action: Action,
-  rules: Rule[],
-  ctx: unknown,
-): Promise<Decision> {
-  try {
-    return await evaluate(action, rules, ctx)
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    return { kind: 'block', reason: `rule error: ${reason}` }
-  }
 }
