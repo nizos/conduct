@@ -1,3 +1,5 @@
+import picomatch from 'picomatch'
+
 import type { Action } from '../rule.js'
 
 type Verdict = { verdict: 'pass' | 'violation'; reason: string }
@@ -38,6 +40,15 @@ const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
 {"verdict":"pass"|"violation","reason":"<short explanation>"}
 Return JSON only. No prose, no code fences.`
 
+function buildMatcher(patterns: string[]): (path: string) => boolean {
+  const includes = patterns.filter((p) => !p.startsWith('!'))
+  const ignore = patterns
+    .filter((p) => p.startsWith('!'))
+    .map((p) => p.slice(1))
+  const matcher = picomatch(includes.length ? includes : '**', { ignore })
+  return (path) => matcher(path)
+}
+
 function formatEvent(e: SessionEvent): string {
   if ('kind' in e) {
     if (e.kind === 'prompt') return `User: ${e.text}`
@@ -48,10 +59,14 @@ function formatEvent(e: SessionEvent): string {
   return e.output ?? ''
 }
 
-export function enforceTdd(options: { instructions?: string } = {}) {
+export function enforceTdd(
+  options: { instructions?: string; paths?: string[] } = {},
+) {
   const rubric = options.instructions ?? SYSTEM_RUBRIC
+  const matchesPaths = options.paths ? buildMatcher(options.paths) : () => true
   return async (action: Action, rawCtx?: unknown) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
+    if (!matchesPaths(action.path)) return { kind: 'pass' as const }
     const ctx = rawCtx as RuleContext
     const events = (await ctx.history?.()) ?? []
     const historyBlock = events.map(formatEvent).filter(Boolean).join('\n')

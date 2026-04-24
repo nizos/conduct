@@ -157,6 +157,27 @@ describe('enforce-tdd', () => {
     expect(capturedPrompt).toContain('npm test')
   })
 
+  it('skips writes outside the configured paths', async () => {
+    let called = false
+    const ctx = fakeCtx({
+      ai: {
+        reason: async () => {
+          called = true
+          return { verdict: 'violation' as const, reason: 'should not reach' }
+        },
+      },
+    })
+    const rule = enforceTdd({ paths: ['src/**'] })
+
+    const result = await rule(
+      { type: 'write', path: 'README.md', content: 'x' },
+      ctx,
+    )
+
+    expect(result).toEqual({ kind: 'pass' })
+    expect(called).toBe(false)
+  })
+
   it('uses custom instructions when provided', async () => {
     let capturedPrompt = ''
     const ctx = fakeCtx({
