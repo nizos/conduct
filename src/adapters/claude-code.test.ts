@@ -71,6 +71,15 @@ describe('claude-code adapter', () => {
     )
   })
 
+  it('throws for an unsupported tool_name so dispatch can reject the payload', () => {
+    expect(() =>
+      toAction({
+        tool_name: 'MultiEdit',
+        tool_input: { file_path: 'x', edits: [] },
+      }),
+    ).toThrow(/MultiEdit|unsupported|unknown/i)
+  })
+
   it('builds a context whose history reads from the payload transcript_path', async () => {
     const ctx = buildContext({
       transcript_path: 'test/fixtures/transcripts/basic.jsonl',

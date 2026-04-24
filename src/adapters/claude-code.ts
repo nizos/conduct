@@ -16,6 +16,9 @@ export function toAction(payload: unknown): Action {
     }
     return { type: 'write', path: file_path, content: new_string }
   }
+  if (input.tool_name !== 'Write') {
+    throw new Error(`unsupported tool_name: ${String(input.tool_name)}`)
+  }
   const { file_path, content } = input.tool_input as {
     file_path: string
     content: string
