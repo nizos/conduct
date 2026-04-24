@@ -34,15 +34,15 @@ describe('cli', () => {
     expect(response).toBe('')
   })
 
-  it('throws for github-copilot until response translation is implemented', async () => {
+  it('produces an allow response for a github-copilot bash payload that passes rules', async () => {
     const payload = readFileSync(
       'test/fixtures/github-copilot/bash-npm-install.json',
       'utf8',
     )
 
-    await expect(run(payload, { agent: 'github-copilot' })).rejects.toThrow(
-      /github-copilot.*toResponse/i,
-    )
+    const response = await run(payload, { agent: 'github-copilot' })
+
+    expect(JSON.parse(response)).toEqual({ permissionDecision: 'allow' })
   })
 
   it('returns a deny response when a rule crashes on the payload', async () => {

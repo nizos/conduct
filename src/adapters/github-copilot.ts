@@ -6,6 +6,14 @@ export function toAction(payload: unknown): Action {
   return { type: 'command', command }
 }
 
-export function toResponse(_decision: Decision): string {
-  throw new Error('github-copilot toResponse not implemented')
+export function toResponse(decision: Decision): string {
+  if (decision.kind === 'block') {
+    return JSON.stringify({
+      permissionDecision: 'deny',
+      permissionDecisionReason: decision.reason,
+    })
+  }
+  // Per docs, only `deny` is currently processed by the CLI; `allow`
+  // is emitted for compliance but doesn't bypass built-in confirmations.
+  return JSON.stringify({ permissionDecision: 'allow' })
 }

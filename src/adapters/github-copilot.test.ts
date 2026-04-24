@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { toAction } from './github-copilot.js'
+import { toAction, toResponse } from './github-copilot.js'
 
 describe('github-copilot adapter', () => {
   it('tags the action type as command for a bash payload', () => {
@@ -16,6 +16,23 @@ describe('github-copilot adapter', () => {
     const toolArgs = JSON.parse(payload.toolArgs) as { command: string }
 
     expect(action).toMatchObject({ command: toolArgs.command })
+  })
+
+  it('builds a deny response with permissionDecision and reason', () => {
+    const response = JSON.parse(
+      toResponse({ kind: 'block', reason: 'no failing test' }),
+    )
+
+    expect(response).toEqual({
+      permissionDecision: 'deny',
+      permissionDecisionReason: 'no failing test',
+    })
+  })
+
+  it('builds an allow response with permissionDecision: allow', () => {
+    const response = JSON.parse(toResponse({ kind: 'allow' }))
+
+    expect(response).toEqual({ permissionDecision: 'allow' })
   })
 })
 
