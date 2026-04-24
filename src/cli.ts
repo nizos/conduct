@@ -42,7 +42,16 @@ export async function dispatch(
   rawPayload: string,
   rules: Rule[],
 ): Promise<string> {
-  const payload = JSON.parse(rawPayload) as unknown
+  let payload: unknown
+  try {
+    payload = JSON.parse(rawPayload)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    return adapter.toResponse({
+      kind: 'block',
+      reason: `invalid hook payload: could not parse JSON (${reason})`,
+    })
+  }
   const action = adapter.toAction(payload)
   const baseCtx = adapter.buildContext?.(payload)
   const ctx = { ...(baseCtx as object), ai: defaultAi }

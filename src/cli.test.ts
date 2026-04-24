@@ -85,6 +85,16 @@ describe('cli', () => {
     expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
 
+  it('returns a deny response when the payload is not valid JSON', async () => {
+    const response = await dispatch(claudeCode, 'not json at all', [])
+    const parsed = JSON.parse(response)
+
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(parsed.hookSpecificOutput.permissionDecisionReason).toMatch(
+      /json|parse/i,
+    )
+  })
+
   it('throws a clear error for an unknown agent', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-new-file.json',
