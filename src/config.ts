@@ -25,8 +25,7 @@ export type Config = {
  * rule list.
  *
  * @example
- * import { defineConfig } from '@nizos/conduct'
- * import { filenameCasing } from '@nizos/conduct/rules/filename-casing'
+ * import { defineConfig, filenameCasing } from '@nizos/conduct'
  *
  * export default defineConfig({
  *   rules: [filenameCasing({ style: 'kebab-case' })],
