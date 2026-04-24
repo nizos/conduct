@@ -42,9 +42,13 @@ export function filenameCasing(options: {
 
 const pass: RuleResult = { kind: 'pass' }
 
+// kebab-case: no uppercase, no underscores.
 const violatesKebab = (path: string): boolean => /[A-Z_]/.test(path)
+// camelCase: no hyphens; no path segment may start with an uppercase
+// letter. `/\/[A-Z]/` catches `src/UserProfile.ts` (segment-initial cap).
 const violatesCamel = (path: string): boolean =>
   path.includes('-') || /\/[A-Z]/.test(path)
+// snake_case: no uppercase anywhere.
 const violatesSnake = (path: string): boolean => /[A-Z]/.test(path)
 
 const violations = {
