@@ -75,6 +75,16 @@ describe('filename-casing', () => {
 
     expect(result).toEqual({ kind: 'pass' })
   })
+
+  it('skips a write whose path is outside the configured paths', () => {
+    const rule = filenameCasing({
+      style: 'kebab-case',
+      paths: ['src/**'],
+    })
+    const result = rule({ type: 'write', path: 'README.md', content: '' })
+
+    expect(result).toEqual({ kind: 'pass' })
+  })
 })
 
 function setup({ path, style }: { path: string; style: Style }) {
