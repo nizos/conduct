@@ -1,18 +1,17 @@
 import { describe, it, expect } from 'vitest'
 
 import { enforceTdd } from './enforce-tdd.js'
-import { fakeCtx } from '../../test/helpers/fake-ctx.js'
 
 describe('enforce-tdd', () => {
   it('blocks a write when the AI judges it violates TDD', async () => {
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async () => ({
           verdict: 'violation' as const,
           reason: 'No failing test drives this implementation.',
         }),
       },
-    })
+    }
     const rule = enforceTdd()
 
     const result = await rule(
@@ -31,11 +30,11 @@ describe('enforce-tdd', () => {
   })
 
   it('allows a write when the AI judges it passes TDD', async () => {
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async () => ({ verdict: 'pass' as const, reason: '' }),
       },
-    })
+    }
     const rule = enforceTdd()
 
     const result = await rule(
@@ -52,7 +51,7 @@ describe('enforce-tdd', () => {
 
   it('passes through command actions without calling the AI', async () => {
     let called = false
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async () => {
           called = true
@@ -62,7 +61,7 @@ describe('enforce-tdd', () => {
           }
         },
       },
-    })
+    }
     const rule = enforceTdd()
 
     const result = await rule({ type: 'command', command: 'npm install' }, ctx)
@@ -73,14 +72,14 @@ describe('enforce-tdd', () => {
 
   it('includes the action path and content in the AI prompt', async () => {
     let capturedPrompt = ''
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
         },
       },
-    })
+    }
     const rule = enforceTdd()
 
     await rule(
@@ -98,15 +97,23 @@ describe('enforce-tdd', () => {
 
   it('includes recent session history in the AI prompt', async () => {
     let capturedPrompt = ''
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
         },
       },
-      history: async () => [{ output: '2 tests failed' }],
-    })
+      history: async () => [
+        {
+          kind: 'action' as const,
+          tool: 'Bash',
+          input: { command: 'npm test' },
+          output: '2 tests failed',
+          toolUseId: 'tu_1',
+        },
+      ],
+    }
     const rule = enforceTdd()
 
     await rule(
@@ -123,7 +130,7 @@ describe('enforce-tdd', () => {
 
   it('includes tool names and user prompts in the history block', async () => {
     let capturedPrompt = ''
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
@@ -131,16 +138,16 @@ describe('enforce-tdd', () => {
         },
       },
       history: async () => [
-        { kind: 'prompt', text: 'add a test for the adder' },
+        { kind: 'prompt' as const, text: 'add a test for the adder' },
         {
-          kind: 'action',
+          kind: 'action' as const,
           tool: 'Bash',
           input: { command: 'npm test' },
           output: '2 tests failed',
           toolUseId: 'tu_1',
         },
       ],
-    })
+    }
     const rule = enforceTdd()
 
     await rule(
@@ -159,14 +166,14 @@ describe('enforce-tdd', () => {
 
   it('skips writes outside the configured paths', async () => {
     let called = false
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async () => {
           called = true
           return { verdict: 'violation' as const, reason: 'should not reach' }
         },
       },
-    })
+    }
     const rule = enforceTdd({ paths: ['src/**'] })
 
     const result = await rule(
@@ -180,14 +187,14 @@ describe('enforce-tdd', () => {
 
   it('uses custom instructions when provided', async () => {
     let capturedPrompt = ''
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
         },
       },
-    })
+    }
     const rule = enforceTdd({
       instructions: 'CUSTOM: only dog-driven development allowed',
     })
@@ -199,14 +206,14 @@ describe('enforce-tdd', () => {
 
   it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
     let capturedPrompt = ''
-    const ctx = fakeCtx({
+    const ctx = {
       ai: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
         },
       },
-    })
+    }
     const rule = enforceTdd()
 
     await rule(
