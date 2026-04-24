@@ -62,6 +62,15 @@ describe('claudeAgentSdk', () => {
     expect(capture.last?.options?.allowedTools).toEqual([])
   })
 
+  it('does not inherit host project or user settings', async () => {
+    const capture = captureQuery()
+    const client = claudeAgentSdk({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.settingSources).toEqual([])
+  })
+
   it('parses a verdict from a fenced code block', async () => {
     const client = claudeAgentSdk({
       queryFn: fakeQuery('```json\n{"verdict":"pass","reason":"fine"}\n```'),
@@ -104,6 +113,7 @@ type CapturedArgs = {
     disallowedTools?: string[]
     thinking?: { type: 'disabled' | 'enabled' }
     permissionMode?: string
+    settingSources?: string[]
     env?: Record<string, string | undefined>
   }
 }

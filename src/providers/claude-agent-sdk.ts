@@ -12,6 +12,7 @@ type QueryFn = (args: {
     disallowedTools?: string[]
     thinking?: { type: 'disabled' | 'enabled' }
     permissionMode?: 'default' | 'dontAsk' | 'acceptEdits' | 'bypassPermissions'
+    settingSources?: ('user' | 'project' | 'local')[]
     env?: Record<string, string | undefined>
   }
 }) => AsyncIterable<Msg>
@@ -37,6 +38,7 @@ async function getResultText(
       thinking: { type: 'disabled' },
       permissionMode: 'dontAsk',
       allowedTools: [],
+      settingSources: [],
       env: cleanEnv(),
       disallowedTools: [
         'Bash',
