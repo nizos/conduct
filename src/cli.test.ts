@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { run } from './cli.js'
+import { dispatch, run } from './cli.js'
+import * as claudeCode from './adapter/claude-code.js'
+import type { Rule } from './rule.js'
 
 describe('cli', () => {
   it('denies a write whose filename violates kebab-case', async () => {
@@ -43,6 +45,26 @@ describe('cli', () => {
     const { response } = await setup('multi-edit.json')
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+  })
+
+  it('passes a context with a working history() to rules', async () => {
+    let captured: unknown = undefined
+    const capturingRule: Rule = (_action, ctx) => {
+      captured = ctx
+      return { kind: 'pass' as const }
+    }
+    const payload = JSON.stringify({
+      transcript_path: 'test/fixtures/transcripts/basic.jsonl',
+      tool_name: 'Bash',
+      tool_input: { command: 'x' },
+    })
+
+    await dispatch(claudeCode, payload, [capturingRule])
+
+    const ctx = captured as { history: () => Promise<unknown[]> }
+    expect(typeof ctx.history).toBe('function')
+    const events = await ctx.history()
+    expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
 
   it('throws a clear error for an unknown agent', async () => {

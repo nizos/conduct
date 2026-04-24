@@ -8,6 +8,7 @@ import { evaluate, type Decision } from './engine.js'
 type Adapter = {
   toAction: (payload: unknown) => Action
   toResponse: (decision: Decision) => string
+  buildContext?: (payload: unknown) => unknown
 }
 
 const adapters = {
@@ -29,16 +30,29 @@ export async function run(
       `unknown agent: ${String(options.agent)}. Expected one of: ${known}`,
     )
   }
+  const config = await loadConfig(findConfig(process.cwd()))
+  return dispatch(adapter, rawPayload, config.rules)
+}
+
+export async function dispatch(
+  adapter: Adapter,
+  rawPayload: string,
+  rules: Rule[],
+): Promise<string> {
   const payload = JSON.parse(rawPayload) as unknown
   const action = adapter.toAction(payload)
-  const config = await loadConfig(findConfig(process.cwd()))
-  const decision = await safeEvaluate(action, config.rules)
+  const ctx = adapter.buildContext?.(payload)
+  const decision = await safeEvaluate(action, rules, ctx)
   return adapter.toResponse(decision)
 }
 
-async function safeEvaluate(action: Action, rules: Rule[]): Promise<Decision> {
+async function safeEvaluate(
+  action: Action,
+  rules: Rule[],
+  ctx: unknown,
+): Promise<Decision> {
   try {
-    return await evaluate(action, rules)
+    return await evaluate(action, rules, ctx)
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
     return { kind: 'block', reason: `rule error: ${reason}` }

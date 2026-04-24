@@ -24,8 +24,9 @@ export function toAction(payload: unknown): Action {
   return { type: 'write', path: file_path, content }
 }
 
-export function buildContext(payload: { transcript_path: string }) {
-  return { history: () => readTranscript(payload.transcript_path) }
+export function buildContext(payload: unknown) {
+  const input = payload as { transcript_path: string }
+  return { history: () => readTranscript(input.transcript_path) }
 }
 
 export function toResponse(decision: Decision): string {
