@@ -3,7 +3,6 @@ import type { Adapter } from './adapters/adapter.js'
 import { adapters, type Agent } from './adapters/registry.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluateSafely } from './engine.js'
-import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
 
 export type { Agent } from './adapters/registry.js'
 
@@ -11,16 +10,16 @@ export async function run(
   rawPayload: string,
   options: { agent: Agent },
 ): Promise<string> {
-  const adapter = adapters[options.agent]
-  if (!adapter) {
+  const entry = adapters[options.agent]
+  if (!entry) {
     const known = Object.keys(adapters).join(', ')
     throw new Error(
       `unknown agent: ${String(options.agent)}. Expected one of: ${known}`,
     )
   }
   const config = await loadConfig(findConfig(process.cwd()))
-  const ai = config.ai ?? claudeAgentSdk()
-  return dispatch(adapter, rawPayload, config.rules, ai)
+  const ai = config.ai ?? entry.makeAi()
+  return dispatch(entry.adapter, rawPayload, config.rules, ai)
 }
 
 export async function dispatch(
