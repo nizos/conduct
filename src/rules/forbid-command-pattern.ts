@@ -1,4 +1,5 @@
 import type { Rule } from '../rule.js'
+import { stringOrRegexMatches } from './string-or-regex-matches.js'
 
 /**
  * Blocks a command whose text matches `match` — a literal substring or
@@ -26,14 +27,9 @@ export function forbidCommandPattern(options: {
 }): Rule {
   return (action) => {
     if (action.type !== 'command') return { kind: 'pass' }
-    if (!commandMatches(action.command, options.match)) {
+    if (!stringOrRegexMatches(action.command, options.match)) {
       return { kind: 'pass' }
     }
     return { kind: 'violation', reason: options.reason }
   }
-}
-
-function commandMatches(command: string, match: string | RegExp): boolean {
-  if (typeof match === 'string') return command.includes(match)
-  return command.search(match) !== -1
 }

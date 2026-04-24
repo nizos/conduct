@@ -1,5 +1,6 @@
 import type { Rule } from '../rule.js'
 import { buildMatcher } from './match-paths.js'
+import { stringOrRegexMatches } from './string-or-regex-matches.js'
 
 /**
  * Blocks a write whose content matches `match` — a literal substring or
@@ -34,12 +35,9 @@ export function forbidContentPattern(options: {
   return (action) => {
     if (action.type !== 'write') return { kind: 'pass' }
     if (!matchesPaths(action.path)) return { kind: 'pass' }
-    if (!contentMatches(action.content, options.match)) return { kind: 'pass' }
+    if (!stringOrRegexMatches(action.content, options.match)) {
+      return { kind: 'pass' }
+    }
     return { kind: 'violation', reason: options.reason }
   }
-}
-
-function contentMatches(content: string, match: string | RegExp): boolean {
-  if (typeof match === 'string') return content.includes(match)
-  return content.search(match) !== -1
 }
