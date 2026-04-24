@@ -1,11 +1,5 @@
-import { z } from 'zod'
-
 import type { AiClient, Verdict } from '../rule.js'
-
-const VerdictSchema = z.object({
-  verdict: z.enum(['pass', 'violation']),
-  reason: z.string(),
-})
+import { parseVerdict } from './parse-verdict.js'
 
 type Msg = { type: string; [k: string]: unknown }
 
@@ -92,41 +86,4 @@ async function getResultText(
     'no result message received: SDK query stream ended without a ' +
       '{type:"result", subtype:"success"} message (typically an SDK/transport failure)',
   )
-}
-
-function parseVerdict(text: string): Verdict {
-  const parsed = tryParseJson(text)
-  if (parsed === undefined) {
-    return {
-      verdict: 'violation',
-      reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
-    }
-  }
-  const result = VerdictSchema.safeParse(parsed)
-  if (!result.success) {
-    return {
-      verdict: 'violation',
-      reason: `validator returned unexpected shape: ${text.slice(0, 200)}`,
-    }
-  }
-  return result.data
-}
-
-function tryParseJson(text: string): unknown {
-  // Fast path: most validator responses are already plain JSON.
-  try {
-    return JSON.parse(text.trim())
-  } catch {
-    // Fallback: strip an optional ```json fence and retry.
-    try {
-      return JSON.parse(
-        text
-          .replace(/^```(?:json)?\s*/, '')
-          .replace(/\s*```$/, '')
-          .trim(),
-      )
-    } catch {
-      return undefined
-    }
-  }
 }
