@@ -34,6 +34,12 @@ describe('github-copilot adapter', () => {
 
     expect(response).toEqual({ permissionDecision: 'allow' })
   })
+
+  it('throws when toolArgs is missing or not a JSON-encoded string', () => {
+    expect(() =>
+      toAction({ toolName: 'bash', toolArgs: 'not-valid-json' }),
+    ).toThrow(/toolArgs|command|payload/i)
+  })
 })
 
 function setup(fixtureName: string) {
