@@ -66,8 +66,14 @@ export function toAction(payload: unknown): Action {
   return { type: 'command', command: args.data.command }
 }
 
+const ContextPayloadSchema = z.object({
+  sessionId: z.string().regex(/^[A-Za-z0-9_-]+$/, {
+    message: 'sessionId must be a safe identifier (no path separators)',
+  }),
+})
+
 export function buildContext(payload: unknown): Record<string, unknown> {
-  const { sessionId } = payload as { sessionId: string }
+  const { sessionId } = ContextPayloadSchema.parse(payload)
   const home = process.env.COPILOT_HOME ?? path.join(homedir(), '.copilot')
   const events = path.join(home, 'session-state', sessionId, 'events.jsonl')
   return { history: () => readTranscript(events) }

@@ -91,6 +91,12 @@ describe('github-copilot adapter', () => {
     )
   })
 
+  it('buildContext throws for a sessionId containing path separators', () => {
+    expect(() => buildContext({ sessionId: '../../../etc' })).toThrow(
+      /sessionId|invalid|path/i,
+    )
+  })
+
   it('buildContext wires history() to the sessionId under COPILOT_HOME', async () => {
     const { mkdtemp, mkdir, cp, rm } = await import('node:fs/promises')
     const os = await import('node:os')
