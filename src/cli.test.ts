@@ -23,15 +23,15 @@ describe('cli', () => {
     expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
   })
 
-  it('throws for codex until response translation is implemented', async () => {
+  it('produces an empty allow response for a codex Bash payload that passes rules', async () => {
     const payload = readFileSync(
       'test/fixtures/codex/bash-npm-install.json',
       'utf8',
     )
 
-    await expect(run(payload, { agent: 'codex' })).rejects.toThrow(
-      /codex.*toResponse/i,
-    )
+    const response = await run(payload, { agent: 'codex' })
+
+    expect(response).toBe('')
   })
 
   it('throws for github-copilot until response translation is implemented', async () => {

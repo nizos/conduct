@@ -38,12 +38,15 @@ describe('bin main', () => {
 
   it('surfaces a run() throw as exit 1 with the message on stderr', async () => {
     const result = await main({
-      argv: ['node', 'bin.js', '--agent', 'codex'],
-      stdin: readFileSync('test/fixtures/codex/bash-npm-install.json', 'utf8'),
+      argv: ['node', 'bin.js', '--agent', 'github-copilot'],
+      stdin: readFileSync(
+        'test/fixtures/github-copilot/bash-npm-install.json',
+        'utf8',
+      ),
     })
 
     expect(result.exitCode).toBe(1)
-    expect(result.stderr).toMatch(/codex.*toResponse/i)
+    expect(result.stderr).toMatch(/github-copilot.*toResponse/i)
   })
 
   it('writes the run() response to stdout and exits 0 on success', async () => {

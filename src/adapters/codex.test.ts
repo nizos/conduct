@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { toAction } from './codex.js'
+import { toAction, toResponse } from './codex.js'
 
 describe('codex adapter', () => {
   it('tags the action type as command for a Bash payload', () => {
@@ -15,6 +15,21 @@ describe('codex adapter', () => {
     const { action, payload } = setup('bash-npm-install.json')
 
     expect(action).toMatchObject({ command: payload.tool_input.command })
+  })
+
+  it('builds a block response as {"decision":"block","reason":...}', () => {
+    const response = JSON.parse(
+      toResponse({ kind: 'block', reason: 'no failing test' }),
+    )
+
+    expect(response).toEqual({
+      decision: 'block',
+      reason: 'no failing test',
+    })
+  })
+
+  it('builds an empty allow response (exit 0 + empty stdout = allow in Codex)', () => {
+    expect(toResponse({ kind: 'allow' })).toBe('')
   })
 })
 

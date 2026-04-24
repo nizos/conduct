@@ -5,6 +5,9 @@ export function toAction(payload: unknown): Action {
   return { type: 'command', command: tool_input.command }
 }
 
-export function toResponse(_decision: Decision): string {
-  throw new Error('codex toResponse not implemented')
+export function toResponse(decision: Decision): string {
+  if (decision.kind === 'block') {
+    return JSON.stringify({ decision: 'block', reason: decision.reason })
+  }
+  return ''
 }
