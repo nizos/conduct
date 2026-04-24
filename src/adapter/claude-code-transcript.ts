@@ -3,9 +3,19 @@ import { readFile } from 'node:fs/promises'
 export async function readTranscript(path: string): Promise<unknown[]> {
   const raw = await readFile(path, 'utf8')
   const lines = raw.split('\n').filter(Boolean)
-  const uses = new Map<string, { name: string; input: unknown }>()
-  const results = new Map<string, string>()
-  const prompts: string[] = []
+
+  type Emit =
+    | { kind: 'prompt'; text: string }
+    | {
+        kind: 'action'
+        tool: string
+        input: unknown
+        output: string
+        toolUseId: string
+      }
+
+  const pending = new Map<string, Emit>()
+  const emitted: Emit[] = []
 
   for (const line of lines) {
     const entry = JSON.parse(line) as {
@@ -16,31 +26,26 @@ export async function readTranscript(path: string): Promise<unknown[]> {
     if (!Array.isArray(content)) continue
     for (const c of content as Array<Record<string, unknown>>) {
       if (c.type === 'tool_use') {
-        uses.set(c.id as string, { name: c.name as string, input: c.input })
+        const action: Emit = {
+          kind: 'action',
+          tool: c.name as string,
+          input: c.input,
+          output: '',
+          toolUseId: c.id as string,
+        }
+        pending.set(c.id as string, action)
+        emitted.push(action)
       } else if (c.type === 'tool_result' && typeof c.content === 'string') {
-        results.set(c.tool_use_id as string, c.content)
+        const existing = pending.get(c.tool_use_id as string)
+        if (existing && existing.kind === 'action') existing.output = c.content
       } else if (
         c.type === 'text' &&
         entry.type === 'user' &&
         typeof c.text === 'string'
       ) {
-        prompts.push(c.text)
+        emitted.push({ kind: 'prompt', text: c.text })
       }
     }
   }
-
-  const events: unknown[] = []
-  for (const text of prompts) {
-    events.push({ kind: 'prompt', text })
-  }
-  for (const [id, use] of uses) {
-    events.push({
-      kind: 'action',
-      tool: use.name,
-      input: use.input,
-      output: results.get(id) ?? '',
-      toolUseId: id,
-    })
-  }
-  return events
+  return emitted
 }

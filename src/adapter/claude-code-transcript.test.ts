@@ -20,4 +20,15 @@ describe('claude-code-transcript', () => {
 
     expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
+
+  it('returns events in the order they appear in the transcript', async () => {
+    const events = await readTranscript(
+      'test/fixtures/transcripts/interleaved.jsonl',
+    )
+
+    expect(events.map((e) => (e as { kind: string }).kind)).toEqual([
+      'action',
+      'prompt',
+    ])
+  })
 })
