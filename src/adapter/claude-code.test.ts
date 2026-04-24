@@ -35,6 +35,18 @@ describe('claude-code adapter', () => {
     expect(action).toMatchObject({ command: payload.tool_input.command })
   })
 
+  it('maps the Edit new_string to the content on the action', () => {
+    const { action, payload } = setup('edit-file.json')
+
+    expect(action).toMatchObject({ content: payload.tool_input.new_string })
+  })
+
+  it('extracts the file path from an Edit payload', () => {
+    const { action, payload } = setup('edit-file.json')
+
+    expect(action).toMatchObject({ path: payload.tool_input.file_path })
+  })
+
   it('builds an allow response from an allow decision', () => {
     const response = JSON.parse(toResponse({ kind: 'allow' }))
 

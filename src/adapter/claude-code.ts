@@ -9,6 +9,13 @@ export function toAction(payload: unknown): Action {
     const { command } = input.tool_input as { command: string }
     return { type: 'command', command }
   }
+  if (input.tool_name === 'Edit') {
+    const { file_path, new_string } = input.tool_input as {
+      file_path: string
+      new_string: string
+    }
+    return { type: 'write', path: file_path, content: new_string }
+  }
   const { file_path, content } = input.tool_input as {
     file_path: string
     content: string
