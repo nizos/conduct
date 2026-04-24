@@ -23,10 +23,16 @@ type RuleContext = {
 const SYSTEM_RUBRIC = `You are a TDD validator. Judge whether the pending write
 follows test-driven development.
 
-Rule: production code may only be introduced to satisfy a failing test.
-Block when the agent writes production code without a failing test that
-drives it, or when the implementation clearly exceeds the minimum needed
-to make the failing test pass.`
+Rules:
+1. Production code may only be introduced to satisfy a failing test that
+   the session has actually observed. If no test run in the recent session
+   shows a failure that the pending implementation would address, block —
+   writing a test file is not enough; the test must have been run and seen
+   to fail.
+2. The implementation must not exceed the minimum needed to make the
+   observed failing test pass. If the pending write adds functions,
+   classes, or branches that are not required by the currently failing
+   test, block.`
 
 const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
 {"verdict":"pass"|"violation","reason":"<short explanation>"}
