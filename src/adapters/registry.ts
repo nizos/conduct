@@ -10,3 +10,7 @@ export const adapters = {
 } satisfies Record<string, Adapter>
 
 export type Agent = keyof typeof adapters
+
+export function isAgent(value: unknown): value is Agent {
+  return typeof value === 'string' && value in adapters
+}
