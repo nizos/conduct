@@ -29,4 +29,24 @@ describe('enforce-tdd', () => {
       reason: expect.stringContaining('failing test'),
     })
   })
+
+  it('allows a write when the AI judges it passes TDD', async () => {
+    const ctx = fakeCtx({
+      ai: {
+        reason: async () => ({ verdict: 'pass', reason: '' }),
+      },
+    })
+    const rule = enforceTdd()
+
+    const result = await rule(
+      {
+        type: 'write',
+        path: 'src/calc.ts',
+        content: 'export const add = (a, b) => a + b',
+      },
+      ctx,
+    )
+
+    expect(result).toEqual({ kind: 'pass' })
+  })
 })

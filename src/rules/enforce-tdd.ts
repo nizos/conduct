@@ -1,12 +1,17 @@
+type Verdict = { verdict: 'pass' | 'violation'; reason: string }
+
 type RuleContext = {
   ai: {
-    reason: (input: { prompt: string }) => Promise<{ reason: string }>
+    reason: (input: { prompt: string }) => Promise<Verdict>
   }
 }
 
 export function enforceTdd() {
   return async (_action: unknown, ctx: RuleContext) => {
-    const verdict = await ctx.ai.reason({ prompt: '' })
-    return { kind: 'violation' as const, reason: verdict.reason }
+    const v = await ctx.ai.reason({ prompt: '' })
+    if (v.verdict === 'violation') {
+      return { kind: 'violation' as const, reason: v.reason }
+    }
+    return { kind: 'pass' as const }
   }
 }
