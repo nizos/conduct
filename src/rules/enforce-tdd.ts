@@ -1,3 +1,5 @@
+import type { Action } from '../rule.js'
+
 type Verdict = { verdict: 'pass' | 'violation'; reason: string }
 
 type RuleContext = {
@@ -7,9 +9,10 @@ type RuleContext = {
 }
 
 export function enforceTdd() {
-  return async (action: { type: string }, ctx: RuleContext) => {
+  return async (action: Action, ctx: RuleContext) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
-    const v = await ctx.ai.reason({ prompt: '' })
+    const prompt = `File: ${action.path}\n\n${action.content}`
+    const v = await ctx.ai.reason({ prompt })
     if (v.verdict === 'violation') {
       return { kind: 'violation' as const, reason: v.reason }
     }

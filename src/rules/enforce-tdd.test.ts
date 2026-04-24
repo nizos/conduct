@@ -67,4 +67,29 @@ describe('enforce-tdd', () => {
     expect(result).toEqual({ kind: 'pass' })
     expect(called).toBe(false)
   })
+
+  it('includes the action path and content in the AI prompt', async () => {
+    let capturedPrompt = ''
+    const ctx = fakeCtx({
+      ai: {
+        reason: async ({ prompt }: { prompt: string }) => {
+          capturedPrompt = prompt
+          return { verdict: 'pass', reason: '' }
+        },
+      },
+    })
+    const rule = enforceTdd()
+
+    await rule(
+      {
+        type: 'write',
+        path: 'src/calc.ts',
+        content: 'export const add = (a, b) => a + b',
+      },
+      ctx,
+    )
+
+    expect(capturedPrompt).toContain('src/calc.ts')
+    expect(capturedPrompt).toContain('export const add')
+  })
 })
