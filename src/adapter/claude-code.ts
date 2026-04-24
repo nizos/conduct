@@ -24,9 +24,22 @@ export function toAction(payload: unknown): Action {
   return { type: 'write', path: file_path, content }
 }
 
-export function buildContext(payload: unknown) {
+type AiClient = {
+  reason: (prompt: string) => Promise<{
+    verdict: 'pass' | 'violation'
+    reason: string
+  }>
+}
+
+export function buildContext(
+  payload: unknown,
+  options: { ai?: AiClient } = {},
+) {
   const input = payload as { transcript_path: string }
-  return { history: () => readTranscript(input.transcript_path) }
+  return {
+    history: () => readTranscript(input.transcript_path),
+    ai: options.ai,
+  }
 }
 
 export function toResponse(decision: Decision): string {
