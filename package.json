@@ -31,17 +31,9 @@
       "types": "./dist/rule.d.ts",
       "default": "./dist/rule.js"
     },
-    "./rules/filename-casing": {
-      "types": "./dist/rules/filename-casing.d.ts",
-      "default": "./dist/rules/filename-casing.js"
-    },
-    "./rules/forbid-command-pattern": {
-      "types": "./dist/rules/forbid-command-pattern.d.ts",
-      "default": "./dist/rules/forbid-command-pattern.js"
-    },
-    "./rules/forbid-content-pattern": {
-      "types": "./dist/rules/forbid-content-pattern.d.ts",
-      "default": "./dist/rules/forbid-content-pattern.js"
+    "./rules/*": {
+      "types": "./dist/rules/*.d.ts",
+      "default": "./dist/rules/*.js"
     }
   },
   "files": [
