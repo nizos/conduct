@@ -92,14 +92,8 @@ async function getResultText(
 }
 
 function parseVerdict(text: string): Verdict {
-  const stripped = text
-    .replace(/^```(?:json)?\s*/, '')
-    .replace(/\s*```$/, '')
-    .trim()
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(stripped)
-  } catch {
+  const parsed = tryParseJson(text)
+  if (parsed === undefined) {
     return {
       verdict: 'violation',
       reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
@@ -113,4 +107,23 @@ function parseVerdict(text: string): Verdict {
     }
   }
   return result.data
+}
+
+function tryParseJson(text: string): unknown {
+  // Fast path: most validator responses are already plain JSON.
+  try {
+    return JSON.parse(text.trim())
+  } catch {
+    // Fallback: strip an optional ```json fence and retry.
+    try {
+      return JSON.parse(
+        text
+          .replace(/^```(?:json)?\s*/, '')
+          .replace(/\s*```$/, '')
+          .trim(),
+      )
+    } catch {
+      return undefined
+    }
+  }
 }
