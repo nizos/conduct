@@ -8,6 +8,8 @@ const PayloadSchema = z.object({
   tool_input: z.object({ command: z.string() }),
 })
 
+const ContextPayloadSchema = z.object({ transcript_path: z.string() })
+
 export function toAction(payload: unknown): Action {
   const parsed = PayloadSchema.safeParse(payload)
   if (!parsed.success) {
@@ -23,7 +25,7 @@ export function toAction(payload: unknown): Action {
 }
 
 export function buildContext(payload: unknown): Record<string, unknown> {
-  const { transcript_path } = payload as { transcript_path: string }
+  const { transcript_path } = ContextPayloadSchema.parse(payload)
   return { history: () => readTranscript(transcript_path) }
 }
 

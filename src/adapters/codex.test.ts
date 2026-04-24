@@ -41,6 +41,10 @@ describe('codex adapter', () => {
     ).toThrow(/apply_patch|unsupported|Bash/i)
   })
 
+  it('buildContext throws when transcript_path is missing', () => {
+    expect(() => buildContext({})).toThrow()
+  })
+
   it('buildContext wires history() to the payload transcript_path', async () => {
     const ctx = buildContext({
       transcript_path: 'test/fixtures/transcripts/codex-basic.jsonl',
