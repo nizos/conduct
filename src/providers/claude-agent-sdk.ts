@@ -1,4 +1,3 @@
-import { query } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
 
 import type { AiClient, Verdict } from '../rule.js'
@@ -23,10 +22,20 @@ type QueryFn = (args: {
   }
 }) => AsyncIterable<Msg>
 
+/**
+ * The SDK import is ~670 KB of JS. We defer it to the first time a rule
+ * actually asks for a verdict so hook invocations whose rules are all
+ * static (filenameCasing, forbid*) don't pay the cold-start cost.
+ */
+async function loadSdkQuery(): Promise<QueryFn> {
+  const mod = await import('@anthropic-ai/claude-agent-sdk')
+  return mod.query as unknown as QueryFn
+}
+
 export function claudeAgentSdk(options: { queryFn?: QueryFn } = {}): AiClient {
-  const queryFn = options.queryFn ?? (query as unknown as QueryFn)
   return {
     reason: async (prompt: string): Promise<Verdict> => {
+      const queryFn = options.queryFn ?? (await loadSdkQuery())
       let text: string
       try {
         text = await getResultText(queryFn, prompt)
