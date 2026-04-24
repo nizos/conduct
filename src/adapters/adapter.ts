@@ -11,5 +11,5 @@ import type { Action, Decision } from '../rule.js'
 export type Adapter = {
   toAction: (payload: unknown) => Action
   toResponse: (decision: Decision) => string
-  buildContext?: (payload: unknown) => unknown
+  buildContext?: (payload: unknown) => Record<string, unknown>
 }

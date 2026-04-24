@@ -40,10 +40,10 @@ export async function dispatch(
     })
   }
   let action: Action
-  let baseCtx: unknown
+  let baseCtx: Record<string, unknown> = {}
   try {
     action = adapter.toAction(payload)
-    baseCtx = adapter.buildContext?.(payload)
+    baseCtx = adapter.buildContext?.(payload) ?? {}
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
     return adapter.toResponse({
@@ -51,7 +51,7 @@ export async function dispatch(
       reason: `invalid hook payload: ${reason}`,
     })
   }
-  const ctx = { ...(baseCtx as object), ai }
+  const ctx = { ...baseCtx, ai }
   const decision = await evaluateSafely(action, rules, ctx)
   return adapter.toResponse(decision)
 }
