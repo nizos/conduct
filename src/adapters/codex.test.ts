@@ -31,6 +31,15 @@ describe('codex adapter', () => {
   it('builds an empty allow response (exit 0 + empty stdout = allow in Codex)', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
+
+  it('throws for a non-Bash tool_name (Codex only intercepts Bash today)', () => {
+    expect(() =>
+      toAction({
+        tool_name: 'apply_patch',
+        tool_input: { patch: 'diff' },
+      }),
+    ).toThrow(/apply_patch|unsupported|Bash/i)
+  })
 })
 
 function setup(fixtureName: string) {
