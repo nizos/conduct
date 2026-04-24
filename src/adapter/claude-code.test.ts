@@ -80,18 +80,6 @@ describe('claude-code adapter', () => {
 
     expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
-
-  it('wires the ai option through to the ctx', () => {
-    const ai = {
-      reason: async () => ({ verdict: 'pass' as const, reason: '' }),
-    }
-    const ctx = buildContext(
-      { transcript_path: 'test/fixtures/transcripts/basic.jsonl' },
-      { ai },
-    )
-
-    expect(ctx.ai).toBe(ai)
-  })
 })
 
 function setup(fixtureName: string) {
