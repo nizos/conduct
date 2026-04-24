@@ -1,8 +1,10 @@
-import { readFile } from 'node:fs/promises'
+import { lstat, readFile, stat } from 'node:fs/promises'
 
 import { z } from 'zod'
 
 import type { SessionEvent } from '../rule.js'
+
+const DEFAULT_MAX_TRANSCRIPT_BYTES = 100 * 1024 * 1024
 
 const ContentItemSchema = z.discriminatedUnion('type', [
   z.object({
@@ -27,7 +29,21 @@ const EntrySchema = z.object({
   message: z.object({ content: z.array(z.unknown()) }).optional(),
 })
 
-export async function readTranscript(path: string): Promise<SessionEvent[]> {
+export async function readTranscript(
+  path: string,
+  options: { maxBytes?: number } = {},
+): Promise<SessionEvent[]> {
+  const maxBytes = options.maxBytes ?? DEFAULT_MAX_TRANSCRIPT_BYTES
+  const linkInfo = await lstat(path)
+  if (linkInfo.isSymbolicLink()) {
+    throw new Error(`transcript at ${path} is a symbolic link (refusing)`)
+  }
+  const info = await stat(path)
+  if (info.size > maxBytes) {
+    throw new Error(
+      `transcript at ${path} exceeds ${maxBytes} bytes (got ${info.size})`,
+    )
+  }
   const raw = await readFile(path, 'utf8')
   const lines = raw.split('\n').filter(Boolean)
 
