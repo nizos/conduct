@@ -52,6 +52,27 @@ describe('claudeAgentSdk', () => {
     expect(capture.last?.options?.maxThinkingTokens).toBe(0)
   })
 
+  it('parses a verdict from a fenced code block', async () => {
+    const client = claudeAgentSdk({
+      queryFn: fakeQuery('```json\n{"verdict":"pass","reason":"fine"}\n```'),
+    })
+
+    const verdict = await client.reason('prompt')
+
+    expect(verdict).toEqual({ verdict: 'pass', reason: 'fine' })
+  })
+
+  it('returns a fail-closed violation when the response is not valid JSON', async () => {
+    const client = claudeAgentSdk({
+      queryFn: fakeQuery('not valid json at all'),
+    })
+
+    const verdict = await client.reason('prompt')
+
+    expect(verdict.verdict).toBe('violation')
+    expect(verdict.reason).toMatch(/parse|invalid|json/i)
+  })
+
   it('strips CLAUDECODE from the env to avoid nested-session rejection', async () => {
     process.env.CLAUDECODE = '1'
     const capture = captureQuery()
