@@ -22,7 +22,79 @@ describe('claudeAgentSdk', () => {
 
     expect(verdict).toEqual({ verdict: 'pass', reason: 'looks fine' })
   })
+
+  it('limits the query to a single turn', async () => {
+    const capture = captureQuery()
+    const client = claudeAgentSdk({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.maxTurns).toBe(1)
+  })
+
+  it('disallows tool use so the validator cannot act', async () => {
+    const capture = captureQuery()
+    const client = claudeAgentSdk({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.disallowedTools).toEqual(
+      expect.arrayContaining(['Bash', 'Write', 'Edit']),
+    )
+  })
+
+  it('disables extended thinking for fast turnaround', async () => {
+    const capture = captureQuery()
+    const client = claudeAgentSdk({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.maxThinkingTokens).toBe(0)
+  })
+
+  it('strips CLAUDECODE from the env to avoid nested-session rejection', async () => {
+    process.env.CLAUDECODE = '1'
+    const capture = captureQuery()
+    const client = claudeAgentSdk({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.env).toBeDefined()
+    expect(capture.last?.options?.env).not.toHaveProperty('CLAUDECODE')
+    delete process.env.CLAUDECODE
+  })
 })
+
+type CapturedArgs = {
+  prompt: string
+  options?: {
+    maxTurns?: number
+    disallowedTools?: string[]
+    maxThinkingTokens?: number
+    env?: Record<string, string | undefined>
+  }
+}
+
+function captureQuery() {
+  const state: { last?: CapturedArgs } = {}
+  const fn = (args: CapturedArgs) => {
+    state.last = args
+    async function* gen() {
+      yield {
+        type: 'result' as const,
+        subtype: 'success' as const,
+        result: '{"verdict":"pass","reason":""}',
+      }
+    }
+    return gen()
+  }
+  return {
+    fn,
+    get last() {
+      return state.last
+    },
+  }
+}
 
 function fakeQuery(resultText: string) {
   return () => {
