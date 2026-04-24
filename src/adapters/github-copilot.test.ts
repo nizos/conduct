@@ -40,6 +40,56 @@ describe('github-copilot adapter', () => {
       toAction({ toolName: 'bash', toolArgs: 'not-valid-json' }),
     ).toThrow(/toolArgs|command|payload/i)
   })
+
+  it('tags a create payload as a write action', () => {
+    const { action } = setup('pre-create-new-test.json')
+
+    expect(action.type).toBe('write')
+  })
+
+  it('maps create payload path + file_text onto the write action', () => {
+    const { action, payload } = setup('pre-create-new-test.json')
+    const args = JSON.parse(payload.toolArgs) as {
+      path: string
+      file_text: string
+    }
+
+    expect(action).toMatchObject({ path: args.path, content: args.file_text })
+  })
+
+  it('maps an edit payload path + new_str onto the write action', () => {
+    const { action, payload } = setup('pre-edit-add-subtract.json')
+    const args = JSON.parse(payload.toolArgs) as {
+      path: string
+      new_str: string
+    }
+
+    expect(action).toMatchObject({ path: args.path, content: args.new_str })
+  })
+
+  it('throws for non-write / non-command tools like view', () => {
+    const payload = JSON.parse(
+      readFileSync(
+        'test/fixtures/github-copilot/pre-view-calculator.json',
+        'utf8',
+      ),
+    )
+
+    expect(() => toAction(payload)).toThrow(/view|unsupported|toolName/i)
+  })
+
+  it('throws for metadata tools like report_intent', () => {
+    const payload = JSON.parse(
+      readFileSync(
+        'test/fixtures/github-copilot/pre-report-intent.json',
+        'utf8',
+      ),
+    )
+
+    expect(() => toAction(payload)).toThrow(
+      /report_intent|unsupported|toolName/i,
+    )
+  })
 })
 
 function setup(fixtureName: string) {
