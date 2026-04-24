@@ -55,7 +55,11 @@ export function findConfig(startDir: string): string {
     const candidate = path.join(dir, CONFIG_FILENAME)
     if (existsSync(candidate)) return candidate
     const parent = path.dirname(dir)
-    if (parent === dir) throw new Error(`${CONFIG_FILENAME} not found`)
+    if (parent === dir) {
+      throw new Error(
+        `${CONFIG_FILENAME} not found (searched from ${startDir} up to /)`,
+      )
+    }
     dir = parent
   }
 }

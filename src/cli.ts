@@ -51,6 +51,9 @@ export async function dispatch(
       reason: `invalid hook payload: ${reason}`,
     })
   }
+  // CLI-injected `ai` overrides anything the adapter might have put in
+  // baseCtx — the config/default provider is the canonical source of
+  // `ai`, and adapters only supply session capabilities like history().
   const ctx = { ...baseCtx, ai }
   const decision = await evaluateSafely(action, rules, ctx)
   return adapter.toResponse(decision)

@@ -88,7 +88,10 @@ async function getResultText(
       return message.result
     }
   }
-  throw new Error('no result message received')
+  throw new Error(
+    'no result message received: SDK query stream ended without a ' +
+      '{type:"result", subtype:"success"} message (typically an SDK/transport failure)',
+  )
 }
 
 function parseVerdict(text: string): Verdict {
