@@ -92,16 +92,13 @@ describe('claudeAgentSdk', () => {
     expect(verdict.reason).toMatch(/parse|invalid|json/i)
   })
 
-  it('strips CLAUDECODE from the env to avoid nested-session rejection', async () => {
-    process.env.CLAUDECODE = '1'
+  it('does not pass an env option (SDK handles session context)', async () => {
     const capture = captureQuery()
     const client = claudeAgentSdk({ queryFn: capture.fn })
 
     await client.reason('prompt')
 
-    expect(capture.last?.options?.env).toBeDefined()
-    expect(capture.last?.options?.env).not.toHaveProperty('CLAUDECODE')
-    delete process.env.CLAUDECODE
+    expect(capture.last?.options?.env).toBeUndefined()
   })
 })
 

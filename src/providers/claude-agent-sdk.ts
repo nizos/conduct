@@ -39,7 +39,6 @@ async function getResultText(
       permissionMode: 'dontAsk',
       allowedTools: [],
       settingSources: [],
-      env: cleanEnv(),
       disallowedTools: [
         'Bash',
         'Write',
@@ -73,10 +72,4 @@ function parseVerdict(text: string): Verdict {
       reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
     }
   }
-}
-
-function cleanEnv(): Record<string, string | undefined> {
-  const env = { ...process.env }
-  delete env.CLAUDECODE
-  return env
 }
