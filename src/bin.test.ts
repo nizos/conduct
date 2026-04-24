@@ -24,6 +24,18 @@ describe('bin main', () => {
     expect(result.stderr).toMatch(/claude-code/)
   })
 
+  it('returns exit 1 with a cap message when stdin reading throws', async () => {
+    const result = await main({
+      argv: ['node', 'bin.js', '--agent', 'claude-code'],
+      stdin: () => {
+        throw new Error('input exceeds 10 bytes')
+      },
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toMatch(/exceeds|cap|bytes/i)
+  })
+
   it('surfaces a run() throw as exit 1 with the message on stderr', async () => {
     const result = await main({
       argv: ['node', 'bin.js', '--agent', 'codex'],

@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs'
+import { readSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
 import { adapters, isAgent } from './adapters/registry.js'
 import { run } from './cli.js'
+import { readCapped } from './read-capped.js'
+
+const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
 
 export type MainResult = {
   stdout?: string
@@ -13,7 +16,7 @@ export type MainResult = {
 
 export async function main(args: {
   argv: readonly string[]
-  stdin: string
+  stdin: string | (() => string)
 }): Promise<MainResult> {
   const agentIndex = args.argv.indexOf('--agent')
   if (agentIndex === -1) {
@@ -30,8 +33,18 @@ export async function main(args: {
       exitCode: 2,
     }
   }
+  let stdin: string
   try {
-    const response = await run(args.stdin, { agent: agentArg })
+    stdin = typeof args.stdin === 'function' ? args.stdin() : args.stdin
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    return {
+      stderr: `conduct: ${reason}\n`,
+      exitCode: 1,
+    }
+  }
+  try {
+    const response = await run(stdin, { agent: agentArg })
     return { stdout: response, exitCode: 0 }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
@@ -43,8 +56,14 @@ export async function main(args: {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const stdin = readFileSync(0, 'utf8')
-  const result = await main({ argv: process.argv, stdin })
+  const result = await main({
+    argv: process.argv,
+    stdin: () =>
+      readCapped(
+        (buffer, offset, length) => readSync(0, buffer, offset, length, null),
+        MAX_PAYLOAD_BYTES,
+      ),
+  })
   if (result.stdout !== undefined) process.stdout.write(result.stdout)
   if (result.stderr !== undefined) process.stderr.write(result.stderr)
   process.exit(result.exitCode)
