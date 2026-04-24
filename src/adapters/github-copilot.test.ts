@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { toAction, toResponse } from './github-copilot.js'
+import { buildContext, toAction, toResponse } from './github-copilot.js'
 
 describe('github-copilot adapter', () => {
   it('tags the action type as command for a bash payload', () => {
@@ -89,6 +89,32 @@ describe('github-copilot adapter', () => {
     expect(() => toAction(payload)).toThrow(
       /report_intent|unsupported|toolName/i,
     )
+  })
+
+  it('buildContext wires history() to the sessionId under COPILOT_HOME', async () => {
+    const { mkdtemp, mkdir, cp, rm } = await import('node:fs/promises')
+    const os = await import('node:os')
+    const path = await import('node:path')
+    const home = await mkdtemp(path.join(os.tmpdir(), 'conduct-copilot-'))
+    const sessionId = 'test-sess-123'
+    const dir = path.join(home, 'session-state', sessionId)
+    await mkdir(dir, { recursive: true })
+    await cp(
+      'test/fixtures/transcripts/copilot-basic.jsonl',
+      path.join(dir, 'events.jsonl'),
+    )
+    const prevHome = process.env.COPILOT_HOME
+    process.env.COPILOT_HOME = home
+    try {
+      const ctx = buildContext({ sessionId })
+      const history = ctx.history as () => Promise<unknown[]>
+      const events = await history()
+      expect(events).toContainEqual(expect.objectContaining({ kind: 'prompt' }))
+    } finally {
+      if (prevHome === undefined) delete process.env.COPILOT_HOME
+      else process.env.COPILOT_HOME = prevHome
+      await rm(home, { recursive: true, force: true })
+    }
   })
 })
 

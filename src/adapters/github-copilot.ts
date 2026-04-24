@@ -1,6 +1,10 @@
+import { homedir } from 'node:os'
+import path from 'node:path'
+
 import { z } from 'zod'
 
 import type { Action, Decision } from '../rule.js'
+import { readTranscript } from './github-copilot-transcript.js'
 
 const PayloadSchema = z.discriminatedUnion('toolName', [
   z.object({ toolName: z.literal('bash'), toolArgs: z.string() }),
@@ -60,6 +64,13 @@ export function toAction(payload: unknown): Action {
     throw new Error('github-copilot bash toolArgs missing required "command"')
   }
   return { type: 'command', command: args.data.command }
+}
+
+export function buildContext(payload: unknown): Record<string, unknown> {
+  const { sessionId } = payload as { sessionId: string }
+  const home = process.env.COPILOT_HOME ?? path.join(homedir(), '.copilot')
+  const events = path.join(home, 'session-state', sessionId, 'events.jsonl')
+  return { history: () => readTranscript(events) }
 }
 
 export function toResponse(decision: Decision): string {
