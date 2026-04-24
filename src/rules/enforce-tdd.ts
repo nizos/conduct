@@ -11,6 +11,18 @@ type RuleContext = {
   history?: () => Promise<SessionEvent[]>
 }
 
+const SYSTEM_RUBRIC = `You are a TDD validator. Judge whether the pending write
+follows test-driven development.
+
+Rule: production code may only be introduced to satisfy a failing test.
+Block when the agent writes production code without a failing test that
+drives it, or when the implementation clearly exceeds the minimum needed
+to make the failing test pass.`
+
+const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
+{"verdict":"pass"|"violation","reason":"<short explanation>"}
+Return JSON only. No prose, no code fences.`
+
 export function enforceTdd() {
   return async (action: Action, ctx: RuleContext) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
@@ -20,8 +32,10 @@ export function enforceTdd() {
       .filter(Boolean)
       .join('\n')
     const prompt = [
+      SYSTEM_RUBRIC,
       historyBlock && `Recent session:\n${historyBlock}`,
-      `File: ${action.path}\n\n${action.content}`,
+      `Pending action:\nFile: ${action.path}\n\n${action.content}`,
+      RESPONSE_SPEC,
     ]
       .filter(Boolean)
       .join('\n\n')

@@ -120,4 +120,30 @@ describe('enforce-tdd', () => {
 
     expect(capturedPrompt).toContain('2 tests failed')
   })
+
+  it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
+    let capturedPrompt = ''
+    const ctx = fakeCtx({
+      ai: {
+        reason: async (prompt: string) => {
+          capturedPrompt = prompt
+          return { verdict: 'pass' as const, reason: '' }
+        },
+      },
+    })
+    const rule = enforceTdd()
+
+    await rule(
+      {
+        type: 'write',
+        path: 'src/calc.ts',
+        content: 'export const add = () => 0',
+      },
+      ctx,
+    )
+
+    expect(capturedPrompt).toMatch(/failing test/i)
+    expect(capturedPrompt).toMatch(/verdict/i)
+    expect(capturedPrompt).toMatch(/reason/i)
+  })
 })
