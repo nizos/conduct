@@ -9,7 +9,7 @@ type QueryFn = (args: {
   options?: {
     maxTurns?: number
     disallowedTools?: string[]
-    maxThinkingTokens?: number
+    thinking?: { type: 'disabled' | 'enabled' }
     env?: Record<string, string | undefined>
   }
 }) => AsyncIterable<Msg>
@@ -32,7 +32,7 @@ async function getResultText(
     prompt,
     options: {
       maxTurns: 1,
-      maxThinkingTokens: 0,
+      thinking: { type: 'disabled' },
       env: cleanEnv(),
       disallowedTools: [
         'Bash',

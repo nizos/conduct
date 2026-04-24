@@ -49,7 +49,7 @@ describe('claudeAgentSdk', () => {
 
     await client.reason('prompt')
 
-    expect(capture.last?.options?.maxThinkingTokens).toBe(0)
+    expect(capture.last?.options?.thinking).toEqual({ type: 'disabled' })
   })
 
   it('parses a verdict from a fenced code block', async () => {
@@ -91,7 +91,7 @@ type CapturedArgs = {
   options?: {
     maxTurns?: number
     disallowedTools?: string[]
-    maxThinkingTokens?: number
+    thinking?: { type: 'disabled' | 'enabled' }
     env?: Record<string, string | undefined>
   }
 }
