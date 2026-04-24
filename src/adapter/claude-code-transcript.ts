@@ -18,9 +18,11 @@ export async function readTranscript(path: string): Promise<unknown[]> {
   const emitted: Emit[] = []
 
   for (const line of lines) {
-    const entry = JSON.parse(line) as {
-      type?: string
-      message?: { content?: unknown }
+    let entry: { type?: string; message?: { content?: unknown } }
+    try {
+      entry = JSON.parse(line) as typeof entry
+    } catch {
+      continue
     }
     const content = entry.message?.content
     if (!Array.isArray(content)) continue

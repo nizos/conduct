@@ -21,6 +21,21 @@ describe('claude-code-transcript', () => {
     expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
 
+  it('skips malformed lines and keeps parsing valid ones', async () => {
+    const events = await readTranscript(
+      'test/fixtures/transcripts/with-malformed-line.jsonl',
+    )
+
+    expect(events).toContainEqual({ kind: 'prompt', text: 'hello' })
+    expect(events).toContainEqual({
+      kind: 'action',
+      tool: 'Bash',
+      input: { command: 'ls' },
+      output: 'ok',
+      toolUseId: 'tu_1',
+    })
+  })
+
   it('returns events in the order they appear in the transcript', async () => {
     const events = await readTranscript(
       'test/fixtures/transcripts/interleaved.jsonl',

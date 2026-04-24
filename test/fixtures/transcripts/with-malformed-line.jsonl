@@ -1,0 +1,4 @@
+{"type":"user","message":{"content":[{"type":"text","text":"hello"}]}}
+this is not valid json
+{"type":"assistant","message":{"content":[{"type":"tool_use","id":"tu_1","name":"Bash","input":{"command":"ls"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tu_1","content":"ok"}]}}
