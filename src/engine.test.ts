@@ -32,4 +32,17 @@ describe('engine', () => {
 
     expect(decision).toEqual({ kind: 'allow' })
   })
+
+  it('passes the context to rules that accept it', async () => {
+    let received: unknown = undefined
+    const capturing: Rule = (_action, ctx) => {
+      received = ctx
+      return { kind: 'pass' as const }
+    }
+    const ctx = {}
+
+    await evaluate({ type: 'command', command: 'x' }, [capturing], ctx)
+
+    expect(received).toBe(ctx)
+  })
 })

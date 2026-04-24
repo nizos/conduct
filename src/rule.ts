@@ -21,9 +21,14 @@ export type RuleResult =
   | { kind: 'violation'; reason: string }
 
 /**
- * A rule as the engine consumes it: a function from Action to RuleResult.
- * Rules may be synchronous or asynchronous; the engine awaits the
- * returned value either way. Rule modules export factories of the
- * form `(options) => Rule`.
+ * A rule as the engine consumes it: a function from Action (+ an
+ * optional context injected by the engine) to RuleResult. Rules may be
+ * synchronous or asynchronous; the engine awaits the returned value
+ * either way. The context shape is intentionally `unknown` at this
+ * layer — rules that need specific capabilities narrow internally.
+ * Rule modules export factories of the form `(options) => Rule`.
  */
-export type Rule = (action: Action) => RuleResult | Promise<RuleResult>
+export type Rule = (
+  action: Action,
+  ctx?: unknown,
+) => RuleResult | Promise<RuleResult>

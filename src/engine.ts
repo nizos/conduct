@@ -17,9 +17,10 @@ export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
 export async function evaluate(
   action: Action,
   rules: Rule[],
+  ctx?: unknown,
 ): Promise<Decision> {
   for (const rule of rules) {
-    const result = await rule(action)
+    const result = await rule(action, ctx)
     if (result.kind === 'violation') {
       return { kind: 'block', reason: result.reason }
     }
