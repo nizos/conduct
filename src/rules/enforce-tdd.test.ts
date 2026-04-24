@@ -8,7 +8,7 @@ describe('enforce-tdd', () => {
     const ctx = fakeCtx({
       ai: {
         reason: async () => ({
-          verdict: 'violation',
+          verdict: 'violation' as const,
           reason: 'No failing test drives this implementation.',
         }),
       },
@@ -33,7 +33,7 @@ describe('enforce-tdd', () => {
   it('allows a write when the AI judges it passes TDD', async () => {
     const ctx = fakeCtx({
       ai: {
-        reason: async () => ({ verdict: 'pass', reason: '' }),
+        reason: async () => ({ verdict: 'pass' as const, reason: '' }),
       },
     })
     const rule = enforceTdd()
@@ -56,7 +56,10 @@ describe('enforce-tdd', () => {
       ai: {
         reason: async () => {
           called = true
-          return { verdict: 'violation', reason: 'should not be reached' }
+          return {
+            verdict: 'violation' as const,
+            reason: 'should not be reached',
+          }
         },
       },
     })
@@ -74,7 +77,7 @@ describe('enforce-tdd', () => {
       ai: {
         reason: async ({ prompt }: { prompt: string }) => {
           capturedPrompt = prompt
-          return { verdict: 'pass', reason: '' }
+          return { verdict: 'pass' as const, reason: '' }
         },
       },
     })
@@ -91,5 +94,30 @@ describe('enforce-tdd', () => {
 
     expect(capturedPrompt).toContain('src/calc.ts')
     expect(capturedPrompt).toContain('export const add')
+  })
+
+  it('includes recent session history in the AI prompt', async () => {
+    let capturedPrompt = ''
+    const ctx = fakeCtx({
+      ai: {
+        reason: async ({ prompt }: { prompt: string }) => {
+          capturedPrompt = prompt
+          return { verdict: 'pass' as const, reason: '' }
+        },
+      },
+      history: async () => [{ output: '2 tests failed' }],
+    })
+    const rule = enforceTdd()
+
+    await rule(
+      {
+        type: 'write',
+        path: 'src/calc.ts',
+        content: 'export const add = () => 0',
+      },
+      ctx,
+    )
+
+    expect(capturedPrompt).toContain('2 tests failed')
   })
 })
