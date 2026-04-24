@@ -12,7 +12,8 @@ import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
 const ai = claudeAgentSdk()
 
-const SESSION_ID = 'integration-copilot-tdd'
+const CLEAN_SESSION = 'integration-copilot-tdd-clean'
+const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
 
 describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   let home: string
@@ -20,12 +21,17 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
 
   beforeAll(async () => {
     home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
-    const sessionDir = path.join(home, 'session-state', SESSION_ID)
-    await mkdir(sessionDir, { recursive: true })
-    await cp(
-      'test/fixtures/transcripts/copilot-tdd-clean.jsonl',
-      path.join(sessionDir, 'events.jsonl'),
-    )
+    for (const [session, fixture] of [
+      [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
+      [NO_RUN_SESSION, 'copilot-tdd-no-test-run.jsonl'],
+    ] as const) {
+      const sessionDir = path.join(home, 'session-state', session)
+      await mkdir(sessionDir, { recursive: true })
+      await cp(
+        `test/fixtures/transcripts/${fixture}`,
+        path.join(sessionDir, 'events.jsonl'),
+      )
+    }
     prevHome = process.env.COPILOT_HOME
     process.env.COPILOT_HOME = home
   })
@@ -38,7 +44,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
 
   it('allows a minimal add implementation after a failing test was run', async () => {
     const payload = buildCreatePayload({
-      sessionId: SESSION_ID,
+      sessionId: CLEAN_SESSION,
       file_path: '/workspaces/conduct/src/calculator.ts',
       file_text:
         'export function add(a: number, b: number): number {\n  return a + b\n}\n',
@@ -52,9 +58,23 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
 
   it('blocks an over-implementation that adds many unrequested functions', async () => {
     const payload = buildCreatePayload({
-      sessionId: SESSION_ID,
+      sessionId: CLEAN_SESSION,
       file_path: '/workspaces/conduct/src/calculator.ts',
       file_text: OVER_IMPL,
+    })
+
+    const response = await dispatch(copilot, payload, [enforceTdd()], ai)
+    const parsed = JSON.parse(response)
+
+    expect(parsed.permissionDecision).toBe('deny')
+  }, 60000)
+
+  it('blocks implementation when the failing test has not been run', async () => {
+    const payload = buildCreatePayload({
+      sessionId: NO_RUN_SESSION,
+      file_path: '/workspaces/conduct/src/calculator.ts',
+      file_text:
+        'export function add(a: number, b: number): number {\n  return a + b\n}\n',
     })
 
     const response = await dispatch(copilot, payload, [enforceTdd()], ai)
