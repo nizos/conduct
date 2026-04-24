@@ -103,6 +103,26 @@ describe('claudeAgentSdk', () => {
     expect(verdict.reason).toMatch(/unexpected|invalid|shape|verdict/i)
   })
 
+  it('fails closed when the result message has a non-string result', async () => {
+    const client = claudeAgentSdk({
+      queryFn: () => {
+        async function* gen() {
+          yield {
+            type: 'result' as const,
+            subtype: 'success' as const,
+            result: { oops: 'this should be a string' },
+          }
+        }
+        return gen()
+      },
+    })
+
+    const verdict = await client.reason('prompt')
+
+    expect(verdict.verdict).toBe('violation')
+    expect(verdict.reason).toMatch(/result|string|shape/i)
+  })
+
   it('does not pass an env option (SDK handles session context)', async () => {
     const capture = captureQuery()
     const client = claudeAgentSdk({ queryFn: capture.fn })

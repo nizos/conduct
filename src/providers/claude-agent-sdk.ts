@@ -21,7 +21,13 @@ export function claudeAgentSdk(options: { queryFn?: QueryFn } = {}): AiClient {
   const queryFn = options.queryFn ?? (query as unknown as QueryFn)
   return {
     reason: async (prompt: string): Promise<Verdict> => {
-      const text = await getResultText(queryFn, prompt)
+      let text: string
+      try {
+        text = await getResultText(queryFn, prompt)
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        return { verdict: 'violation', reason }
+      }
       return parseVerdict(text)
     },
   }
@@ -56,7 +62,12 @@ async function getResultText(
     },
   })) {
     if (message.type === 'result' && message.subtype === 'success') {
-      return message.result as string
+      if (typeof message.result !== 'string') {
+        throw new Error(
+          `expected string result from validator, got ${typeof message.result}`,
+        )
+      }
+      return message.result
     }
   }
   throw new Error('no result message received')
