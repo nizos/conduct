@@ -52,8 +52,18 @@ export async function dispatch(
       reason: `invalid hook payload: could not parse JSON (${reason})`,
     })
   }
-  const action = adapter.toAction(payload)
-  const baseCtx = adapter.buildContext?.(payload)
+  let action: Action
+  let baseCtx: unknown
+  try {
+    action = adapter.toAction(payload)
+    baseCtx = adapter.buildContext?.(payload)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    return adapter.toResponse({
+      kind: 'block',
+      reason: `invalid hook payload: ${reason}`,
+    })
+  }
   const ctx = { ...(baseCtx as object), ai }
   const decision = await safeEvaluate(action, rules, ctx)
   return adapter.toResponse(decision)

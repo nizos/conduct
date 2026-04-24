@@ -102,6 +102,24 @@ describe('cli', () => {
     )
   })
 
+  it('returns a deny response when the adapter.toAction throws', async () => {
+    const throwingAdapter = {
+      toAction: () => {
+        throw new Error('unsupported tool shape')
+      },
+      toResponse: claudeCode.toResponse,
+    }
+    const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })
+
+    const response = await dispatch(throwingAdapter, payload, [], stubAi)
+    const parsed = JSON.parse(response)
+
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(parsed.hookSpecificOutput.permissionDecisionReason).toMatch(
+      /payload|unsupported tool shape/i,
+    )
+  })
+
   it('throws a clear error for an unknown agent', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-new-file.json',
