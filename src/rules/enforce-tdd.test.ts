@@ -49,4 +49,22 @@ describe('enforce-tdd', () => {
 
     expect(result).toEqual({ kind: 'pass' })
   })
+
+  it('passes through command actions without calling the AI', async () => {
+    let called = false
+    const ctx = fakeCtx({
+      ai: {
+        reason: async () => {
+          called = true
+          return { verdict: 'violation', reason: 'should not be reached' }
+        },
+      },
+    })
+    const rule = enforceTdd()
+
+    const result = await rule({ type: 'command', command: 'npm install' }, ctx)
+
+    expect(result).toEqual({ kind: 'pass' })
+    expect(called).toBe(false)
+  })
 })

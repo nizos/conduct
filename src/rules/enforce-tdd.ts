@@ -7,7 +7,8 @@ type RuleContext = {
 }
 
 export function enforceTdd() {
-  return async (_action: unknown, ctx: RuleContext) => {
+  return async (action: { type: string }, ctx: RuleContext) => {
+    if (action.type !== 'write') return { kind: 'pass' as const }
     const v = await ctx.ai.reason({ prompt: '' })
     if (v.verdict === 'violation') {
       return { kind: 'violation' as const, reason: v.reason }
