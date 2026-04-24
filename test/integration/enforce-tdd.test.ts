@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest'
 
 import * as claudeCode from '../../src/adapter/claude-code.js'
 import { dispatch } from '../../src/cli.js'
+import { claudeAgentSdk } from '../../src/providers/claude-agent-sdk.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
+const ai = claudeAgentSdk()
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
   it('allows clean TDD with minimal implementation', async () => {
@@ -14,7 +16,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: 'export const add = (a: number, b: number): number => a + b\n',
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()])
+    const response = await dispatch(claudeCode, payload, [enforceTdd()], ai)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('allow')
@@ -27,7 +29,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: OVER_IMPL,
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()])
+    const response = await dispatch(claudeCode, payload, [enforceTdd()], ai)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -40,7 +42,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: 'export const add = (a: number, b: number): number => a + b\n',
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()])
+    const response = await dispatch(claudeCode, payload, [enforceTdd()], ai)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')

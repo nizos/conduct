@@ -4,7 +4,11 @@ import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
 import * as claudeCode from './adapter/claude-code.js'
-import type { Rule } from './rule.js'
+import type { AiClient, Rule } from './rule.js'
+
+const stubAi: AiClient = {
+  reason: async () => ({ verdict: 'pass', reason: '' }),
+}
 
 describe('cli', () => {
   it('denies a write whose filename violates kebab-case', async () => {
@@ -47,11 +51,14 @@ describe('cli', () => {
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
-  it('injects an ai client into the ctx', async () => {
+  it('uses the ai client passed to dispatch for the ctx', async () => {
     let captured: unknown = undefined
     const capturingRule: Rule = (_action, ctx) => {
       captured = ctx
       return { kind: 'pass' as const }
+    }
+    const customAi: AiClient = {
+      reason: async () => ({ verdict: 'pass', reason: '' }),
     }
     const payload = JSON.stringify({
       transcript_path: 'test/fixtures/transcripts/basic.jsonl',
@@ -59,10 +66,10 @@ describe('cli', () => {
       tool_input: { command: 'x' },
     })
 
-    await dispatch(claudeCode, payload, [capturingRule])
+    await dispatch(claudeCode, payload, [capturingRule], customAi)
 
-    const ctx = captured as { ai?: { reason?: unknown } }
-    expect(typeof ctx.ai?.reason).toBe('function')
+    const ctx = captured as { ai?: AiClient }
+    expect(ctx.ai).toBe(customAi)
   })
 
   it('passes a context with a working history() to rules', async () => {
@@ -77,7 +84,7 @@ describe('cli', () => {
       tool_input: { command: 'x' },
     })
 
-    await dispatch(claudeCode, payload, [capturingRule])
+    await dispatch(claudeCode, payload, [capturingRule], stubAi)
 
     const ctx = captured as { history: () => Promise<unknown[]> }
     expect(typeof ctx.history).toBe('function')
@@ -86,7 +93,7 @@ describe('cli', () => {
   })
 
   it('returns a deny response when the payload is not valid JSON', async () => {
-    const response = await dispatch(claudeCode, 'not json at all', [])
+    const response = await dispatch(claudeCode, 'not json at all', [], stubAi)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')

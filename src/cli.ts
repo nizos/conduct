@@ -1,12 +1,10 @@
-import type { Action, Rule } from './rule.js'
+import type { Action, AiClient, Rule } from './rule.js'
 import * as claudeCode from './adapter/claude-code.js'
 import * as codex from './adapter/codex.js'
 import * as githubCopilot from './adapter/github-copilot.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluate, type Decision } from './engine.js'
 import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
-
-const defaultAi = claudeAgentSdk()
 
 type Adapter = {
   toAction: (payload: unknown) => Action
@@ -34,13 +32,15 @@ export async function run(
     )
   }
   const config = await loadConfig(findConfig(process.cwd()))
-  return dispatch(adapter, rawPayload, config.rules)
+  const ai = config.ai ?? claudeAgentSdk()
+  return dispatch(adapter, rawPayload, config.rules, ai)
 }
 
 export async function dispatch(
   adapter: Adapter,
   rawPayload: string,
   rules: Rule[],
+  ai: AiClient,
 ): Promise<string> {
   let payload: unknown
   try {
@@ -54,7 +54,7 @@ export async function dispatch(
   }
   const action = adapter.toAction(payload)
   const baseCtx = adapter.buildContext?.(payload)
-  const ctx = { ...(baseCtx as object), ai: defaultAi }
+  const ctx = { ...(baseCtx as object), ai }
   const decision = await safeEvaluate(action, rules, ctx)
   return adapter.toResponse(decision)
 }
