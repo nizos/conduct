@@ -71,6 +71,12 @@ describe('claude-code adapter', () => {
     )
   })
 
+  it('throws when a Bash payload is missing the command field', () => {
+    expect(() => toAction({ tool_name: 'Bash', tool_input: {} })).toThrow(
+      /Bash|tool_input|command/i,
+    )
+  })
+
   it('throws for an unsupported tool_name so dispatch can reject the payload', () => {
     expect(() =>
       toAction({

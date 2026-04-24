@@ -1,35 +1,64 @@
-import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
+import { z } from 'zod'
 
 import type { Action, Decision } from '../rule.js'
 import { readTranscript } from './claude-code-transcript.js'
 
+const PayloadSchema = z.discriminatedUnion('tool_name', [
+  z.object({
+    tool_name: z.literal('Bash'),
+    tool_input: z.object({ command: z.string() }),
+  }),
+  z.object({
+    tool_name: z.literal('Edit'),
+    tool_input: z.object({
+      file_path: z.string(),
+      new_string: z.string(),
+    }),
+  }),
+  z.object({
+    tool_name: z.literal('Write'),
+    tool_input: z.object({
+      file_path: z.string(),
+      content: z.string(),
+    }),
+  }),
+])
+
+const ContextPayloadSchema = z.object({ transcript_path: z.string() })
+
 export function toAction(payload: unknown): Action {
-  const input = payload as PreToolUseHookInput
+  const parsed = PayloadSchema.safeParse(payload)
+  if (!parsed.success) {
+    const toolName =
+      typeof payload === 'object' && payload !== null && 'tool_name' in payload
+        ? String((payload as { tool_name: unknown }).tool_name)
+        : 'unknown'
+    throw new Error(
+      `unsupported tool_name or malformed tool_input: ${toolName}`,
+    )
+  }
+  const input = parsed.data
   if (input.tool_name === 'Bash') {
-    const { command } = input.tool_input as { command: string }
-    return { type: 'command', command }
+    return { type: 'command', command: input.tool_input.command }
   }
   if (input.tool_name === 'Edit') {
-    const { file_path, new_string } = input.tool_input as {
-      file_path: string
-      new_string: string
+    return {
+      type: 'write',
+      path: input.tool_input.file_path,
+      content: input.tool_input.new_string,
     }
-    return { type: 'write', path: file_path, content: new_string }
   }
-  if (input.tool_name !== 'Write') {
-    throw new Error(`unsupported tool_name: ${String(input.tool_name)}`)
+  return {
+    type: 'write',
+    path: input.tool_input.file_path,
+    content: input.tool_input.content,
   }
-  const { file_path, content } = input.tool_input as {
-    file_path: string
-    content: string
-  }
-  return { type: 'write', path: file_path, content }
 }
 
 export function buildContext(payload: unknown) {
-  const input = payload as { transcript_path: string }
+  const { transcript_path } = ContextPayloadSchema.parse(payload)
   return {
-    history: () => readTranscript(input.transcript_path),
+    history: () => readTranscript(transcript_path),
   }
 }
 
