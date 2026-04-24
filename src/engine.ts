@@ -14,9 +14,12 @@ export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
  * decision or allow if none object. Rules that don't apply to the
  * action type should pass through; violations short-circuit evaluation.
  */
-export function evaluate(action: Action, rules: Rule[]): Decision {
+export async function evaluate(
+  action: Action,
+  rules: Rule[],
+): Promise<Decision> {
   for (const rule of rules) {
-    const result = rule(action)
+    const result = await rule(action)
     if (result.kind === 'violation') {
       return { kind: 'block', reason: result.reason }
     }

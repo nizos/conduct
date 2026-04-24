@@ -22,6 +22,8 @@ export type RuleResult =
 
 /**
  * A rule as the engine consumes it: a function from Action to RuleResult.
- * Rule modules export factories of the form `(options) => Rule`.
+ * Rules may be synchronous or asynchronous; the engine awaits the
+ * returned value either way. Rule modules export factories of the
+ * form `(options) => Rule`.
  */
-export type Rule = (action: Action) => RuleResult
+export type Rule = (action: Action) => RuleResult | Promise<RuleResult>

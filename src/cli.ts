@@ -32,13 +32,13 @@ export async function run(
   const payload = JSON.parse(rawPayload) as unknown
   const action = adapter.toAction(payload)
   const config = await loadConfig(findConfig(process.cwd()))
-  const decision = safeEvaluate(action, config.rules)
+  const decision = await safeEvaluate(action, config.rules)
   return adapter.toResponse(decision)
 }
 
-function safeEvaluate(action: Action, rules: Rule[]): Decision {
+async function safeEvaluate(action: Action, rules: Rule[]): Promise<Decision> {
   try {
-    return evaluate(action, rules)
+    return await evaluate(action, rules)
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
     return { kind: 'block', reason: `rule error: ${reason}` }
