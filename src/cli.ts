@@ -1,4 +1,4 @@
-import type { Action } from './rule.js'
+import type { Action, Rule } from './rule.js'
 import * as claudeCode from './adapter/claude-code.js'
 import * as codex from './adapter/codex.js'
 import * as githubCopilot from './adapter/github-copilot.js'
@@ -32,6 +32,15 @@ export async function run(
   const payload = JSON.parse(rawPayload) as unknown
   const action = adapter.toAction(payload)
   const config = await loadConfig(findConfig(process.cwd()))
-  const decision = evaluate(action, config.rules)
+  const decision = safeEvaluate(action, config.rules)
   return adapter.toResponse(decision)
+}
+
+function safeEvaluate(action: Action, rules: Rule[]): Decision {
+  try {
+    return evaluate(action, rules)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    return { kind: 'block', reason: `rule error: ${reason}` }
+  }
 }

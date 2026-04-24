@@ -39,6 +39,12 @@ describe('cli', () => {
     )
   })
 
+  it('returns a deny response when a rule crashes on the payload', async () => {
+    const { response } = await setup('multi-edit.json')
+
+    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+  })
+
   it('throws a clear error for an unknown agent', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-new-file.json',
