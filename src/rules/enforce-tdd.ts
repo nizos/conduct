@@ -43,8 +43,9 @@ function formatEvent(e: SessionEvent): string {
 }
 
 export function enforceTdd() {
-  return async (action: Action, ctx: RuleContext) => {
+  return async (action: Action, rawCtx?: unknown) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
+    const ctx = rawCtx as RuleContext
     const events = (await ctx.history?.()) ?? []
     const historyBlock = events.map(formatEvent).filter(Boolean).join('\n')
     const prompt = [
