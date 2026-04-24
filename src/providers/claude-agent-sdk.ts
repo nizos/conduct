@@ -51,6 +51,9 @@ async function getResultText(
       permissionMode: 'dontAsk',
       allowedTools: [],
       settingSources: [],
+      // Defense in depth: `allowedTools: []` + `permissionMode: 'dontAsk'`
+      // already blocks tool use, but explicitly naming every known tool
+      // guarantees the validator can't act even if the SDK defaults drift.
       disallowedTools: [
         'Bash',
         'Write',
@@ -80,7 +83,10 @@ async function getResultText(
 }
 
 function parseVerdict(text: string): Verdict {
-  const stripped = text.replace(/^```(?:json)?\s*|\s*```$/g, '').trim()
+  const stripped = text
+    .replace(/^```(?:json)?\s*/, '')
+    .replace(/\s*```$/, '')
+    .trim()
   let parsed: unknown
   try {
     parsed = JSON.parse(stripped)
