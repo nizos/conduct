@@ -14,22 +14,22 @@ import type { Rule } from '../rule.js'
  *
  * @example
  * forbidContentPattern({
- *   paths: ['src/**', '!src/**\/*.test.ts'],
  *   match: 'setTimeout',
  *   reason: 'Avoid timers in production code',
+ *   paths: ['src/**', '!src/**\/*.test.ts'],
  * })
  *
  * @example
  * forbidContentPattern({
- *   paths: ['**\/*.md'],
  *   match: /\p{Extended_Pictographic}/u,
  *   reason: 'No emojis in markdown',
+ *   paths: ['**\/*.md'],
  * })
  */
 export function forbidContentPattern(options: {
-  paths?: string[]
   match: string | RegExp
   reason: string
+  paths?: string[]
 }): Rule {
   return (action) => {
     if (action.type !== 'write') return { kind: 'pass' }

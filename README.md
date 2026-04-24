@@ -34,9 +34,9 @@ export default defineConfig({
       reason: 'Use pnpm install instead',
     }),
     forbidContentPattern({
-      paths: ['src/**', '!src/**/*.test.ts'],
       match: 'setTimeout',
       reason: 'Avoid timers in production code',
+      paths: ['src/**', '!src/**/*.test.ts'],
     }),
     forbidContentPattern({
       match: 'eslint-disable',
