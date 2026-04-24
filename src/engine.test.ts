@@ -1,26 +1,30 @@
 import { describe, it, expect } from 'vitest'
 
 import { evaluate, evaluateSafely } from './engine.js'
-import { filenameCasing } from './rules/filename-casing.js'
 import type { Rule } from './rule.js'
 
 describe('engine', () => {
-  it('allows a write whose filename matches the configured style', async () => {
-    const decision = await evaluate(
-      { type: 'write', path: 'src/user-profile.ts', content: '' },
-      [filenameCasing({ style: 'kebab-case' })],
-    )
+  it('returns allow when every rule passes', async () => {
+    const alwaysPass: Rule = () => ({ kind: 'pass' as const })
+
+    const decision = await evaluate({ type: 'command', command: 'x' }, [
+      alwaysPass,
+    ])
 
     expect(decision).toEqual({ kind: 'allow' })
   })
 
-  it('blocks a write whose filename violates the configured style', async () => {
-    const decision = await evaluate(
-      { type: 'write', path: 'src/userProfile.ts', content: '' },
-      [filenameCasing({ style: 'kebab-case' })],
-    )
+  it('returns block with the violation reason when a rule objects', async () => {
+    const alwaysViolate: Rule = () => ({
+      kind: 'violation' as const,
+      reason: 'nope',
+    })
 
-    expect(decision.kind).toBe('block')
+    const decision = await evaluate({ type: 'command', command: 'x' }, [
+      alwaysViolate,
+    ])
+
+    expect(decision).toEqual({ kind: 'block', reason: 'nope' })
   })
 
   it('awaits async rules and returns an allow decision when they pass', async () => {
