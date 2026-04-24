@@ -1,0 +1,2 @@
+{"type":"assistant","message":{"content":[{"type":"tool_use","name":42,"id":null,"input":{"command":"ls"}}]}}
+{"type":"user","message":{"content":[{"type":"text","text":"hello"}]}}

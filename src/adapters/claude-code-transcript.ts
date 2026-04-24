@@ -19,18 +19,26 @@ export async function readTranscript(path: string): Promise<SessionEvent[]> {
     const content = entry.message?.content
     if (!Array.isArray(content)) continue
     for (const c of content as Array<Record<string, unknown>>) {
-      if (c.type === 'tool_use') {
+      if (
+        c.type === 'tool_use' &&
+        typeof c.name === 'string' &&
+        typeof c.id === 'string'
+      ) {
         const action: SessionEvent = {
           kind: 'action',
-          tool: c.name as string,
+          tool: c.name,
           input: c.input,
           output: '',
-          toolUseId: c.id as string,
+          toolUseId: c.id,
         }
-        pending.set(c.id as string, action)
+        pending.set(c.id, action)
         emitted.push(action)
-      } else if (c.type === 'tool_result' && typeof c.content === 'string') {
-        const existing = pending.get(c.tool_use_id as string)
+      } else if (
+        c.type === 'tool_result' &&
+        typeof c.content === 'string' &&
+        typeof c.tool_use_id === 'string'
+      ) {
+        const existing = pending.get(c.tool_use_id)
         if (existing && existing.kind === 'action') existing.output = c.content
       } else if (
         c.type === 'text' &&

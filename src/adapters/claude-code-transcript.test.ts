@@ -36,6 +36,14 @@ describe('claude-code-transcript', () => {
     })
   })
 
+  it('skips tool_use entries whose name or id is not a string', async () => {
+    const events = await readTranscript(
+      'test/fixtures/transcripts/bad-tool-use.jsonl',
+    )
+
+    expect(events).toEqual([{ kind: 'prompt', text: 'hello' }])
+  })
+
   it('returns events in the order they appear in the transcript', async () => {
     const events = await readTranscript(
       'test/fixtures/transcripts/interleaved.jsonl',
