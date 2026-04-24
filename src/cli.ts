@@ -1,24 +1,11 @@
 import type { Action, AiClient, Decision, Rule } from './rule.js'
-import * as claudeCode from './adapter/claude-code.js'
-import * as codex from './adapter/codex.js'
-import * as githubCopilot from './adapter/github-copilot.js'
+import type { Adapter } from './adapter/adapter.js'
+import { adapters, type Agent } from './adapter/registry.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluate } from './engine.js'
 import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
 
-type Adapter = {
-  toAction: (payload: unknown) => Action
-  toResponse: (decision: Decision) => string
-  buildContext?: (payload: unknown) => unknown
-}
-
-const adapters = {
-  'claude-code': claudeCode,
-  codex,
-  'github-copilot': githubCopilot,
-} satisfies Record<string, Adapter>
-
-export type Agent = keyof typeof adapters
+export type { Agent } from './adapter/registry.js'
 
 export async function run(
   rawPayload: string,
