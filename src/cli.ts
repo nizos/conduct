@@ -4,6 +4,9 @@ import * as codex from './adapter/codex.js'
 import * as githubCopilot from './adapter/github-copilot.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluate, type Decision } from './engine.js'
+import { claudeAgentSdk } from './providers/claude-agent-sdk.js'
+
+const defaultAi = claudeAgentSdk()
 
 type Adapter = {
   toAction: (payload: unknown) => Action
@@ -41,7 +44,8 @@ export async function dispatch(
 ): Promise<string> {
   const payload = JSON.parse(rawPayload) as unknown
   const action = adapter.toAction(payload)
-  const ctx = adapter.buildContext?.(payload)
+  const baseCtx = adapter.buildContext?.(payload)
+  const ctx = { ...(baseCtx as object), ai: defaultAi }
   const decision = await safeEvaluate(action, rules, ctx)
   return adapter.toResponse(decision)
 }

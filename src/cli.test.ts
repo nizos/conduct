@@ -47,6 +47,24 @@ describe('cli', () => {
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
+  it('injects an ai client into the ctx', async () => {
+    let captured: unknown = undefined
+    const capturingRule: Rule = (_action, ctx) => {
+      captured = ctx
+      return { kind: 'pass' as const }
+    }
+    const payload = JSON.stringify({
+      transcript_path: 'test/fixtures/transcripts/basic.jsonl',
+      tool_name: 'Bash',
+      tool_input: { command: 'x' },
+    })
+
+    await dispatch(claudeCode, payload, [capturingRule])
+
+    const ctx = captured as { ai?: { reason?: unknown } }
+    expect(typeof ctx.ai?.reason).toBe('function')
+  })
+
   it('passes a context with a working history() to rules', async () => {
     let captured: unknown = undefined
     const capturingRule: Rule = (_action, ctx) => {
