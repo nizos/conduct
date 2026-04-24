@@ -1,21 +1,13 @@
 import { readFile } from 'node:fs/promises'
 
-export async function readTranscript(path: string): Promise<unknown[]> {
+import type { SessionEvent } from '../rule.js'
+
+export async function readTranscript(path: string): Promise<SessionEvent[]> {
   const raw = await readFile(path, 'utf8')
   const lines = raw.split('\n').filter(Boolean)
 
-  type Emit =
-    | { kind: 'prompt'; text: string }
-    | {
-        kind: 'action'
-        tool: string
-        input: unknown
-        output: string
-        toolUseId: string
-      }
-
-  const pending = new Map<string, Emit>()
-  const emitted: Emit[] = []
+  const pending = new Map<string, SessionEvent>()
+  const emitted: SessionEvent[] = []
 
   for (const line of lines) {
     let entry: { type?: string; message?: { content?: unknown } }
@@ -28,7 +20,7 @@ export async function readTranscript(path: string): Promise<unknown[]> {
     if (!Array.isArray(content)) continue
     for (const c of content as Array<Record<string, unknown>>) {
       if (c.type === 'tool_use') {
-        const action: Emit = {
+        const action: SessionEvent = {
           kind: 'action',
           tool: c.name as string,
           input: c.input,

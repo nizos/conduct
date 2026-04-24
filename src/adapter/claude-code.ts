@@ -1,7 +1,7 @@
 import type { PreToolUseHookInput } from '@anthropic-ai/claude-agent-sdk'
 
 import type { Decision } from '../engine.js'
-import type { Action } from '../rule.js'
+import type { Action, AiClient } from '../rule.js'
 import { readTranscript } from './claude-code-transcript.js'
 
 export function toAction(payload: unknown): Action {
@@ -22,13 +22,6 @@ export function toAction(payload: unknown): Action {
     content: string
   }
   return { type: 'write', path: file_path, content }
-}
-
-type AiClient = {
-  reason: (prompt: string) => Promise<{
-    verdict: 'pass' | 'violation'
-    reason: string
-  }>
 }
 
 export function buildContext(

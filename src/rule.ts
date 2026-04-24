@@ -25,10 +25,51 @@ export type RuleResult =
  * optional context injected by the engine) to RuleResult. Rules may be
  * synchronous or asynchronous; the engine awaits the returned value
  * either way. The context shape is intentionally `unknown` at this
- * layer — rules that need specific capabilities narrow internally.
- * Rule modules export factories of the form `(options) => Rule`.
+ * layer — rules that need specific capabilities narrow internally,
+ * typically to `RuleContext` below. Rule modules export factories of
+ * the form `(options) => Rule`.
  */
 export type Rule = (
   action: Action,
   ctx?: unknown,
 ) => RuleResult | Promise<RuleResult>
+
+/**
+ * The verdict an AI validator returns — the shape `AiClient.reason`
+ * resolves to and the shape rules use to decide pass vs violation.
+ */
+export type Verdict = { verdict: 'pass' | 'violation'; reason: string }
+
+/**
+ * The minimal AI-provider contract. Rules that need LLM judgment reach
+ * for `ctx.ai.reason(prompt)`; providers implement this one method and
+ * are swappable without touching rule code.
+ */
+export type AiClient = {
+  reason: (prompt: string) => Promise<Verdict>
+}
+
+/**
+ * A normalized event from the agent's recent session — what the agent
+ * asked, did, and saw. Adapters translate vendor-specific transcripts
+ * into this shape. Rules consume it via `ctx.history()`.
+ */
+export type SessionEvent =
+  | { kind: 'prompt'; text: string }
+  | {
+      kind: 'action'
+      tool: string
+      input: unknown
+      output: string
+      toolUseId: string
+    }
+
+/**
+ * The capabilities the engine makes available to rules. All fields are
+ * optional at the type level because different adapters supply
+ * different subsets. Rules should narrow defensively when they read.
+ */
+export type RuleContext = {
+  ai?: AiClient
+  history?: () => Promise<SessionEvent[]>
+}
