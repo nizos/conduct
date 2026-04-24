@@ -14,4 +14,10 @@ describe('claude-code-transcript', () => {
       toolUseId: 'tu_1',
     })
   })
+
+  it('emits a prompt event for user text messages', async () => {
+    const events = await readTranscript('test/fixtures/transcripts/basic.jsonl')
+
+    expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
+  })
 })
