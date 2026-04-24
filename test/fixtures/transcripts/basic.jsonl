@@ -1,0 +1,3 @@
+{"type":"user","message":{"content":[{"type":"text","text":"add a test"}]}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","id":"tu_1","name":"Bash","input":{"command":"npm test"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tu_1","content":"2 tests failed"}]}}
