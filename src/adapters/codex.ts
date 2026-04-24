@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../rule.js'
+import { readTranscript } from './codex-transcript.js'
 
 const PayloadSchema = z.object({
   tool_name: z.literal('Bash'),
@@ -19,6 +20,11 @@ export function toAction(payload: unknown): Action {
     )
   }
   return { type: 'command', command: parsed.data.tool_input.command }
+}
+
+export function buildContext(payload: unknown): Record<string, unknown> {
+  const { transcript_path } = payload as { transcript_path: string }
+  return { history: () => readTranscript(transcript_path) }
 }
 
 export function toResponse(decision: Decision): string {
