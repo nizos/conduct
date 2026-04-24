@@ -92,6 +92,17 @@ describe('claudeAgentSdk', () => {
     expect(verdict.reason).toMatch(/parse|invalid|json/i)
   })
 
+  it('returns a fail-closed violation when verdict is not pass or violation', async () => {
+    const client = claudeAgentSdk({
+      queryFn: fakeQuery('{"verdict":"maybe","reason":"unsure"}'),
+    })
+
+    const verdict = await client.reason('prompt')
+
+    expect(verdict.verdict).toBe('violation')
+    expect(verdict.reason).toMatch(/unexpected|invalid|shape|verdict/i)
+  })
+
   it('does not pass an env option (SDK handles session context)', async () => {
     const capture = captureQuery()
     const client = claudeAgentSdk({ queryFn: capture.fn })

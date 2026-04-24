@@ -64,12 +64,29 @@ async function getResultText(
 
 function parseVerdict(text: string): Verdict {
   const stripped = text.replace(/^```(?:json)?\s*|\s*```$/g, '').trim()
+  let parsed: unknown
   try {
-    return JSON.parse(stripped) as Verdict
+    parsed = JSON.parse(stripped)
   } catch {
     return {
       verdict: 'violation',
       reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
     }
   }
+  if (!isVerdict(parsed)) {
+    return {
+      verdict: 'violation',
+      reason: `validator returned unexpected shape: ${text.slice(0, 200)}`,
+    }
+  }
+  return parsed
+}
+
+function isVerdict(value: unknown): value is Verdict {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as { verdict?: unknown; reason?: unknown }
+  return (
+    (v.verdict === 'pass' || v.verdict === 'violation') &&
+    typeof v.reason === 'string'
+  )
 }
