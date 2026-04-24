@@ -22,7 +22,8 @@ export type Config = {
 /**
  * Typed identity helper for `conduct.config.ts`. Wrap your exported
  * config in this so editors provide autocomplete and type-check the
- * rule list.
+ * rule list. Has no runtime behavior — it exists solely so the default
+ * export is inferred as `Config` without the user typing it.
  *
  * @example
  * import { defineConfig, filenameCasing } from '@nizos/conduct'
@@ -34,6 +35,8 @@ export type Config = {
 export function defineConfig(config: Config): Config {
   return config
 }
+
+const CONFIG_FILENAME = 'conduct.config.ts'
 
 /**
  * Load a Conduct config file (TypeScript or JavaScript) from an absolute
@@ -49,10 +52,10 @@ export async function loadConfig(filepath: string): Promise<Config> {
 export function findConfig(startDir: string): string {
   let dir = startDir
   while (true) {
-    const candidate = path.join(dir, 'conduct.config.ts')
+    const candidate = path.join(dir, CONFIG_FILENAME)
     if (existsSync(candidate)) return candidate
     const parent = path.dirname(dir)
-    if (parent === dir) throw new Error('conduct.config.ts not found')
+    if (parent === dir) throw new Error(`${CONFIG_FILENAME} not found`)
     dir = parent
   }
 }
