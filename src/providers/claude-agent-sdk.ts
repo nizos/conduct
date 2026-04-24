@@ -1,6 +1,12 @@
 import { query } from '@anthropic-ai/claude-agent-sdk'
+import { z } from 'zod'
 
 import type { AiClient, Verdict } from '../rule.js'
+
+const VerdictSchema = z.object({
+  verdict: z.enum(['pass', 'violation']),
+  reason: z.string(),
+})
 
 type Msg = { type: string; [k: string]: unknown }
 
@@ -84,20 +90,12 @@ function parseVerdict(text: string): Verdict {
       reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
     }
   }
-  if (!isVerdict(parsed)) {
+  const result = VerdictSchema.safeParse(parsed)
+  if (!result.success) {
     return {
       verdict: 'violation',
       reason: `validator returned unexpected shape: ${text.slice(0, 200)}`,
     }
   }
-  return parsed
-}
-
-function isVerdict(value: unknown): value is Verdict {
-  if (typeof value !== 'object' || value === null) return false
-  const v = value as { verdict?: unknown; reason?: unknown }
-  return (
-    (v.verdict === 'pass' || v.verdict === 'violation') &&
-    typeof v.reason === 'string'
-  )
+  return result.data
 }
