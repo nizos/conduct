@@ -1,0 +1,2 @@
+{"type":"assistant","message":{"content":[42,"a stray string",null]}}
+{"type":"user","message":{"content":[{"type":"text","text":"hi"}]}}

@@ -36,6 +36,14 @@ describe('claude-code-transcript', () => {
     })
   })
 
+  it('skips content array elements that are not objects', async () => {
+    const events = await readTranscript(
+      'test/fixtures/transcripts/non-object-content.jsonl',
+    )
+
+    expect(events).toEqual([{ kind: 'prompt', text: 'hi' }])
+  })
+
   it('skips tool_use entries whose name or id is not a string', async () => {
     const events = await readTranscript(
       'test/fixtures/transcripts/bad-tool-use.jsonl',

@@ -18,7 +18,8 @@ export async function readTranscript(path: string): Promise<SessionEvent[]> {
     }
     const content = entry.message?.content
     if (!Array.isArray(content)) continue
-    for (const c of content as Array<Record<string, unknown>>) {
+    for (const c of content) {
+      if (!isRecord(c)) continue
       if (
         c.type === 'tool_use' &&
         typeof c.name === 'string' &&
@@ -50,4 +51,8 @@ export async function readTranscript(path: string): Promise<SessionEvent[]> {
     }
   }
   return emitted
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
