@@ -1,6 +1,31 @@
 import { readFile } from 'node:fs/promises'
 
+import { z } from 'zod'
+
 import type { SessionEvent } from '../rule.js'
+
+const ContentItemSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('tool_use'),
+    name: z.string(),
+    id: z.string(),
+    input: z.unknown(),
+  }),
+  z.object({
+    type: z.literal('tool_result'),
+    content: z.string(),
+    tool_use_id: z.string(),
+  }),
+  z.object({
+    type: z.literal('text'),
+    text: z.string(),
+  }),
+])
+
+const EntrySchema = z.object({
+  type: z.string().optional(),
+  message: z.object({ content: z.array(z.unknown()) }).optional(),
+})
 
 export async function readTranscript(path: string): Promise<SessionEvent[]> {
   const raw = await readFile(path, 'utf8')
@@ -10,49 +35,39 @@ export async function readTranscript(path: string): Promise<SessionEvent[]> {
   const emitted: SessionEvent[] = []
 
   for (const line of lines) {
-    let entry: { type?: string; message?: { content?: unknown } }
+    let rawEntry: unknown
     try {
-      entry = JSON.parse(line) as typeof entry
+      rawEntry = JSON.parse(line)
     } catch {
       continue
     }
-    const content = entry.message?.content
-    if (!Array.isArray(content)) continue
+    const entry = EntrySchema.safeParse(rawEntry)
+    if (!entry.success) continue
+    const content = entry.data.message?.content
+    if (!content) continue
     for (const c of content) {
-      if (!isRecord(c)) continue
-      if (
-        c.type === 'tool_use' &&
-        typeof c.name === 'string' &&
-        typeof c.id === 'string'
-      ) {
+      const parsed = ContentItemSchema.safeParse(c)
+      if (!parsed.success) continue
+      const item = parsed.data
+      if (item.type === 'tool_use') {
         const action: SessionEvent = {
           kind: 'action',
-          tool: c.name,
-          input: c.input,
+          tool: item.name,
+          input: item.input,
           output: '',
-          toolUseId: c.id,
+          toolUseId: item.id,
         }
-        pending.set(c.id, action)
+        pending.set(item.id, action)
         emitted.push(action)
-      } else if (
-        c.type === 'tool_result' &&
-        typeof c.content === 'string' &&
-        typeof c.tool_use_id === 'string'
-      ) {
-        const existing = pending.get(c.tool_use_id)
-        if (existing && existing.kind === 'action') existing.output = c.content
-      } else if (
-        c.type === 'text' &&
-        entry.type === 'user' &&
-        typeof c.text === 'string'
-      ) {
-        emitted.push({ kind: 'prompt', text: c.text })
+      } else if (item.type === 'tool_result') {
+        const existing = pending.get(item.tool_use_id)
+        if (existing && existing.kind === 'action') {
+          existing.output = item.content
+        }
+      } else if (item.type === 'text' && entry.data.type === 'user') {
+        emitted.push({ kind: 'prompt', text: item.text })
       }
     }
   }
   return emitted
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
