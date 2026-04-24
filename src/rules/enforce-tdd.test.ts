@@ -75,7 +75,7 @@ describe('enforce-tdd', () => {
     let capturedPrompt = ''
     const ctx = fakeCtx({
       ai: {
-        reason: async ({ prompt }: { prompt: string }) => {
+        reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
         },
@@ -100,7 +100,7 @@ describe('enforce-tdd', () => {
     let capturedPrompt = ''
     const ctx = fakeCtx({
       ai: {
-        reason: async ({ prompt }: { prompt: string }) => {
+        reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
         },

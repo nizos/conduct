@@ -6,7 +6,7 @@ type SessionEvent = { output?: string }
 
 type RuleContext = {
   ai: {
-    reason: (input: { prompt: string }) => Promise<Verdict>
+    reason: (prompt: string) => Promise<Verdict>
   }
   history?: () => Promise<SessionEvent[]>
 }
@@ -25,7 +25,7 @@ export function enforceTdd() {
     ]
       .filter(Boolean)
       .join('\n\n')
-    const v = await ctx.ai.reason({ prompt })
+    const v = await ctx.ai.reason(prompt)
     if (v.verdict === 'violation') {
       return { kind: 'violation' as const, reason: v.reason }
     }
