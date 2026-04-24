@@ -1,0 +1,15 @@
+{
+  "session_id": "019dc044-d25f-7313-833b-077b6298f1b4",
+  "turn_id": "019dc046-8359-7092-bb35-3dd4913b3d2b",
+  "transcript_path": "/home/node/.codex/sessions/2026/04/24/rollout-2026-04-24T16-13-49-019dc044-d25f-7313-833b-077b6298f1b4.jsonl",
+  "cwd": "/workspaces/conduct",
+  "hook_event_name": "PostToolUse",
+  "model": "gpt-5.4",
+  "permission_mode": "default",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "pwd"
+  },
+  "tool_response": "bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. On e.g. debian this can be enabled with 'sysctl kernel.unprivileged_userns_clone=1'.\n",
+  "tool_use_id": "call_SgmgQFJYyjr6M4NuCOK4FZyY"
+}

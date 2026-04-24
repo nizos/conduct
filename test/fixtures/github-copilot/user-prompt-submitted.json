@@ -1,0 +1,6 @@
+{
+  "sessionId": "56c13b41-a711-40e3-a16d-e911c1340791",
+  "timestamp": 1777047446144,
+  "cwd": "/workspaces/conduct",
+  "prompt": "Create a new file called calculator.test.ts, in it, write the first failing test for an additiong method, then run the test to see that the test fails correctly, then create the minimal implemintation in calculator.ts to make the test\n  pass."
+}

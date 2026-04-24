@@ -6,13 +6,13 @@ import { toAction, toResponse } from './codex.js'
 
 describe('codex adapter', () => {
   it('tags the action type as command for a Bash payload', () => {
-    const { action } = setup('bash-npm-install.json')
+    const { action } = setup('pre-bash-pwd.json')
 
     expect(action.type).toBe('command')
   })
 
   it('extracts the command text from a Bash payload', () => {
-    const { action, payload } = setup('bash-npm-install.json')
+    const { action, payload } = setup('pre-bash-pwd.json')
 
     expect(action).toMatchObject({ command: payload.tool_input.command })
   })

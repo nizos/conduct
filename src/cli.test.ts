@@ -25,7 +25,7 @@ describe('cli', () => {
 
   it('produces an empty allow response for a codex Bash payload that passes rules', async () => {
     const payload = readFileSync(
-      'test/fixtures/codex/bash-npm-install.json',
+      'test/fixtures/codex/pre-bash-pwd.json',
       'utf8',
     )
 
@@ -36,7 +36,7 @@ describe('cli', () => {
 
   it('produces an allow response for a github-copilot bash payload that passes rules', async () => {
     const payload = readFileSync(
-      'test/fixtures/github-copilot/bash-npm-install.json',
+      'test/fixtures/github-copilot/pre-bash-npm-test.json',
       'utf8',
     )
 

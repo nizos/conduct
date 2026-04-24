@@ -37,3 +37,6 @@ coverage/
 # Internal docs (vision, plans, design notes, scratch)
 docs/internal/
 TODO.md
+
+# Local hook capture configs for investigating vendor payload shapes
+.github/hooks/capture.json
