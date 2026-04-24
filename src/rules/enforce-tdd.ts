@@ -1,6 +1,5 @@
-import picomatch from 'picomatch'
-
 import type { Action, RuleContext, SessionEvent } from '../rule.js'
+import { buildMatcher } from './match-paths.js'
 
 const SYSTEM_RUBRIC = `You are a TDD validator. Judge whether the pending write
 follows test-driven development.
@@ -19,15 +18,6 @@ Rules:
 const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
 {"verdict":"pass"|"violation","reason":"<short explanation>"}
 Return JSON only. No prose, no code fences.`
-
-function buildMatcher(patterns: string[]): (path: string) => boolean {
-  const includes = patterns.filter((p) => !p.startsWith('!'))
-  const ignore = patterns
-    .filter((p) => p.startsWith('!'))
-    .map((p) => p.slice(1))
-  const matcher = picomatch(includes.length ? includes : '**', { ignore })
-  return (path) => matcher(path)
-}
 
 function formatEvent(e: SessionEvent): string {
   if (e.kind === 'prompt') return `User: ${e.text}`

@@ -1,6 +1,5 @@
-import picomatch from 'picomatch'
-
 import type { Rule, RuleResult } from '../rule.js'
+import { buildMatcher } from './match-paths.js'
 
 /**
  * Supported filename casing styles.
@@ -29,24 +28,16 @@ export function filenameCasing(options: {
   paths?: string[]
 }): Rule {
   const { style, paths } = options
+  const matchesPaths = paths ? buildMatcher(paths) : () => true
   return (action) => {
     if (action.type !== 'write') return pass
     const { path } = action
-    if (paths && !pathMatches(path, paths)) return pass
+    if (!matchesPaths(path)) return pass
     if (violations[style](path)) {
       return { kind: 'violation', reason: `${path} does not match ${style}` }
     }
     return pass
   }
-}
-
-function pathMatches(path: string, patterns: string[]): boolean {
-  const includes = patterns.filter((p) => !p.startsWith('!'))
-  const ignore = patterns
-    .filter((p) => p.startsWith('!'))
-    .map((p) => p.slice(1))
-  const matcher = picomatch(includes.length ? includes : '**', { ignore })
-  return matcher(path)
 }
 
 const pass: RuleResult = { kind: 'pass' }

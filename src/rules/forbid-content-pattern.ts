@@ -1,6 +1,5 @@
-import picomatch from 'picomatch'
-
 import type { Rule } from '../rule.js'
+import { buildMatcher } from './match-paths.js'
 
 /**
  * Blocks a write whose content matches `match` — a literal substring or
@@ -31,11 +30,10 @@ export function forbidContentPattern(options: {
   reason: string
   paths?: string[]
 }): Rule {
+  const matchesPaths = options.paths ? buildMatcher(options.paths) : () => true
   return (action) => {
     if (action.type !== 'write') return { kind: 'pass' }
-    if (options.paths && !pathMatches(action.path, options.paths)) {
-      return { kind: 'pass' }
-    }
+    if (!matchesPaths(action.path)) return { kind: 'pass' }
     if (!contentMatches(action.content, options.match)) return { kind: 'pass' }
     return { kind: 'violation', reason: options.reason }
   }
@@ -44,13 +42,4 @@ export function forbidContentPattern(options: {
 function contentMatches(content: string, match: string | RegExp): boolean {
   if (typeof match === 'string') return content.includes(match)
   return content.search(match) !== -1
-}
-
-function pathMatches(path: string, patterns: string[]): boolean {
-  const includes = patterns.filter((p) => !p.startsWith('!'))
-  const ignore = patterns
-    .filter((p) => p.startsWith('!'))
-    .map((p) => p.slice(1))
-  const matcher = picomatch(includes.length ? includes : '**', { ignore })
-  return matcher(path)
 }
