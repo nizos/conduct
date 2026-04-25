@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { buildContext, toAction, toResponse } from './codex.js'
+import { buildContext, toAction, toResponse } from './adapter.js'
 
 describe('codex adapter', () => {
   it('tags the action type as command for a Bash payload', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { readTranscript } from './github-copilot.js'
+import { readTranscript } from './transcript.js'
 
 describe('github-copilot transcript', () => {
   it('emits a prompt event for a user.message entry', async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { githubCopilot } from './github-copilot.js'
+import { githubCopilot } from './agent.js'
 
 describe('githubCopilot', () => {
   it('returns the verdict parsed from the assistant message content', async () => {

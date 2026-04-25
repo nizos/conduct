@@ -3,8 +3,8 @@ import path from 'node:path'
 
 import { z } from 'zod'
 
-import type { Action, Decision } from '../rule.js'
-import { readTranscript } from '../transcripts/github-copilot.js'
+import type { Action, Decision } from '../../rule.js'
+import { readTranscript } from './transcript.js'
 
 const PayloadSchema = z.discriminatedUnion('toolName', [
   z.object({ toolName: z.literal('bash'), toolArgs: z.string() }),

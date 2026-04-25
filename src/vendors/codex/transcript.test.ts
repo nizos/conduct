@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { readTranscript } from './codex.js'
+import { readTranscript } from './transcript.js'
 
 describe('codex transcript', () => {
   it('emits a prompt event for a user response_item.message', async () => {

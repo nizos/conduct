@@ -1,7 +1,7 @@
 import type { ThreadOptions } from '@openai/codex-sdk'
 
-import type { Agent } from '../rule.js'
-import { toVerdict } from './to-verdict.js'
+import type { Agent } from '../../rule.js'
+import { toVerdict } from '../to-verdict.js'
 
 type CodexLike = {
   startThread(options?: ThreadOptions): {

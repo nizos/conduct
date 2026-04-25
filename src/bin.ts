@@ -2,7 +2,7 @@
 import { readSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
-import { vendors, isVendor } from './adapters/registry.js'
+import { vendors, isVendor } from './registry.js'
 import { run } from './cli.js'
 import { readCapped } from './read-capped.js'
 

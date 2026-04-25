@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { readTranscript } from './claude-code.js'
+import { readTranscript } from './transcript.js'
 
 describe('claude-code transcript', () => {
   it('pairs a tool_use with its tool_result into a single action event', async () => {

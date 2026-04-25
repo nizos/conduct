@@ -2,7 +2,7 @@ import { lstat, readFile, stat } from 'node:fs/promises'
 
 import { z } from 'zod'
 
-import type { SessionEvent } from '../rule.js'
+import type { SessionEvent } from '../../rule.js'
 
 const DEFAULT_MAX_TRANSCRIPT_BYTES = 100 * 1024 * 1024
 

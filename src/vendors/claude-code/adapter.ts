@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import type { Action, Decision } from '../rule.js'
-import { readTranscript } from '../transcripts/claude-code.js'
+import type { Action, Decision } from '../../rule.js'
+import { readTranscript } from './transcript.js'
 
 const PayloadSchema = z.discriminatedUnion('tool_name', [
   z.object({

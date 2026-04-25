@@ -1,7 +1,7 @@
 import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
 
-import type { Agent } from '../rule.js'
-import { toVerdict } from './to-verdict.js'
+import type { Agent } from '../../rule.js'
+import { toVerdict } from '../to-verdict.js'
 
 type Msg = { type: string; [k: string]: unknown }
 

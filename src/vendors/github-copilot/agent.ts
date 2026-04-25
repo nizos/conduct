@@ -1,5 +1,5 @@
-import type { Agent } from '../rule.js'
-import { toVerdict } from './to-verdict.js'
+import type { Agent } from '../../rule.js'
+import { toVerdict } from '../to-verdict.js'
 
 type SessionConfig = {
   availableTools?: string[]

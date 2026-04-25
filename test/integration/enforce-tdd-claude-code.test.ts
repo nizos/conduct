@@ -1,6 +1,6 @@
 import { beforeAll, describe, it, expect } from 'vitest'
 
-import { vendors } from '../../src/adapters/registry.js'
+import { vendors } from '../../src/registry.js'
 import { dispatch } from '../../src/cli.js'
 import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'

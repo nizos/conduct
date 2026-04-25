@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
-import * as claudeCode from './adapters/claude-code.js'
+import * as claudeCode from './vendors/claude-code/adapter.js'
 import type { Agent, Rule } from './rule.js'
 
 const stubAgent: Agent = {

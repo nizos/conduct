@@ -1,7 +1,7 @@
 import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
 import { describe, it, expect } from 'vitest'
 
-import { claudeCode } from './claude-code.js'
+import { claudeCode } from './agent.js'
 
 describe('claudeCode', () => {
   it('returns the verdict parsed from the final result message', async () => {

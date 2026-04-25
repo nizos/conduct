@@ -1,10 +1,10 @@
 import type { Action, Agent, Rule } from './rule.js'
-import type { Adapter } from './adapters/adapter.js'
-import { vendors, type Vendor } from './adapters/registry.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluateSafely } from './engine.js'
+import { vendors, type Vendor } from './registry.js'
+import type { Adapter } from './vendors/adapter.js'
 
-export type { Vendor } from './adapters/registry.js'
+export type { Vendor } from './registry.js'
 
 export async function run(
   rawPayload: string,

@@ -1,7 +1,7 @@
 import type { ThreadOptions } from '@openai/codex-sdk'
 import { describe, it, expect } from 'vitest'
 
-import { codex } from './codex.js'
+import { codex } from './agent.js'
 
 describe('codex', () => {
   it('returns the verdict parsed from the thread final response', async () => {

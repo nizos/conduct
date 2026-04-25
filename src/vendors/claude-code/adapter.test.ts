@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { buildContext, toAction, toResponse } from './claude-code.js'
+import { buildContext, toAction, toResponse } from './adapter.js'
 
 describe('claude-code adapter', () => {
   it('extracts the file path from a Write payload', () => {

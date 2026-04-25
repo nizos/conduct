@@ -1,11 +1,11 @@
-import type { Agent } from '../rule.js'
-import { claudeCode } from '../agents/claude-code.js'
-import { codex } from '../agents/codex.js'
-import { githubCopilot } from '../agents/github-copilot.js'
-import type { Adapter } from './adapter.js'
-import * as claudeCodeAdapter from './claude-code.js'
-import * as codexAdapter from './codex.js'
-import * as githubCopilotAdapter from './github-copilot.js'
+import type { Agent } from './rule.js'
+import type { Adapter } from './vendors/adapter.js'
+import { claudeCode } from './vendors/claude-code/agent.js'
+import * as claudeCodeAdapter from './vendors/claude-code/adapter.js'
+import { codex } from './vendors/codex/agent.js'
+import * as codexAdapter from './vendors/codex/adapter.js'
+import { githubCopilot } from './vendors/github-copilot/agent.js'
+import * as githubCopilotAdapter from './vendors/github-copilot/adapter.js'
 
 /**
  * Each vendor entry bundles the vendor-specific adapter (payload
