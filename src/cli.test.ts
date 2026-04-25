@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { dispatch, run } from './cli.js'
 import type { Config } from './config.js'
 import { vendors, type VendorEntry } from './registry.js'
-import type { Action, Agent } from './rule.js'
+import type { Action, Agent } from './types.js'
 import { filenameCasing } from './rules/filename-casing.js'
 
 const claudeCodeEntry = vendors['claude-code']

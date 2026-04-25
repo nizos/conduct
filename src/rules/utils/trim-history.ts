@@ -1,4 +1,4 @@
-import type { SessionEvent } from '../../rule.js'
+import type { SessionEvent } from '../../types.js'
 
 export type HistoryWindow = {
   maxEvents: number

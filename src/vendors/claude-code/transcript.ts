@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import type { SessionEvent } from '../../rule.js'
-import { readJsonl } from '../read-jsonl.js'
+import type { SessionEvent } from '../../types.js'
+import { readJsonl } from '../../utils/read-jsonl.js'
 
 const ContentItemSchema = z.discriminatedUnion('type', [
   z.object({

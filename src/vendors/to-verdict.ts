@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { Verdict } from '../rule.js'
+import type { Verdict } from '../types.js'
 
 const VerdictSchema = z.object({
   verdict: z.enum(['pass', 'violation']),

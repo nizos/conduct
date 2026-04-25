@@ -1,6 +1,6 @@
 import type { z } from 'zod'
 
-import type { Action, Decision } from '../rule.js'
+import type { Action, Decision } from '../types.js'
 
 /**
  * The contract every adapter implements. Adapters translate

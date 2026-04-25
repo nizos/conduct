@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { Action, Decision } from '../../rule.js'
+import type { Action, Decision } from '../../types.js'
 
 const PATCH_HEADER = /^\*\*\* (?:Add|Update|Delete) File: (.+)$/m
 

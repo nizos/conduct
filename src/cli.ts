@@ -1,10 +1,11 @@
 import { z } from 'zod'
 
-import type { Action, Agent, Decision, Rule, SessionEvent } from './rule.js'
+import type { Action, Agent, Decision, SessionEvent } from './types.js'
+import type { Rule } from './rules/contract.js'
 import { findConfig, loadConfig, type Config } from './config.js'
 import { evaluateSafely } from './engine.js'
 import { vendors, type Vendor, type VendorEntry } from './registry.js'
-import { JsonString } from './vendors/json-string.js'
+import { JsonString } from './utils/json-string.js'
 
 export type { Vendor } from './registry.js'
 

@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest'
 import { main, type MainResult } from './bin.js'
 import type { ConfigLoader } from './cli.js'
 import type { Config } from './config.js'
-import type { Agent } from './rule.js'
+import type { Agent } from './types.js'
 import { filenameCasing } from './rules/filename-casing.js'
 
 describe('bin main', () => {

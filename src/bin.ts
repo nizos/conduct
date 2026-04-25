@@ -6,8 +6,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { vendors } from './registry.js'
 import { run, type ConfigLoader } from './cli.js'
 import { loadConfig } from './config.js'
-import { parseArgs } from './parse-args.js'
-import { readCapped } from './read-capped.js'
+import { parseArgs } from './utils/parse-args.js'
+import { readCapped } from './utils/read-capped.js'
 
 const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
 
@@ -65,29 +65,27 @@ export async function main(args: {
     return { stderr: parsed.stderr, exitCode: parsed.exitCode }
   }
 
-  let stdin: string
   try {
-    stdin = typeof args.stdin === 'function' ? args.stdin() : args.stdin
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    return { stderr: `conduct: ${reason}\n`, exitCode: 1 }
-  }
-
-  const cliLoader: ConfigLoader | undefined =
-    parsed.configPath !== undefined
-      ? () => loadConfig(path.resolve(parsed.configPath as string))
-      : undefined
-
-  try {
+    const stdin = typeof args.stdin === 'function' ? args.stdin() : args.stdin
+    const loadConfigOverride =
+      args.loadConfig ?? loaderFromPath(parsed.configPath)
     const response = await run(stdin, {
       vendor: parsed.vendor,
-      loadConfig: args.loadConfig ?? cliLoader,
+      loadConfig: loadConfigOverride,
     })
     return { stdout: response, exitCode: 0 }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
     return { stderr: `conduct: ${reason}\n`, exitCode: 1 }
   }
+}
+
+function loaderFromPath(
+  configPath: string | undefined,
+): ConfigLoader | undefined {
+  return configPath !== undefined
+    ? () => loadConfig(path.resolve(configPath))
+    : undefined
 }
 
 if (isInvokedAsScript()) {

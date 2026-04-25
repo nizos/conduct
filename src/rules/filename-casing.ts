@@ -1,4 +1,4 @@
-import type { Rule, RuleResult } from '../rule.js'
+import type { Rule, RuleResult } from './contract.js'
 import { buildMatcher } from './utils/match-paths.js'
 
 /**

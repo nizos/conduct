@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { Action, Decision } from '../../rule.js'
+import type { Action, Decision } from '../../types.js'
 
 export const actionSchema = z.discriminatedUnion('tool_name', [
   z

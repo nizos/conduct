@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { describe, it, expect, onTestFinished } from 'vitest'
 
-import type { Action, SessionEvent, Verdict } from '../rule.js'
+import type { Action, SessionEvent, Verdict } from '../types.js'
 import { enforceTdd } from './enforce-tdd.js'
 
 describe('enforce-tdd', () => {

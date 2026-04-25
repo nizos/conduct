@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import { evaluate, evaluateSafely } from './engine.js'
-import type { Rule } from './rule.js'
+import type { Rule } from './rules/contract.js'
 
 describe('engine', () => {
   it('returns allow when every rule passes', async () => {

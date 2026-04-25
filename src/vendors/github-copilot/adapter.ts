@@ -3,8 +3,8 @@ import path from 'node:path'
 
 import { z } from 'zod'
 
-import type { Action, Decision } from '../../rule.js'
-import { JsonString } from '../json-string.js'
+import type { Action, Decision } from '../../types.js'
+import { JsonString } from '../../utils/json-string.js'
 
 export const actionSchema = z.discriminatedUnion('toolName', [
   z

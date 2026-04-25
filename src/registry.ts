@@ -1,4 +1,4 @@
-import type { Agent, SessionEvent } from './rule.js'
+import type { Agent, SessionEvent } from './types.js'
 import type { Adapter } from './vendors/adapter.js'
 import { claudeCode } from './vendors/claude-code/agent.js'
 import * as claudeCodeAdapter from './vendors/claude-code/adapter.js'

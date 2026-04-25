@@ -1,4 +1,4 @@
-import type { Rule } from '../rule.js'
+import type { Rule } from './contract.js'
 import { stringOrRegexMatches } from './utils/string-or-regex-matches.js'
 
 /**

@@ -1,14 +1,6 @@
 export { defineConfig, type Config } from './config.js'
-export type {
-  Action,
-  Agent,
-  Decision,
-  Rule,
-  RuleContext,
-  RuleResult,
-  SessionEvent,
-  Verdict,
-} from './rule.js'
+export type { Action, Agent, Decision, SessionEvent, Verdict } from './types.js'
+export type { Rule, RuleContext, RuleResult } from './rules/contract.js'
 export { enforceTdd } from './rules/enforce-tdd.js'
 export { filenameCasing, type Style } from './rules/filename-casing.js'
 export { forbidCommandPattern } from './rules/forbid-command-pattern.js'

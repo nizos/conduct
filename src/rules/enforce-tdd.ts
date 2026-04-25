@@ -1,7 +1,8 @@
 import { constants } from 'node:fs'
 import { open } from 'node:fs/promises'
 
-import type { Action, RuleContext, SessionEvent } from '../rule.js'
+import type { Action, SessionEvent } from '../types.js'
+import type { RuleContext } from './contract.js'
 import { buildMatcher } from './utils/match-paths.js'
 import { trimHistory } from './utils/trim-history.js'
 
@@ -146,11 +147,10 @@ export function enforceTdd(
     maxEvents: options.maxEvents ?? DEFAULT_MAX_EVENTS,
     maxContentChars: options.maxContentChars ?? DEFAULT_MAX_CONTENT_CHARS,
   }
-  return async (action: Action, rawCtx?: unknown) => {
+  return async (action: Action, ctx?: RuleContext) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
     if (!matchesPaths(action.path)) return { kind: 'pass' as const }
-    const ctx = rawCtx as RuleContext
-    if (!ctx.agent) return { kind: 'pass' as const }
+    if (!ctx?.agent) return { kind: 'pass' as const }
     const events = (await ctx.history?.()) ?? []
     const windowed = trimHistory(events, window)
     const historyBlock = windowed.map(formatEvent).join('\n')

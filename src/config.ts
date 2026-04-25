@@ -3,7 +3,8 @@ import path from 'node:path'
 
 import { createJiti } from 'jiti'
 
-import type { Agent, Rule } from './rule.js'
+import type { Agent } from './types.js'
+import type { Rule } from './rules/contract.js'
 
 /**
  * A project's Conduct configuration.

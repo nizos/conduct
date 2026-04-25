@@ -1,4 +1,5 @@
-import type { Action, Decision, Rule } from './rule.js'
+import type { Action, Decision } from './types.js'
+import type { Rule, RuleContext } from './rules/contract.js'
 
 /**
  * Run rules against an action, returning the first violation as a block
@@ -8,7 +9,7 @@ import type { Action, Decision, Rule } from './rule.js'
 export async function evaluate(
   action: Action,
   rules: readonly Rule[],
-  ctx?: unknown,
+  ctx?: RuleContext,
 ): Promise<Decision> {
   for (const rule of rules) {
     const result = await rule(action, ctx)
@@ -28,7 +29,7 @@ export async function evaluate(
 export async function evaluateSafely(
   action: Action,
   rules: readonly Rule[],
-  ctx?: unknown,
+  ctx?: RuleContext,
 ): Promise<Decision> {
   try {
     return await evaluate(action, rules, ctx)

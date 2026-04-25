@@ -1,4 +1,4 @@
-import { isVendor, vendors, type Vendor } from './registry.js'
+import { isVendor, vendors, type Vendor } from '../registry.js'
 
 export type ParsedArgs =
   | { kind: 'version' }
