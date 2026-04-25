@@ -6,30 +6,58 @@ import path from 'node:path'
 
 import { describe, it, expect, onTestFinished } from 'vitest'
 
+const CONFIG_FIXTURE = 'test/fixtures/configs/kebab-only.config.ts'
+
 describe('conduct cli (integration)', () => {
-  it('blocks a write that violates the dogfood config', async () => {
+  it('blocks a write that violates the configured rules', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-new-file.json',
       'utf8',
     )
 
-    const { stdout, stderr } = await runCli(payload)
+    const { stdout, stderr } = await runCliAt(
+      'dist/bin.js',
+      ['--agent', 'claude-code', '--config', CONFIG_FIXTURE],
+      payload,
+    )
     if (!stdout) throw new Error(`cli produced no stdout. stderr: ${stderr}`)
     const response = JSON.parse(stdout)
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
-  it('allows a Bash payload (no current dogfood rule applies)', async () => {
-    // Bash actions are short-circuit-allowed by every current dogfood rule
-    // (all are write-only). This makes the test deterministic without
-    // having to satisfy the AI-validated enforceTdd rule end-to-end.
+  it('allows a Bash payload (write-only rules do not apply)', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/bash-npm-install.json',
       'utf8',
     )
 
-    const { stdout } = await runCli(payload)
+    const { stdout } = await runCliAt(
+      'dist/bin.js',
+      ['--agent', 'claude-code', '--config', CONFIG_FIXTURE],
+      payload,
+    )
+    const response = JSON.parse(stdout)
+
+    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+  })
+
+  it('loads the config from --config <path> instead of discovering one', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-kebab-case.json',
+      'utf8',
+    )
+
+    const { stdout } = await runCliAt(
+      'dist/bin.js',
+      [
+        '--agent',
+        'claude-code',
+        '--config',
+        'test/fixtures/configs/kebab-only.config.ts',
+      ],
+      payload,
+    )
     const response = JSON.parse(stdout)
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
@@ -63,23 +91,6 @@ function runCliAt(
       cwd: path.resolve(),
       stdio: ['pipe', 'pipe', 'pipe'],
     })
-    let stdout = ''
-    let stderr = ''
-    child.stdout.on('data', (chunk: Buffer) => (stdout += chunk.toString()))
-    child.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()))
-    child.on('close', () => resolve({ stdout, stderr }))
-    child.on('error', reject)
-    child.stdin.end(stdin)
-  })
-}
-
-function runCli(stdin: string): Promise<{ stdout: string; stderr: string }> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(
-      process.execPath,
-      ['dist/bin.js', '--agent', 'claude-code'],
-      { cwd: path.resolve(), stdio: ['pipe', 'pipe', 'pipe'] },
-    )
     let stdout = ''
     let stderr = ''
     child.stdout.on('data', (chunk: Buffer) => (stdout += chunk.toString()))
