@@ -2,11 +2,12 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { describe, it, expect, onTestFinished } from 'vitest'
+import { describe, it, onTestFinished } from 'vitest'
 
 import { vendors } from '../../src/registry.js'
 import { dispatch } from '../../src/cli.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
+import { expectDecision } from './expect-decision.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
 const entry = vendors['codex']
@@ -15,50 +16,50 @@ describe.skipIf(!runAi)(
   'enforce-tdd + codex (integration with real AI)',
   () => {
     it('allows clean TDD with minimal implementation', async () => {
-      const { decision } = await setup({
+      const result = await setup({
         transcript: 'test/fixtures/transcripts/codex-tdd-test-failed.jsonl',
         pendingContent: MINIMAL_IMPL,
       })
 
-      expect(decision).toBe('allow')
+      expectDecision(result, 'allow')
     }, 60000)
 
     it('blocks clear over-implementation', async () => {
-      const { decision } = await setup({
+      const result = await setup({
         transcript: 'test/fixtures/transcripts/codex-tdd-test-failed.jsonl',
         pendingContent: OVER_IMPL,
       })
 
-      expect(decision).toBe('block')
+      expectDecision(result, 'block')
     }, 60000)
 
     it('blocks implementation when the failing test has not been run', async () => {
-      const { decision } = await setup({
+      const result = await setup({
         transcript: 'test/fixtures/transcripts/codex-tdd-no-test-run.jsonl',
         pendingContent: MINIMAL_IMPL,
       })
 
-      expect(decision).toBe('block')
+      expectDecision(result, 'block')
     }, 60000)
 
     it('allows adding a second test to an existing test file', async () => {
-      const { decision } = await setup({
+      const result = await setup({
         transcript: 'test/fixtures/transcripts/codex-tdd-test-failed.jsonl',
         beforeFile: EXISTING_TEST_CONTENT,
         pendingContent: PLUS_ONE_TEST,
       })
 
-      expect(decision).toBe('allow')
+      expectDecision(result, 'allow')
     }, 60000)
 
     it('blocks when two new tests are added in a single write', async () => {
-      const { decision } = await setup({
+      const result = await setup({
         transcript: 'test/fixtures/transcripts/codex-tdd-test-failed.jsonl',
         beforeFile: EXISTING_TEST_CONTENT,
         pendingContent: PLUS_TWO_TESTS,
       })
 
-      expect(decision).toBe('block')
+      expectDecision(result, 'block')
     }, 60000)
   },
 )
@@ -71,7 +72,7 @@ async function setup(opts: {
   transcript: string
   pendingContent: string
   beforeFile?: string
-}): Promise<{ decision: string }> {
+}): Promise<{ decision: string; reason?: string }> {
   const dir = await mkdtemp(path.join(tmpdir(), 'enforce-tdd-codex-'))
   onTestFinished(async () => {
     await rm(dir, { recursive: true, force: true })
@@ -96,7 +97,7 @@ async function setup(opts: {
   const agent = entry.agent()
   const response = await dispatch(entry, payload, [enforceTdd()], agent)
   const parsed = response ? JSON.parse(response) : {}
-  return { decision: parsed.decision ?? 'allow' }
+  return { decision: parsed.decision ?? 'allow', reason: parsed.reason }
 }
 
 function makeAddFilePatch(filePath: string, content: string): string {
