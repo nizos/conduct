@@ -121,6 +121,20 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('CUSTOM: only dog-driven development')
   })
 
+  it('limits the history block to the last maxEvents events', async () => {
+    const events: SessionEvent[] = Array.from({ length: 15 }, (_, i) => ({
+      kind: 'prompt' as const,
+      text: `event-${i}`,
+    }))
+    const s = setup({ history: events, maxEvents: 5 })
+
+    await s.rule(writeAction(), s.ctx)
+
+    expect(s.capturedPrompt).toContain('event-14')
+    expect(s.capturedPrompt).toContain('event-10')
+    expect(s.capturedPrompt).not.toContain('event-9')
+  })
+
   it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
     const s = setup()
 
@@ -141,6 +155,8 @@ function setup(
     history?: SessionEvent[]
     paths?: string[]
     instructions?: string
+    maxEvents?: number
+    maxContentChars?: number
   } = {},
 ) {
   const verdict = options.verdict ?? { verdict: 'pass' as const, reason: '' }
@@ -158,6 +174,8 @@ function setup(
   const rule = enforceTdd({
     paths: options.paths,
     instructions: options.instructions,
+    maxEvents: options.maxEvents,
+    maxContentChars: options.maxContentChars,
   })
   return {
     rule,

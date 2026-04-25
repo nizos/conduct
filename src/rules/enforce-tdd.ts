@@ -1,5 +1,9 @@
 import type { Action, RuleContext, SessionEvent } from '../rule.js'
 import { buildMatcher } from './match-paths.js'
+import { trimHistory } from './trim-history.js'
+
+const DEFAULT_MAX_EVENTS = 10
+const DEFAULT_MAX_CONTENT_CHARS = 1000
 
 const SYSTEM_RUBRIC = `You are a TDD validator. Judge whether the pending write
 follows test-driven development.
@@ -58,6 +62,12 @@ function buildPrompt(
  * @param options.paths — gitignore-style path globs to scope which
  *   writes are checked. Leading `!` negates. When omitted, every
  *   write is checked.
+ * @param options.maxEvents — keep at most this many of the most
+ *   recent session events when building the prompt (default 10).
+ *   Caps token usage when transcripts get long.
+ * @param options.maxContentChars — truncate any single event's
+ *   text/output longer than this, with a head + tail + marker
+ *   replacement (default 1000).
  *
  * @example
  * enforceTdd()
@@ -66,17 +76,27 @@ function buildPrompt(
  * enforceTdd({ paths: ['src/**', '!src/**\/*.test.ts'] })
  */
 export function enforceTdd(
-  options: { instructions?: string; paths?: string[] } = {},
+  options: {
+    instructions?: string
+    paths?: string[]
+    maxEvents?: number
+    maxContentChars?: number
+  } = {},
 ) {
   const rubric = options.instructions ?? SYSTEM_RUBRIC
   const matchesPaths = options.paths ? buildMatcher(options.paths) : () => true
+  const window = {
+    maxEvents: options.maxEvents ?? DEFAULT_MAX_EVENTS,
+    maxContentChars: options.maxContentChars ?? DEFAULT_MAX_CONTENT_CHARS,
+  }
   return async (action: Action, rawCtx?: unknown) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
     if (!matchesPaths(action.path)) return { kind: 'pass' as const }
     const ctx = rawCtx as RuleContext
     if (!ctx.agent) return { kind: 'pass' as const }
     const events = (await ctx.history?.()) ?? []
-    const historyBlock = events.map(formatEvent).join('\n')
+    const windowed = trimHistory(events, window)
+    const historyBlock = windowed.map(formatEvent).join('\n')
     const prompt = buildPrompt(rubric, historyBlock, action)
     const verdict = await ctx.agent.reason(prompt)
     if (verdict.verdict === 'violation') {
