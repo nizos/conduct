@@ -63,6 +63,42 @@ describe('githubCopilotSdk', () => {
     expect(capture.stopCalled).toBe(true)
   })
 
+  it('forwards the onPermissionRequest handler from options into createSession', async () => {
+    const capture = captureCopilotClient()
+    const handler = () => ({ kind: 'allow' as const })
+    const client = githubCopilotSdk({
+      copilotClientFactory: capture.factory,
+      onPermissionRequest: handler,
+    })
+
+    await client.reason('prompt')
+
+    expect(capture.lastSessionConfig?.onPermissionRequest).toBe(handler)
+  })
+
+  it('returns a fail-closed violation when sendAndWait returns undefined', async () => {
+    const client = githubCopilotSdk({
+      copilotClientFactory: () => ({
+        async start() {},
+        async createSession() {
+          return {
+            async sendAndWait() {
+              return undefined
+            },
+          }
+        },
+        async stop() {
+          return []
+        },
+      }),
+    })
+
+    const verdict = await client.reason('prompt')
+
+    expect(verdict.verdict).toBe('violation')
+    expect(verdict.reason).toMatch(/no response from copilot/i)
+  })
+
   it('returns a fail-closed violation when the SDK call throws', async () => {
     const client = githubCopilotSdk({
       copilotClientFactory: () => ({
@@ -87,10 +123,15 @@ describe('githubCopilotSdk', () => {
   })
 })
 
+type SessionConfig = {
+  availableTools?: string[]
+  onPermissionRequest?: unknown
+}
+
 function captureCopilotClient() {
   const state: {
     lastSendAndWaitOptions?: { prompt: string }
-    lastSessionConfig?: { availableTools?: string[] }
+    lastSessionConfig?: SessionConfig
     startCalled: boolean
     stopCalled: boolean
   } = { startCalled: false, stopCalled: false }
@@ -98,7 +139,7 @@ function captureCopilotClient() {
     async start() {
       state.startCalled = true
     },
-    async createSession(config: { availableTools?: string[] }) {
+    async createSession(config: SessionConfig) {
       state.lastSessionConfig = config
       return {
         async sendAndWait(options: { prompt: string }) {

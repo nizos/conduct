@@ -1,6 +1,7 @@
 import type { AiClient } from '../rule.js'
 import { claudeAgentSdk, type QueryFn } from '../providers/claude-agent-sdk.js'
 import { codexSdk } from '../providers/codex-sdk.js'
+import { githubCopilotSdk } from '../providers/github-copilot-sdk.js'
 import type { Adapter } from './adapter.js'
 import * as claudeCode from './claude-code.js'
 import * as codex from './codex.js'
@@ -37,14 +38,11 @@ export const adapters = {
   },
   'github-copilot': {
     adapter: githubCopilot,
-    // Placeholder until githubCopilotSdk lands. Uses Claude as the
-    // validator so existing integration tests still work.
     makeAi: async () => {
-      const mod = await import('@anthropic-ai/claude-agent-sdk')
-      return claudeAgentSdk({
-        queryFn: mod.query as unknown as Parameters<
-          typeof claudeAgentSdk
-        >[0]['queryFn'],
+      const mod = await import('@github/copilot-sdk')
+      return githubCopilotSdk({
+        copilotClientFactory: () => new mod.CopilotClient({}),
+        onPermissionRequest: mod.approveAll,
       })
     },
   },
