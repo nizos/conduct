@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, readSync } from 'node:fs'
+import { readFileSync, readSync, realpathSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -96,7 +96,7 @@ export async function main(args: {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (isInvokedAsScript()) {
   const result = await main({
     argv: process.argv,
     stdin: () =>
@@ -108,4 +108,17 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   if (result.stdout !== undefined) process.stdout.write(result.stdout)
   if (result.stderr !== undefined) process.stderr.write(result.stderr)
   process.exit(result.exitCode)
+}
+
+// Resolve symlinks on argv[1] so the script-entry check works under npx /
+// node_modules/.bin shims (which always invoke through a symlink).
+function isInvokedAsScript(): boolean {
+  const argv1 = process.argv[1]
+  if (!argv1) return false
+  try {
+    const resolved = realpathSync(argv1)
+    return import.meta.url === pathToFileURL(resolved).href
+  } catch {
+    return false
+  }
 }
