@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
-import { readTranscript } from './codex-transcript.js'
+import { readTranscript } from './codex.js'
 
-describe('codex-transcript', () => {
+describe('codex transcript', () => {
   it('emits a prompt event for a user response_item.message', async () => {
     const events = await readTranscript(
       'test/fixtures/transcripts/codex-basic.jsonl',

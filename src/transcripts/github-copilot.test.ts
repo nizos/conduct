@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
-import { readTranscript } from './github-copilot-transcript.js'
+import { readTranscript } from './github-copilot.js'
 
-describe('github-copilot-transcript', () => {
+describe('github-copilot transcript', () => {
   it('emits a prompt event for a user.message entry', async () => {
     const events = await readTranscript(
       'test/fixtures/transcripts/copilot-basic.jsonl',

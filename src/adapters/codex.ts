@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../rule.js'
-import { readTranscript } from './codex-transcript.js'
+import { readTranscript } from '../transcripts/codex.js'
 
 const PayloadSchema = z.object({
   tool_name: z.literal('Bash'),
