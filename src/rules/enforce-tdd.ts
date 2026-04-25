@@ -40,11 +40,11 @@ function buildPrompt(
  * Blocks a write unless the session's recent history shows a failing
  * test that the pending implementation would address, and the write
  * is the minimum implementation needed to make that test pass. Uses
- * an AI validator (via `ctx.ai.reason`) to judge the pending action
+ * an AI validator (via `ctx.agent.reason`) to judge the pending action
  * against the transcript.
  *
  * Applies to: write actions.
- * Supported agents: Claude Code. (The rule requires `ctx.ai` and
+ * Supported agents: Claude Code. (The rule requires `ctx.agent` and
  * `ctx.history` — Codex and GitHub Copilot adapters don't currently
  * supply these.)
  *
@@ -74,11 +74,11 @@ export function enforceTdd(
     if (action.type !== 'write') return { kind: 'pass' as const }
     if (!matchesPaths(action.path)) return { kind: 'pass' as const }
     const ctx = rawCtx as RuleContext
-    if (!ctx.ai) return { kind: 'pass' as const }
+    if (!ctx.agent) return { kind: 'pass' as const }
     const events = (await ctx.history?.()) ?? []
     const historyBlock = events.map(formatEvent).join('\n')
     const prompt = buildPrompt(rubric, historyBlock, action)
-    const verdict = await ctx.ai.reason(prompt)
+    const verdict = await ctx.agent.reason(prompt)
     if (verdict.verdict === 'violation') {
       return { kind: 'violation' as const, reason: verdict.reason }
     }

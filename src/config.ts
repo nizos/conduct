@@ -3,20 +3,21 @@ import path from 'node:path'
 
 import { createJiti } from 'jiti'
 
-import type { AiClient, Rule } from './rule.js'
+import type { Agent, Rule } from './rule.js'
 
 /**
  * A project's Conduct configuration.
  *
  * - `rules` — the active rules for the session, each produced by
  *   calling a rule factory with its options.
- * - `ai` — optional AI provider to inject into every rule's ctx.
- *   When omitted, the engine falls back to the Claude Agent SDK,
- *   which piggybacks on the user's Claude Code subscription.
+ * - `agent` — optional AI validator to inject into every rule's ctx.
+ *   When omitted, the engine uses the validator that pairs with the
+ *   selected vendor (e.g. Claude Agent SDK for `claude-code`), which
+ *   piggybacks on the user's logged-in session.
  */
 export type Config = {
   rules: readonly Rule[]
-  ai?: AiClient
+  agent?: Agent
 }
 
 /**

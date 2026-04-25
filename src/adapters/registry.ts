@@ -1,4 +1,4 @@
-import type { AiClient } from '../rule.js'
+import type { Agent } from '../rule.js'
 import { claudeAgentSdk, type QueryFn } from '../providers/claude-agent-sdk.js'
 import { codexSdk } from '../providers/codex-sdk.js'
 import { githubCopilotSdk } from '../providers/github-copilot-sdk.js'
@@ -8,15 +8,15 @@ import * as codex from './codex.js'
 import * as githubCopilot from './github-copilot.js'
 
 /**
- * Each agent entry bundles the vendor-specific adapter (payload
+ * Each vendor entry bundles the vendor-specific adapter (payload
  * translation) with an async factory for the matching AI provider.
  * `makeAi` is async so the dynamic `import()` of each vendor SDK
- * happens only when that agent is actually selected — importing the
+ * happens only when that vendor is actually selected — importing the
  * registry itself does not load any SDK.
  */
-export type AgentEntry = {
+export type VendorEntry = {
   adapter: Adapter
-  makeAi: () => Promise<AiClient>
+  makeAi: () => Promise<Agent>
 }
 
 export const adapters = {
@@ -46,10 +46,10 @@ export const adapters = {
       })
     },
   },
-} satisfies Record<string, AgentEntry>
+} satisfies Record<string, VendorEntry>
 
-export type Agent = keyof typeof adapters
+export type Vendor = keyof typeof adapters
 
-export function isAgent(value: unknown): value is Agent {
+export function isVendor(value: unknown): value is Vendor {
   return typeof value === 'string' && value in adapters
 }

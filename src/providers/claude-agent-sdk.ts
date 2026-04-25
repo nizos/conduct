@@ -1,6 +1,6 @@
 import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
 
-import type { AiClient } from '../rule.js'
+import type { Agent } from '../rule.js'
 import { aiClientFromText } from './ai-client-from-text.js'
 
 type Msg = { type: string; [k: string]: unknown }
@@ -10,7 +10,7 @@ export type QueryFn = (args: {
   options?: ClaudeQueryOptions
 }) => AsyncIterable<Msg>
 
-export function claudeAgentSdk(options: { queryFn: QueryFn }): AiClient {
+export function claudeAgentSdk(options: { queryFn: QueryFn }): Agent {
   return aiClientFromText((prompt) => getResultText(options.queryFn, prompt))
 }
 

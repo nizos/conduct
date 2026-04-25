@@ -4,9 +4,9 @@ import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
 import * as claudeCode from './adapters/claude-code.js'
-import type { AiClient, Rule } from './rule.js'
+import type { Agent, Rule } from './rule.js'
 
-const stubAi: AiClient = {
+const stubAgent: Agent = {
   reason: async () => ({ verdict: 'pass', reason: '' }),
 }
 
@@ -29,7 +29,7 @@ describe('cli', () => {
       'utf8',
     )
 
-    const response = await run(payload, { agent: 'codex' })
+    const response = await run(payload, { vendor: 'codex' })
 
     expect(response).toBe('')
   })
@@ -40,7 +40,7 @@ describe('cli', () => {
       'utf8',
     )
 
-    const response = await run(payload, { agent: 'github-copilot' })
+    const response = await run(payload, { vendor: 'github-copilot' })
 
     expect(JSON.parse(response)).toEqual({ permissionDecision: 'allow' })
   })
@@ -57,7 +57,7 @@ describe('cli', () => {
       captured = ctx
       return { kind: 'pass' as const }
     }
-    const customAi: AiClient = {
+    const customAgent: Agent = {
       reason: async () => ({ verdict: 'pass', reason: '' }),
     }
     const payload = JSON.stringify({
@@ -66,10 +66,10 @@ describe('cli', () => {
       tool_input: { command: 'x' },
     })
 
-    await dispatch(claudeCode, payload, [capturingRule], customAi)
+    await dispatch(claudeCode, payload, [capturingRule], customAgent)
 
-    const ctx = captured as { ai?: AiClient }
-    expect(ctx.ai).toBe(customAi)
+    const ctx = captured as { agent?: Agent }
+    expect(ctx.agent).toBe(customAgent)
   })
 
   it('passes a context with a working history() to rules', async () => {
@@ -84,7 +84,7 @@ describe('cli', () => {
       tool_input: { command: 'x' },
     })
 
-    await dispatch(claudeCode, payload, [capturingRule], stubAi)
+    await dispatch(claudeCode, payload, [capturingRule], stubAgent)
 
     const ctx = captured as { history: () => Promise<unknown[]> }
     expect(typeof ctx.history).toBe('function')
@@ -93,7 +93,12 @@ describe('cli', () => {
   })
 
   it('returns a deny response when the payload is not valid JSON', async () => {
-    const response = await dispatch(claudeCode, 'not json at all', [], stubAi)
+    const response = await dispatch(
+      claudeCode,
+      'not json at all',
+      [],
+      stubAgent,
+    )
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -111,7 +116,7 @@ describe('cli', () => {
     }
     const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })
 
-    const response = await dispatch(throwingAdapter, payload, [], stubAi)
+    const response = await dispatch(throwingAdapter, payload, [], stubAgent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -127,8 +132,8 @@ describe('cli', () => {
     )
 
     await expect(
-      run(payload, { agent: 'bogus' as unknown as 'claude-code' }),
-    ).rejects.toThrow(/unknown agent.*bogus/i)
+      run(payload, { vendor: 'bogus' as unknown as 'claude-code' }),
+    ).rejects.toThrow(/unknown vendor.*bogus/i)
   })
 })
 
@@ -137,7 +142,7 @@ async function setup(fixtureName: string) {
     `test/fixtures/claude-code/${fixtureName}`,
     'utf8',
   )
-  const raw = await run(payload, { agent: 'claude-code' })
+  const raw = await run(payload, { vendor: 'claude-code' })
   const response = JSON.parse(raw)
   return { response }
 }

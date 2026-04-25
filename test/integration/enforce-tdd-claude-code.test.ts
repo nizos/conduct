@@ -2,16 +2,16 @@ import { beforeAll, describe, it, expect } from 'vitest'
 
 import { adapters } from '../../src/adapters/registry.js'
 import { dispatch } from '../../src/cli.js'
-import type { AiClient } from '../../src/rule.js'
+import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
 const entry = adapters['claude-code']
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
-  let ai: AiClient
+  let agent: Agent
   beforeAll(async () => {
-    ai = await entry.makeAi()
+    agent = await entry.makeAi()
   })
 
   const claudeCode = entry.adapter
@@ -22,7 +22,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: 'export const add = (a: number, b: number): number => a + b\n',
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()], ai)
+    const response = await dispatch(claudeCode, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('allow')
@@ -35,7 +35,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: OVER_IMPL,
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()], ai)
+    const response = await dispatch(claudeCode, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -48,7 +48,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: 'export const add = (a: number, b: number): number => a + b\n',
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()], ai)
+    const response = await dispatch(claudeCode, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')

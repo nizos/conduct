@@ -1,32 +1,32 @@
-import type { Action, AiClient, Rule } from './rule.js'
+import type { Action, Agent, Rule } from './rule.js'
 import type { Adapter } from './adapters/adapter.js'
-import { adapters, type Agent } from './adapters/registry.js'
+import { adapters, type Vendor } from './adapters/registry.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluateSafely } from './engine.js'
 
-export type { Agent } from './adapters/registry.js'
+export type { Vendor } from './adapters/registry.js'
 
 export async function run(
   rawPayload: string,
-  options: { agent: Agent },
+  options: { vendor: Vendor },
 ): Promise<string> {
-  const entry = adapters[options.agent]
+  const entry = adapters[options.vendor]
   if (!entry) {
     const known = Object.keys(adapters).join(', ')
     throw new Error(
-      `unknown agent: ${String(options.agent)}. Expected one of: ${known}`,
+      `unknown vendor: ${String(options.vendor)}. Expected one of: ${known}`,
     )
   }
   const config = await loadConfig(findConfig(process.cwd()))
-  const ai = config.ai ?? (await entry.makeAi())
-  return dispatch(entry.adapter, rawPayload, config.rules, ai)
+  const agent = config.agent ?? (await entry.makeAi())
+  return dispatch(entry.adapter, rawPayload, config.rules, agent)
 }
 
 export async function dispatch(
   adapter: Adapter,
   rawPayload: string,
   rules: readonly Rule[],
-  ai: AiClient,
+  agent: Agent,
 ): Promise<string> {
   let payload: unknown
   try {
@@ -50,10 +50,11 @@ export async function dispatch(
       reason: `invalid hook payload: ${reason}`,
     })
   }
-  // CLI-injected `ai` overrides anything the adapter might have put in
-  // baseCtx — the config/default provider is the canonical source of
-  // `ai`, and adapters only supply session capabilities like history().
-  const ctx = { ...baseCtx, ai }
+  // CLI-injected `agent` overrides anything the adapter might have put
+  // in baseCtx — the config/default agent is the canonical source of
+  // `agent`, and adapters only supply session capabilities like
+  // history().
+  const ctx = { ...baseCtx, agent }
   const decision = await evaluateSafely(action, rules, ctx)
   return adapter.toResponse(decision)
 }

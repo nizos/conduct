@@ -1,4 +1,4 @@
-import type { AiClient } from '../rule.js'
+import type { Agent } from '../rule.js'
 import { aiClientFromText } from './ai-client-from-text.js'
 
 type SessionConfig = {
@@ -19,7 +19,7 @@ type CopilotClientLike = {
 export function githubCopilotSdk(options: {
   copilotClientFactory: () => CopilotClientLike
   onPermissionRequest?: unknown
-}): AiClient {
+}): Agent {
   return aiClientFromText(async (prompt) => {
     const client = options.copilotClientFactory()
     await client.start()

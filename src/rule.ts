@@ -44,17 +44,17 @@ export type Rule = (
 ) => RuleResult | Promise<RuleResult>
 
 /**
- * The verdict an AI validator returns — the shape `AiClient.reason`
+ * The verdict an AI validator returns — the shape `Agent.reason`
  * resolves to and the shape rules use to decide pass vs violation.
  */
 export type Verdict = { verdict: 'pass' | 'violation'; reason: string }
 
 /**
- * The minimal AI-provider contract. Rules that need LLM judgment reach
- * for `ctx.ai.reason(prompt)`; providers implement this one method and
+ * The minimal AI-validator contract. Rules that need LLM judgment reach
+ * for `ctx.agent.reason(prompt)`; agents implement this one method and
  * are swappable without touching rule code.
  */
-export type AiClient = {
+export type Agent = {
   reason: (prompt: string) => Promise<Verdict>
 }
 
@@ -79,6 +79,6 @@ export type SessionEvent =
  * different subsets. Rules should narrow defensively when they read.
  */
 export type RuleContext = {
-  ai?: AiClient
+  agent?: Agent
   history?: () => Promise<SessionEvent[]>
 }

@@ -1,6 +1,6 @@
 import type { ThreadOptions } from '@openai/codex-sdk'
 
-import type { AiClient } from '../rule.js'
+import type { Agent } from '../rule.js'
 import { aiClientFromText } from './ai-client-from-text.js'
 
 type CodexLike = {
@@ -9,7 +9,7 @@ type CodexLike = {
   }
 }
 
-export function codexSdk(options: { codexFactory: () => CodexLike }): AiClient {
+export function codexSdk(options: { codexFactory: () => CodexLike }): Agent {
   return aiClientFromText(async (prompt) => {
     const thread = options.codexFactory().startThread({
       skipGitRepoCheck: true,

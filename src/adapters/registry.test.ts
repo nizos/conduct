@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest'
 
-import { adapters, isAgent } from './registry.js'
+import { adapters, isVendor } from './registry.js'
 
-describe('isAgent', () => {
+describe('isVendor', () => {
   it('accepts a known agent name', () => {
-    expect(isAgent('claude-code')).toBe(true)
+    expect(isVendor('claude-code')).toBe(true)
   })
 
   it('rejects an unknown string', () => {
-    expect(isAgent('bogus')).toBe(false)
+    expect(isVendor('bogus')).toBe(false)
   })
 
   it('rejects a non-string value', () => {
-    expect(isAgent(undefined)).toBe(false)
+    expect(isVendor(undefined)).toBe(false)
   })
 })
 

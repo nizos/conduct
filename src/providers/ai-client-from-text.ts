@@ -1,8 +1,8 @@
-import type { AiClient, Verdict } from '../rule.js'
+import type { Agent, Verdict } from '../rule.js'
 import { parseVerdict } from './parse-verdict.js'
 
 /**
- * Wraps a "give me text from a prompt" function as an AiClient.
+ * Wraps a "give me text from a prompt" function as an Agent.
  * Centralises the fail-closed contract every AI provider shares: a
  * thrown getText becomes a `violation` verdict whose reason is the
  * error message; a returned string is fed through parseVerdict.
@@ -14,7 +14,7 @@ import { parseVerdict } from './parse-verdict.js'
  */
 export function aiClientFromText(
   getText: (prompt: string) => Promise<string>,
-): AiClient {
+): Agent {
   return {
     reason: async (prompt: string): Promise<Verdict> => {
       let text: string

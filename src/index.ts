@@ -1,7 +1,7 @@
 export { defineConfig, type Config } from './config.js'
 export type {
   Action,
-  AiClient,
+  Agent,
   Decision,
   Rule,
   RuleContext,

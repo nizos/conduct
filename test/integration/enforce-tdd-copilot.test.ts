@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, it, expect } from 'vitest'
 
 import { adapters } from '../../src/adapters/registry.js'
 import { dispatch } from '../../src/cli.js'
-import type { AiClient } from '../../src/rule.js'
+import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
@@ -19,10 +19,10 @@ const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
 describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   let home: string
   let prevHome: string | undefined
-  let ai: AiClient
+  let agent: Agent
 
   beforeAll(async () => {
-    ai = await entry.makeAi()
+    agent = await entry.makeAi()
     home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
     for (const [session, fixture] of [
       [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
@@ -53,7 +53,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
         'export function add(a: number, b: number): number {\n  return a + b\n}\n',
     })
 
-    const response = await dispatch(copilot, payload, [enforceTdd()], ai)
+    const response = await dispatch(copilot, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.permissionDecision).toBe('allow')
@@ -66,7 +66,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
       file_text: OVER_IMPL,
     })
 
-    const response = await dispatch(copilot, payload, [enforceTdd()], ai)
+    const response = await dispatch(copilot, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.permissionDecision).toBe('deny')
@@ -80,7 +80,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
         'export function add(a: number, b: number): number {\n  return a + b\n}\n',
     })
 
-    const response = await dispatch(copilot, payload, [enforceTdd()], ai)
+    const response = await dispatch(copilot, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.permissionDecision).toBe('deny')

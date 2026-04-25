@@ -5,7 +5,7 @@ import { enforceTdd } from './enforce-tdd.js'
 describe('enforce-tdd', () => {
   it('blocks a write when the AI judges it violates TDD', async () => {
     const ctx = {
-      ai: {
+      agent: {
         reason: async () => ({
           verdict: 'violation' as const,
           reason: 'No failing test drives this implementation.',
@@ -31,7 +31,7 @@ describe('enforce-tdd', () => {
 
   it('allows a write when the AI judges it passes TDD', async () => {
     const ctx = {
-      ai: {
+      agent: {
         reason: async () => ({ verdict: 'pass' as const, reason: '' }),
       },
     }
@@ -52,7 +52,7 @@ describe('enforce-tdd', () => {
   it('passes through command actions without calling the AI', async () => {
     let called = false
     const ctx = {
-      ai: {
+      agent: {
         reason: async () => {
           called = true
           return {
@@ -73,7 +73,7 @@ describe('enforce-tdd', () => {
   it('includes the action path and content in the AI prompt', async () => {
     let capturedPrompt = ''
     const ctx = {
-      ai: {
+      agent: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
@@ -98,7 +98,7 @@ describe('enforce-tdd', () => {
   it('includes recent session history in the AI prompt', async () => {
     let capturedPrompt = ''
     const ctx = {
-      ai: {
+      agent: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
@@ -131,7 +131,7 @@ describe('enforce-tdd', () => {
   it('includes tool names and user prompts in the history block', async () => {
     let capturedPrompt = ''
     const ctx = {
-      ai: {
+      agent: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
@@ -167,7 +167,7 @@ describe('enforce-tdd', () => {
   it('skips writes outside the configured paths', async () => {
     let called = false
     const ctx = {
-      ai: {
+      agent: {
         reason: async () => {
           called = true
           return { verdict: 'violation' as const, reason: 'should not reach' }
@@ -188,7 +188,7 @@ describe('enforce-tdd', () => {
   it('uses custom instructions when provided', async () => {
     let capturedPrompt = ''
     const ctx = {
-      ai: {
+      agent: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
@@ -207,7 +207,7 @@ describe('enforce-tdd', () => {
   it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
     let capturedPrompt = ''
     const ctx = {
-      ai: {
+      agent: {
         reason: async (prompt: string) => {
           capturedPrompt = prompt
           return { verdict: 'pass' as const, reason: '' }
