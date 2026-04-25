@@ -32,7 +32,8 @@ const DEFAULT_TDD_RULES = `Rules:
    observed failing test pass. Functions, classes, or branches not
    required by the currently failing test are over-implementation.
 3. A single write should add at most one new test. Compare "Current
-   file content" with "Pending action" to count newly added tests; if
+   file content" with "Pending action" to count newly added tests;
+   tests already present in "Current file content" do not count. If
    more than one new test appears, block.`
 
 const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
