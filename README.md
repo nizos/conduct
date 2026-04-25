@@ -1,5 +1,6 @@
 # Conduct
 
+[![npm version](https://img.shields.io/npm/v/@nizos/conduct.svg)](https://www.npmjs.com/package/@nizos/conduct)
 [![CI](https://github.com/nizos/conduct/actions/workflows/ci.yml/badge.svg)](https://github.com/nizos/conduct/actions/workflows/ci.yml)
 [![Security](https://github.com/nizos/conduct/actions/workflows/security.yml/badge.svg)](https://github.com/nizos/conduct/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -13,10 +14,10 @@ Conduct is a vendor-agnostic policy engine that sits between the agent and the c
 ## Features
 
 - **Vendor-agnostic** — one config across Claude Code, OpenAI Codex, and GitHub Copilot.
-- **Reuses your agent's session** — AI-validated rules go through the agent's official SDK, picking up the auth you've already configured.
 - **Deterministic + AI** — text and regex rules for fast guardrails; AI judgment only where it matters.
 - **TDD out of the box** — `enforceTdd` ships ready: no test reporter, no state files.
 - **Extensible** — drop in your own rules; the engine just runs them.
+- **Reuses your agent's session** — AI-validated rules go through the agent's official SDK.
 
 ## Status
 
@@ -59,7 +60,7 @@ export default defineConfig({
 })
 ```
 
-See [docs/rules.md](docs/rules.md) for each rule's options and [docs/setup.md](docs/setup.md) for how to wire conduct into your agent.
+See the [rules reference](docs/rules.md) for each rule's options and the [setup guide](docs/setup.md) for how to wire conduct into your agent.
 
 ## License
 
