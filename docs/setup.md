@@ -4,7 +4,20 @@ Wire conduct into your agent's hook system. Each vendor's section below shows th
 
 ## Claude Code
 
-Add a `PreToolUse` hook in `.claude/settings.json` (project) or `~/.claude/settings.json` (user-global):
+### Recommended: install via plugin
+
+Two commands wire conduct into Claude Code's hook system, no manual config edit:
+
+```
+/plugin marketplace add nizos/conduct
+/plugin install conduct@conduct
+```
+
+The plugin ships the `PreToolUse` hook with the matcher `Bash|Write|Edit`, which covers commands and file modifications.
+
+### Manual install
+
+If you'd rather wire the hook yourself, add a `PreToolUse` entry to `.claude/settings.json` (project) or `~/.claude/settings.json` (user-global):
 
 ```json
 {
