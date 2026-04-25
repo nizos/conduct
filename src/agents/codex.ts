@@ -9,11 +9,12 @@ type CodexLike = {
   }
 }
 
-export function codexSdk(options: { codexFactory: () => CodexLike }): Agent {
+export function codex(deps: { codex?: CodexLike } = {}): Agent {
   return {
     reason: (prompt) =>
       toVerdict(async () => {
-        const thread = options.codexFactory().startThread({
+        const instance = deps.codex ?? (await loadDefaultCodex())
+        const thread = instance.startThread({
           skipGitRepoCheck: true,
           sandboxMode: 'read-only',
           approvalPolicy: 'never',
@@ -24,4 +25,9 @@ export function codexSdk(options: { codexFactory: () => CodexLike }): Agent {
         return turn.finalResponse
       }),
   }
+}
+
+async function loadDefaultCodex(): Promise<CodexLike> {
+  const mod = await import('@openai/codex-sdk')
+  return new mod.Codex()
 }

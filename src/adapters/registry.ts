@@ -1,10 +1,10 @@
 import type { Agent } from '../rule.js'
 import { claudeCode } from '../agents/claude-code.js'
-import { codexSdk } from '../agents/codex-sdk.js'
+import { codex } from '../agents/codex.js'
 import { githubCopilotSdk } from '../agents/github-copilot-sdk.js'
 import type { Adapter } from './adapter.js'
 import * as claudeCodeAdapter from './claude-code.js'
-import * as codex from './codex.js'
+import * as codexAdapter from './codex.js'
 import * as githubCopilot from './github-copilot.js'
 
 /**
@@ -25,11 +25,8 @@ export const adapters = {
     makeAi: async () => claudeCode(),
   },
   codex: {
-    adapter: codex,
-    makeAi: async () => {
-      const mod = await import('@openai/codex-sdk')
-      return codexSdk({ codexFactory: () => new mod.Codex() })
-    },
+    adapter: codexAdapter,
+    makeAi: async () => codex(),
   },
   'github-copilot': {
     adapter: githubCopilot,

@@ -1,12 +1,12 @@
 import type { ThreadOptions } from '@openai/codex-sdk'
 import { describe, it, expect } from 'vitest'
 
-import { codexSdk } from './codex-sdk.js'
+import { codex } from './codex.js'
 
-describe('codexSdk', () => {
+describe('codex', () => {
   it('returns the verdict parsed from the thread final response', async () => {
-    const client = codexSdk({
-      codexFactory: fakeCodex('{"verdict":"violation","reason":"no test"}'),
+    const client = codex({
+      codex: fakeCodex('{"verdict":"violation","reason":"no test"}'),
     })
 
     const verdict = await client.reason('some prompt')
@@ -15,8 +15,8 @@ describe('codexSdk', () => {
   })
 
   it('parses a distinct verdict from a different thread response', async () => {
-    const client = codexSdk({
-      codexFactory: fakeCodex('{"verdict":"pass","reason":"looks fine"}'),
+    const client = codex({
+      codex: fakeCodex('{"verdict":"pass","reason":"looks fine"}'),
     })
 
     const verdict = await client.reason('some prompt')
@@ -26,7 +26,7 @@ describe('codexSdk', () => {
 
   it('starts the thread with skipGitRepoCheck so the validator runs anywhere', async () => {
     const capture = captureCodex()
-    const client = codexSdk({ codexFactory: capture.factory })
+    const client = codex({ codex: capture.codex })
 
     await client.reason('prompt')
 
@@ -35,7 +35,7 @@ describe('codexSdk', () => {
 
   it('uses read-only sandboxMode so the validator cannot write or run commands', async () => {
     const capture = captureCodex()
-    const client = codexSdk({ codexFactory: capture.factory })
+    const client = codex({ codex: capture.codex })
 
     await client.reason('prompt')
 
@@ -44,7 +44,7 @@ describe('codexSdk', () => {
 
   it("uses approvalPolicy 'never' so the validator cannot escalate", async () => {
     const capture = captureCodex()
-    const client = codexSdk({ codexFactory: capture.factory })
+    const client = codex({ codex: capture.codex })
 
     await client.reason('prompt')
 
@@ -53,7 +53,7 @@ describe('codexSdk', () => {
 
   it('disables network access so the validator cannot reach out', async () => {
     const capture = captureCodex()
-    const client = codexSdk({ codexFactory: capture.factory })
+    const client = codex({ codex: capture.codex })
 
     await client.reason('prompt')
 
@@ -62,7 +62,7 @@ describe('codexSdk', () => {
 
   it('disables web search so the validator stays self-contained', async () => {
     const capture = captureCodex()
-    const client = codexSdk({ codexFactory: capture.factory })
+    const client = codex({ codex: capture.codex })
 
     await client.reason('prompt')
 
@@ -71,7 +71,7 @@ describe('codexSdk', () => {
 
   it('forwards the rule prompt verbatim to thread.run', async () => {
     const capture = captureCodex()
-    const client = codexSdk({ codexFactory: capture.factory })
+    const client = codex({ codex: capture.codex })
 
     await client.reason('rule prompt text')
 
@@ -79,8 +79,8 @@ describe('codexSdk', () => {
   })
 
   it('returns a fail-closed violation when the SDK run throws', async () => {
-    const client = codexSdk({
-      codexFactory: () => ({
+    const client = codex({
+      codex: {
         startThread() {
           return {
             async run() {
@@ -88,7 +88,7 @@ describe('codexSdk', () => {
             },
           }
         },
-      }),
+      },
     })
 
     const verdict = await client.reason('prompt')
@@ -103,7 +103,7 @@ function captureCodex() {
     lastThreadOptions?: ThreadOptions
     lastRunInput?: string
   } = {}
-  const factory = () => ({
+  const codex = {
     startThread(opts?: ThreadOptions) {
       state.lastThreadOptions = opts
       return {
@@ -113,9 +113,9 @@ function captureCodex() {
         },
       }
     },
-  })
+  }
   return {
-    factory,
+    codex,
     get lastThreadOptions() {
       return state.lastThreadOptions
     },
@@ -126,7 +126,7 @@ function captureCodex() {
 }
 
 function fakeCodex(finalResponse: string) {
-  return () => ({
+  return {
     startThread() {
       return {
         async run() {
@@ -134,5 +134,5 @@ function fakeCodex(finalResponse: string) {
         },
       }
     },
-  })
+  }
 }
