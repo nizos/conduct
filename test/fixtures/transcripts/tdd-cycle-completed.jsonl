@@ -1,0 +1,9 @@
+{"type":"user","message":{"content":[{"type":"text","text":"build a calculator module with an `add` function. follow TDD."}]}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","id":"tu_1","name":"Write","input":{"file_path":"src/calculator.test.ts","content":"import { describe, expect, it } from 'vitest'\nimport { add } from './calculator.js'\n\ndescribe('calculator', () => {\n  it('adds two numbers', () => {\n    expect(add(2, 3)).toBe(5)\n  })\n})\n"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tu_1","content":"File written"}]}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","id":"tu_2","name":"Bash","input":{"command":"npm test"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tu_2","content":"FAIL src/calculator.test.ts\n  calculator > adds two numbers\n    Error: Cannot find module './calculator.js'\n\nTest Files  1 failed\n     Tests  1 failed"}]}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","id":"tu_3","name":"Write","input":{"file_path":"src/calculator.ts","content":"export function add(a: number, b: number): number {\n  return a + b\n}\n"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tu_3","content":"File written"}]}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","id":"tu_4","name":"Bash","input":{"command":"npm test"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tu_4","content":"PASS src/calculator.test.ts\n  calculator > adds two numbers\n\nTest Files  1 passed\n     Tests  1 passed"}]}}

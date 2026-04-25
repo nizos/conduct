@@ -44,7 +44,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
 
   it('allows adding a second test to an existing test file', async () => {
     const result = await setup({
-      transcript: 'test/fixtures/transcripts/tdd-clean.jsonl',
+      transcript: 'test/fixtures/transcripts/tdd-cycle-completed.jsonl',
       beforeFile: EXISTING_TEST_CONTENT,
       pendingContent: PLUS_ONE_TEST,
     })
@@ -54,7 +54,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
 
   it('blocks when two new tests are added in a single write', async () => {
     const result = await setup({
-      transcript: 'test/fixtures/transcripts/tdd-clean.jsonl',
+      transcript: 'test/fixtures/transcripts/tdd-cycle-completed.jsonl',
       beforeFile: EXISTING_TEST_CONTENT,
       pendingContent: PLUS_TWO_TESTS,
     })

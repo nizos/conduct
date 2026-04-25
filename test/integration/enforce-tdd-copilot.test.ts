@@ -14,6 +14,7 @@ const entry = vendors['github-copilot']
 
 const CLEAN_SESSION = 'integration-copilot-tdd-clean'
 const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
+const CYCLE_COMPLETED_SESSION = 'integration-copilot-tdd-cycle-completed'
 
 describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   it('allows a minimal add implementation after a failing test was run', async () => {
@@ -45,7 +46,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
 
   it('allows adding a second test to an existing test file', async () => {
     const result = await setup({
-      sessionId: CLEAN_SESSION,
+      sessionId: CYCLE_COMPLETED_SESSION,
       beforeFile: EXISTING_TEST_CONTENT,
       pendingContent: PLUS_ONE_TEST,
     })
@@ -55,7 +56,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
 
   it('blocks when two new tests are added in a single write', async () => {
     const result = await setup({
-      sessionId: CLEAN_SESSION,
+      sessionId: CYCLE_COMPLETED_SESSION,
       beforeFile: EXISTING_TEST_CONTENT,
       pendingContent: PLUS_TWO_TESTS,
     })
@@ -77,6 +78,7 @@ async function setup(opts: {
   for (const [session, fixture] of [
     [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
     [NO_RUN_SESSION, 'copilot-tdd-no-test-run.jsonl'],
+    [CYCLE_COMPLETED_SESSION, 'copilot-tdd-cycle-completed.jsonl'],
   ] as const) {
     const sessionDir = path.join(home, 'session-state', session)
     await mkdir(sessionDir, { recursive: true })
