@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { vendors, isVendor } from './registry.js'
-import { run } from './cli.js'
+import { run, type ConfigLoader } from './cli.js'
 import { readCapped } from './read-capped.js'
 
 const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
@@ -52,6 +52,7 @@ export type MainResult = {
 export async function main(args: {
   argv: readonly string[]
   stdin: string | (() => string)
+  loadConfig?: ConfigLoader
 }): Promise<MainResult> {
   if (args.argv.includes('--version')) {
     return { stdout: `${VERSION}\n`, exitCode: 0 }
@@ -85,7 +86,10 @@ export async function main(args: {
     }
   }
   try {
-    const response = await run(stdin, { vendor: agentArg })
+    const response = await run(stdin, {
+      vendor: agentArg,
+      loadConfig: args.loadConfig,
+    })
     return { stdout: response, exitCode: 0 }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)

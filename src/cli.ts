@@ -1,16 +1,21 @@
 import type { Action, Agent, Rule, SessionEvent } from './rule.js'
-import { findConfig, loadConfig } from './config.js'
+import { findConfig, loadConfig, type Config } from './config.js'
 import { evaluateSafely } from './engine.js'
 import { vendors, type Vendor, type VendorEntry } from './registry.js'
 
 export type { Vendor } from './registry.js'
 
+export type ConfigLoader = () => Promise<Config>
+
+const defaultConfigLoader: ConfigLoader = () =>
+  loadConfig(findConfig(process.cwd()))
+
 export async function run(
   rawPayload: string,
-  options: { vendor: Vendor },
+  options: { vendor: Vendor; loadConfig?: ConfigLoader },
 ): Promise<string> {
   const entry = vendors[options.vendor]
-  const config = await loadConfig(findConfig(process.cwd()))
+  const config = await (options.loadConfig ?? defaultConfigLoader)()
   const agent = config.agent ?? entry.agent()
   return dispatch(entry, rawPayload, config.rules, agent)
 }

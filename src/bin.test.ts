@@ -3,6 +3,23 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import { main } from './bin.js'
+import type { Config } from './config.js'
+import type { Agent } from './rule.js'
+import { filenameCasing } from './rules/filename-casing.js'
+
+const stubAgent: Agent = {
+  reason: async () => ({ verdict: 'pass', reason: '' }),
+}
+
+const testConfig: Config = {
+  rules: [
+    filenameCasing({
+      style: 'kebab-case',
+      paths: ['**/src/**', '**/test/**'],
+    }),
+  ],
+  agent: stubAgent,
+}
 
 describe('bin main', () => {
   it('returns exit code 2 and a helpful stderr when --agent is missing', async () => {
@@ -57,6 +74,24 @@ describe('bin main', () => {
     expect(result.stdout?.trim()).toMatch(/^\d+\.\d+\.\d+/)
   })
 
+  it('forwards an injected config loader through to run()', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-kebab-case.json',
+      'utf8',
+    )
+
+    const result = await main({
+      argv: ['node', 'bin.js', '--agent', 'claude-code'],
+      stdin: payload,
+      loadConfig: async () => testConfig,
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(
+      JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision,
+    ).toBe('allow')
+  })
+
   it('writes the run() response to stdout and exits 0 on success', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-kebab-case.json',
@@ -66,6 +101,7 @@ describe('bin main', () => {
     const result = await main({
       argv: ['node', 'bin.js', '--agent', 'claude-code'],
       stdin: payload,
+      loadConfig: async () => testConfig,
     })
 
     expect(result.exitCode).toBe(0)

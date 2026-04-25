@@ -3,8 +3,10 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
+import type { Config } from './config.js'
 import { vendors, type VendorEntry } from './registry.js'
 import type { Agent } from './rule.js'
+import { filenameCasing } from './rules/filename-casing.js'
 
 const claudeCodeEntry = vendors['claude-code']
 
@@ -31,7 +33,10 @@ describe('cli', () => {
       'utf8',
     )
 
-    const response = await run(payload, { vendor: 'codex' })
+    const response = await run(payload, {
+      vendor: 'codex',
+      loadConfig: async () => defaultTestConfig,
+    })
 
     expect(response).toBe('')
   })
@@ -42,7 +47,10 @@ describe('cli', () => {
       'utf8',
     )
 
-    const response = await run(payload, { vendor: 'github-copilot' })
+    const response = await run(payload, {
+      vendor: 'github-copilot',
+      loadConfig: async () => defaultTestConfig,
+    })
 
     expect(JSON.parse(response)).toEqual({ permissionDecision: 'allow' })
   })
@@ -68,6 +76,30 @@ describe('cli', () => {
     )
   })
 
+  it('honors an injected config loader instead of discovering one on disk', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-kebab-case.json',
+      'utf8',
+    )
+    const injectedConfig: Config = {
+      rules: [
+        filenameCasing({
+          style: 'kebab-case',
+          paths: ['**/src/**', '**/test/**'],
+        }),
+      ],
+      agent: stubAgent,
+    }
+
+    const raw = await run(payload, {
+      vendor: 'claude-code',
+      loadConfig: async () => injectedConfig,
+    })
+    const response = JSON.parse(raw)
+
+    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+  })
+
   it('returns a deny response when the adapter.toAction throws', async () => {
     const throwingEntry: VendorEntry = {
       ...claudeCodeEntry,
@@ -90,12 +122,25 @@ describe('cli', () => {
   })
 })
 
-async function setup(fixtureName: string) {
+const defaultTestConfig: Config = {
+  rules: [
+    filenameCasing({
+      style: 'kebab-case',
+      paths: ['**/src/**', '**/test/**'],
+    }),
+  ],
+  agent: stubAgent,
+}
+
+async function setup(fixtureName: string, config: Config = defaultTestConfig) {
   const payload = readFileSync(
     `test/fixtures/claude-code/${fixtureName}`,
     'utf8',
   )
-  const raw = await run(payload, { vendor: 'claude-code' })
+  const raw = await run(payload, {
+    vendor: 'claude-code',
+    loadConfig: async () => config,
+  })
   const response = JSON.parse(raw)
   return { response }
 }

@@ -20,9 +20,12 @@ describe('conduct cli (integration)', () => {
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
-  it('allows a write that matches the dogfood config', async () => {
+  it('allows a Bash payload (no current dogfood rule applies)', async () => {
+    // Bash actions are short-circuit-allowed by every current dogfood rule
+    // (all are write-only). This makes the test deterministic without
+    // having to satisfy the AI-validated enforceTdd rule end-to-end.
     const payload = readFileSync(
-      'test/fixtures/claude-code/write-kebab-case.json',
+      'test/fixtures/claude-code/bash-npm-install.json',
       'utf8',
     )
 
