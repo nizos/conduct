@@ -39,6 +39,8 @@ Vendors:
 
 Options:
   --agent <vendor>  Required. The host coding agent.
+  --config <path>   Load rules from <path> instead of auto-discovering
+                    conduct.config.ts.
   --version         Print the package version and exit.
   --help            Print this help and exit.
 

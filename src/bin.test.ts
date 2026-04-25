@@ -44,6 +44,12 @@ describe('bin main', () => {
     expect(result.stdout).toContain('github.com/nizos/conduct')
   })
 
+  it('lists --config in the --help output', async () => {
+    const result = await setup({ argv: ['node', 'bin.js', '--help'] })
+
+    expect(result.stdout).toMatch(/--config/)
+  })
+
   it('prints the package version to stdout and exits 0 with --version', async () => {
     const result = await setup({ argv: ['node', 'bin.js', '--version'] })
 
