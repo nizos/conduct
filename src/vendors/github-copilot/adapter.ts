@@ -5,64 +5,64 @@ import { z } from 'zod'
 
 import type { Action, Decision } from '../../rule.js'
 
-const PayloadSchema = z.discriminatedUnion('toolName', [
-  z.object({ toolName: z.literal('bash'), toolArgs: z.string() }),
-  z.object({ toolName: z.literal('create'), toolArgs: z.string() }),
-  z.object({ toolName: z.literal('edit'), toolArgs: z.string() }),
+const JsonString = z.string().transform((s, ctx): unknown => {
+  try {
+    return JSON.parse(s)
+  } catch {
+    ctx.addIssue({ code: 'custom', message: 'toolArgs is not valid JSON' })
+    return z.NEVER
+  }
+})
+
+const ActionSchema = z.discriminatedUnion('toolName', [
+  z
+    .object({
+      toolName: z.literal('bash'),
+      toolArgs: JsonString.pipe(z.object({ command: z.string() })),
+    })
+    .transform(
+      (d): Action => ({ type: 'command', command: d.toolArgs.command }),
+    ),
+  z
+    .object({
+      toolName: z.literal('create'),
+      toolArgs: JsonString.pipe(
+        z.object({ path: z.string(), file_text: z.string() }),
+      ),
+    })
+    .transform(
+      (d): Action => ({
+        type: 'write',
+        path: d.toolArgs.path,
+        content: d.toolArgs.file_text,
+      }),
+    ),
+  z
+    .object({
+      toolName: z.literal('edit'),
+      toolArgs: JsonString.pipe(
+        z.object({ path: z.string(), new_str: z.string() }),
+      ),
+    })
+    .transform(
+      (d): Action => ({
+        type: 'write',
+        path: d.toolArgs.path,
+        content: d.toolArgs.new_str,
+      }),
+    ),
 ])
 
-const BashArgsSchema = z.object({ command: z.string() })
-const CreateArgsSchema = z.object({
-  path: z.string(),
-  file_text: z.string(),
-})
-const EditArgsSchema = z.object({
-  path: z.string(),
-  new_str: z.string(),
-})
-
 export function toAction(payload: unknown): Action {
-  const parsed = PayloadSchema.safeParse(payload)
-  if (!parsed.success) {
-    const toolName =
-      typeof payload === 'object' && payload !== null && 'toolName' in payload
-        ? String((payload as { toolName: unknown }).toolName)
-        : 'unknown'
-    throw new Error(
-      `unsupported github-copilot toolName or malformed payload: ${toolName}`,
-    )
-  }
-  let rawArgs: unknown
-  try {
-    rawArgs = JSON.parse(parsed.data.toolArgs)
-  } catch {
-    throw new Error(
-      `github-copilot toolArgs is not valid JSON: ${parsed.data.toolArgs.slice(0, 80)}`,
-    )
-  }
-  if (parsed.data.toolName === 'create') {
-    const args = CreateArgsSchema.safeParse(rawArgs)
-    if (!args.success) {
-      throw new Error(
-        'github-copilot create toolArgs missing required "path" or "file_text"',
-      )
-    }
-    return { type: 'write', path: args.data.path, content: args.data.file_text }
-  }
-  if (parsed.data.toolName === 'edit') {
-    const args = EditArgsSchema.safeParse(rawArgs)
-    if (!args.success) {
-      throw new Error(
-        'github-copilot edit toolArgs missing required "path" or "new_str"',
-      )
-    }
-    return { type: 'write', path: args.data.path, content: args.data.new_str }
-  }
-  const args = BashArgsSchema.safeParse(rawArgs)
-  if (!args.success) {
-    throw new Error('github-copilot bash toolArgs missing required "command"')
-  }
-  return { type: 'command', command: args.data.command }
+  const parsed = ActionSchema.safeParse(payload)
+  if (parsed.success) return parsed.data
+  const toolName =
+    typeof payload === 'object' && payload !== null && 'toolName' in payload
+      ? String((payload as { toolName: unknown }).toolName)
+      : 'unknown'
+  throw new Error(
+    `unsupported github-copilot toolName or malformed payload: ${toolName}`,
+  )
 }
 
 const ContextPayloadSchema = z.object({
