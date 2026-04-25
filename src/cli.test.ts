@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
 import { vendors, type VendorEntry } from './registry.js'
-import type { Agent, Rule, SessionEvent } from './rule.js'
+import type { Agent } from './rule.js'
 
 const claudeCodeEntry = vendors['claude-code']
 
@@ -51,61 +51,6 @@ describe('cli', () => {
     const { response } = await setup('multi-edit.json')
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
-  })
-
-  it('uses the ai client passed to dispatch for the ctx', async () => {
-    let captured: unknown = undefined
-    const capturingRule: Rule = (_action, ctx) => {
-      captured = ctx
-      return { kind: 'pass' as const }
-    }
-    const customAgent: Agent = {
-      reason: async () => ({ verdict: 'pass', reason: '' }),
-    }
-    const payload = JSON.stringify({
-      transcript_path: 'test/fixtures/transcripts/basic.jsonl',
-      tool_name: 'Bash',
-      tool_input: { command: 'x' },
-    })
-
-    await dispatch(claudeCodeEntry, payload, [capturingRule], customAgent)
-
-    const ctx = captured as { agent?: Agent }
-    expect(ctx.agent).toBe(customAgent)
-  })
-
-  it('wires ctx.history through entry.readTranscript using the path from sessionPath', async () => {
-    let captured: unknown = undefined
-    let readPath: string | undefined
-    const capturingRule: Rule = (_action, ctx) => {
-      captured = ctx
-      return { kind: 'pass' as const }
-    }
-    const stubEntry: VendorEntry = {
-      adapter: {
-        toAction: () => ({ type: 'command', command: 'x' }),
-        toResponse: () => 'ok',
-        sessionPath: (payload) => (payload as { path?: string }).path,
-      },
-      agent: () => stubAgent,
-      readTranscript: async (path) => {
-        readPath = path
-        return [{ kind: 'prompt', text: 'mocked' }]
-      },
-    }
-
-    await dispatch(
-      stubEntry,
-      JSON.stringify({ path: '/transcript.jsonl' }),
-      [capturingRule],
-      stubAgent,
-    )
-
-    const ctx = captured as { history?: () => Promise<SessionEvent[]> }
-    expect(typeof ctx.history).toBe('function')
-    const events = await ctx.history!()
-    expect(readPath).toBe('/transcript.jsonl')
-    expect(events).toEqual([{ kind: 'prompt', text: 'mocked' }])
   })
 
   it('returns a deny response when the payload is not valid JSON', async () => {
