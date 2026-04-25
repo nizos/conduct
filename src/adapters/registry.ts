@@ -9,33 +9,24 @@ import * as githubCopilotAdapter from './github-copilot.js'
 
 /**
  * Each vendor entry bundles the vendor-specific adapter (payload
- * translation) with an async factory for the matching AI provider.
- * `makeAi` is async so the dynamic `import()` of each vendor SDK
- * happens only when that vendor is actually selected — importing the
- * registry itself does not load any SDK.
+ * translation) with the matching agent factory. The factory is sync;
+ * each agent owns its own lazy `import()` of its vendor SDK and only
+ * loads on first reason() call — importing this registry does not
+ * load any SDK.
  */
 export type VendorEntry = {
   adapter: Adapter
-  makeAi: () => Promise<Agent>
+  agent: () => Agent
 }
 
-export const adapters = {
-  'claude-code': {
-    adapter: claudeCodeAdapter,
-    makeAi: async () => claudeCode(),
-  },
-  codex: {
-    adapter: codexAdapter,
-    makeAi: async () => codex(),
-  },
-  'github-copilot': {
-    adapter: githubCopilotAdapter,
-    makeAi: async () => githubCopilot(),
-  },
+export const vendors = {
+  'claude-code': { adapter: claudeCodeAdapter, agent: claudeCode },
+  codex: { adapter: codexAdapter, agent: codex },
+  'github-copilot': { adapter: githubCopilotAdapter, agent: githubCopilot },
 } satisfies Record<string, VendorEntry>
 
-export type Vendor = keyof typeof adapters
+export type Vendor = keyof typeof vendors
 
 export function isVendor(value: unknown): value is Vendor {
-  return typeof value === 'string' && value in adapters
+  return typeof value === 'string' && value in vendors
 }

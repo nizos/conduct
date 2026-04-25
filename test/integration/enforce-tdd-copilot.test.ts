@@ -4,13 +4,13 @@ import path from 'node:path'
 
 import { afterAll, beforeAll, describe, it, expect } from 'vitest'
 
-import { adapters } from '../../src/adapters/registry.js'
+import { vendors } from '../../src/adapters/registry.js'
 import { dispatch } from '../../src/cli.js'
 import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
-const entry = adapters['github-copilot']
+const entry = vendors['github-copilot']
 const copilot = entry.adapter
 
 const CLEAN_SESSION = 'integration-copilot-tdd-clean'
@@ -22,7 +22,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   let agent: Agent
 
   beforeAll(async () => {
-    agent = await entry.makeAi()
+    agent = entry.agent()
     home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
     for (const [session, fixture] of [
       [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],

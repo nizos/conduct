@@ -1,17 +1,17 @@
 import { beforeAll, describe, it, expect } from 'vitest'
 
-import { adapters } from '../../src/adapters/registry.js'
+import { vendors } from '../../src/adapters/registry.js'
 import { dispatch } from '../../src/cli.js'
 import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
-const entry = adapters['claude-code']
+const entry = vendors['claude-code']
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
   let agent: Agent
-  beforeAll(async () => {
-    agent = await entry.makeAi()
+  beforeAll(() => {
+    agent = entry.agent()
   })
 
   const claudeCode = entry.adapter

@@ -1,6 +1,6 @@
 import type { Action, Agent, Rule } from './rule.js'
 import type { Adapter } from './adapters/adapter.js'
-import { adapters, type Vendor } from './adapters/registry.js'
+import { vendors, type Vendor } from './adapters/registry.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluateSafely } from './engine.js'
 
@@ -10,15 +10,15 @@ export async function run(
   rawPayload: string,
   options: { vendor: Vendor },
 ): Promise<string> {
-  const entry = adapters[options.vendor]
+  const entry = vendors[options.vendor]
   if (!entry) {
-    const known = Object.keys(adapters).join(', ')
+    const known = Object.keys(vendors).join(', ')
     throw new Error(
       `unknown vendor: ${String(options.vendor)}. Expected one of: ${known}`,
     )
   }
   const config = await loadConfig(findConfig(process.cwd()))
-  const agent = config.agent ?? (await entry.makeAi())
+  const agent = config.agent ?? entry.agent()
   return dispatch(entry.adapter, rawPayload, config.rules, agent)
 }
 

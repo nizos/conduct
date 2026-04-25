@@ -2,7 +2,7 @@
 import { readSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
-import { adapters, isVendor } from './adapters/registry.js'
+import { vendors, isVendor } from './adapters/registry.js'
 import { run } from './cli.js'
 import { readCapped } from './read-capped.js'
 
@@ -27,7 +27,7 @@ export async function main(args: {
   }
   const agentArg = args.argv[agentIndex + 1]
   if (!isVendor(agentArg)) {
-    const known = Object.keys(adapters).join(', ')
+    const known = Object.keys(vendors).join(', ')
     return {
       stderr: `conduct: --agent ${String(agentArg)} is not a known agent. Expected one of: ${known}\n`,
       exitCode: 2,
