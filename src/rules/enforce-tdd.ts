@@ -1,4 +1,5 @@
-import { lstat, readFile, stat } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { open } from 'node:fs/promises'
 
 import type { Action, RuleContext, SessionEvent } from '../rule.js'
 import { buildMatcher } from './utils/match-paths.js'
@@ -77,14 +78,20 @@ function buildPrompt(
 }
 
 async function readBeforeContent(path: string): Promise<string | undefined> {
+  let handle
   try {
-    const linkInfo = await lstat(path)
-    if (linkInfo.isSymbolicLink()) return undefined
-    const info = await stat(path)
-    if (info.size > MAX_BEFORE_CONTENT_BYTES) return undefined
-    return await readFile(path, 'utf8')
+    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW)
   } catch {
     return undefined
+  }
+  try {
+    const info = await handle.stat()
+    if (info.size > MAX_BEFORE_CONTENT_BYTES) return undefined
+    return await handle.readFile('utf8')
+  } catch {
+    return undefined
+  } finally {
+    await handle.close()
   }
 }
 
