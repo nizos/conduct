@@ -1,6 +1,6 @@
 {
   "session_id": "019dc044-d25f-7313-833b-077b6298f1b4",
-  "transcript_path": "/home/node/.codex/sessions/2026/04/24/rollout-2026-04-24T16-13-49-019dc044-d25f-7313-833b-077b6298f1b4.jsonl",
+  "transcript_path": "/tmp/codex-rollout.jsonl",
   "cwd": "/workspaces/conduct",
   "hook_event_name": "SessionStart",
   "model": "gpt-5.4",

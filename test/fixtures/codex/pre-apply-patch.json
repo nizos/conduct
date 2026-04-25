@@ -1,7 +1,7 @@
 {
   "session_id": "019dc40e-f504-7a10-b9f7-2a2ecc35451e",
   "turn_id": "019dc40f-164a-7751-b250-9c06f6368ed1",
-  "transcript_path": "/home/node/.codex/sessions/2026/04/25/rollout-2026-04-25T09-53-27-019dc40e-f504-7a10-b9f7-2a2ecc35451e.jsonl",
+  "transcript_path": "/tmp/codex-rollout.jsonl",
   "cwd": "/workspaces/conduct",
   "hook_event_name": "PreToolUse",
   "model": "gpt-5.5",
