@@ -1,7 +1,7 @@
 import type { ThreadOptions } from '@openai/codex-sdk'
 
 import type { Agent } from '../rule.js'
-import { aiClientFromText } from './ai-client-from-text.js'
+import { toVerdict } from './to-verdict.js'
 
 type CodexLike = {
   startThread(options?: ThreadOptions): {
@@ -10,15 +10,18 @@ type CodexLike = {
 }
 
 export function codexSdk(options: { codexFactory: () => CodexLike }): Agent {
-  return aiClientFromText(async (prompt) => {
-    const thread = options.codexFactory().startThread({
-      skipGitRepoCheck: true,
-      sandboxMode: 'read-only',
-      approvalPolicy: 'never',
-      networkAccessEnabled: false,
-      webSearchEnabled: false,
-    })
-    const turn = await thread.run(prompt)
-    return turn.finalResponse
-  })
+  return {
+    reason: (prompt) =>
+      toVerdict(async () => {
+        const thread = options.codexFactory().startThread({
+          skipGitRepoCheck: true,
+          sandboxMode: 'read-only',
+          approvalPolicy: 'never',
+          networkAccessEnabled: false,
+          webSearchEnabled: false,
+        })
+        const turn = await thread.run(prompt)
+        return turn.finalResponse
+      }),
+  }
 }

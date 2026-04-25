@@ -1,5 +1,5 @@
 import type { Agent } from '../rule.js'
-import { aiClientFromText } from './ai-client-from-text.js'
+import { toVerdict } from './to-verdict.js'
 
 type SessionConfig = {
   availableTools?: string[]
@@ -20,20 +20,23 @@ export function githubCopilotSdk(options: {
   copilotClientFactory: () => CopilotClientLike
   onPermissionRequest?: unknown
 }): Agent {
-  return aiClientFromText(async (prompt) => {
-    const client = options.copilotClientFactory()
-    await client.start()
-    const session = await client.createSession({
-      availableTools: [],
-      onPermissionRequest: options.onPermissionRequest,
-    })
-    const event = await session.sendAndWait({ prompt })
-    await client.stop()
-    if (!event) {
-      throw new Error(
-        'no response from copilot: sendAndWait returned undefined',
-      )
-    }
-    return event.data.content
-  })
+  return {
+    reason: (prompt) =>
+      toVerdict(async () => {
+        const client = options.copilotClientFactory()
+        await client.start()
+        const session = await client.createSession({
+          availableTools: [],
+          onPermissionRequest: options.onPermissionRequest,
+        })
+        const event = await session.sendAndWait({ prompt })
+        await client.stop()
+        if (!event) {
+          throw new Error(
+            'no response from copilot: sendAndWait returned undefined',
+          )
+        }
+        return event.data.content
+      }),
+  }
 }
