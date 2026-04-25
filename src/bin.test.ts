@@ -8,43 +8,6 @@ import type { Config } from './config.js'
 import type { Agent } from './rule.js'
 import { filenameCasing } from './rules/filename-casing.js'
 
-const stubAgent: Agent = {
-  reason: async () => ({ verdict: 'pass', reason: '' }),
-}
-
-const testConfig: Config = {
-  rules: [
-    filenameCasing({
-      style: 'kebab-case',
-      paths: ['**/src/**', '**/test/**'],
-    }),
-  ],
-  agent: stubAgent,
-}
-
-const KEBAB_PAYLOAD = readFileSync(
-  'test/fixtures/claude-code/write-kebab-case.json',
-  'utf8',
-)
-
-async function setup(
-  opts: {
-    argv?: readonly string[]
-    stdin?: string | (() => string)
-    loadConfig?: ConfigLoader
-  } = {},
-): Promise<MainResult> {
-  return main({
-    argv: opts.argv ?? ['node', 'bin.js', '--agent', 'claude-code'],
-    stdin: opts.stdin ?? '',
-    loadConfig: opts.loadConfig,
-  })
-}
-
-function decisionOf(result: MainResult): string {
-  return JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision
-}
-
 describe('bin main', () => {
   it('returns exit code 2 and a helpful stderr when --agent is missing', async () => {
     const result = await setup({ argv: ['node', 'bin.js'] })
@@ -126,3 +89,40 @@ describe('bin main', () => {
     expect(decisionOf(result)).toBe('allow')
   })
 })
+
+const stubAgent: Agent = {
+  reason: async () => ({ verdict: 'pass', reason: '' }),
+}
+
+const testConfig: Config = {
+  rules: [
+    filenameCasing({
+      style: 'kebab-case',
+      paths: ['**/src/**', '**/test/**'],
+    }),
+  ],
+  agent: stubAgent,
+}
+
+const KEBAB_PAYLOAD = readFileSync(
+  'test/fixtures/claude-code/write-kebab-case.json',
+  'utf8',
+)
+
+async function setup(
+  opts: {
+    argv?: readonly string[]
+    stdin?: string | (() => string)
+    loadConfig?: ConfigLoader
+  } = {},
+): Promise<MainResult> {
+  return main({
+    argv: opts.argv ?? ['node', 'bin.js', '--agent', 'claude-code'],
+    stdin: opts.stdin ?? '',
+    loadConfig: opts.loadConfig,
+  })
+}
+
+function decisionOf(result: MainResult): string {
+  return JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision
+}
