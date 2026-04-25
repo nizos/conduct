@@ -9,15 +9,16 @@ Process discipline for coding agents.
 
 ## Overview
 
-Conduct is a vendor-agnostic policy engine that sits between the agent and the codebase, evaluating each attempted action against configurable rules and blocking, modifying, or allowing it, and providing correction and guidance. It generalizes [tdd-guard](https://github.com/nizos/tdd-guard) beyond TDD and across coding agents.
+Conduct is a policy engine that sits between coding agents and your codebase, evaluating each attempted action against configurable rules. It generalizes [tdd-guard](https://github.com/nizos/tdd-guard) beyond TDD and across coding agents.
 
 ## Features
 
-- **Vendor-agnostic** — one config across Claude Code, OpenAI Codex, and GitHub Copilot.
-- **Deterministic + AI** — text and regex rules for fast guardrails; AI judgment only where it matters.
-- **TDD out of the box** — `enforceTdd` ships ready: no test reporter, no state files.
-- **Extensible** — drop in your own rules; the engine just runs them.
-- **Reuses your agent's session** — AI-validated rules go through the agent's official SDK.
+- **Multi-Agent Support** - Works with Claude Code, OpenAI Codex, and GitHub Copilot
+- **TDD Enforcement** - Blocks code without a failing test, works with any test runner
+- **Pattern Rules** - Block command or content patterns by string or regex
+- **Customizable Validation** - Adjust TDD rules to match your team's style
+- **Deterministic + AI** - Fast text rules; AI judgment only where it matters
+- **Extensible** - Drop in your own rules
 
 ## Status
 
