@@ -1,5 +1,5 @@
 import type { AiClient } from '../rule.js'
-import { claudeAgentSdk } from '../providers/claude-agent-sdk.js'
+import { claudeAgentSdk, type QueryFn } from '../providers/claude-agent-sdk.js'
 import { codexSdk } from '../providers/codex-sdk.js'
 import type { Adapter } from './adapter.js'
 import * as claudeCode from './claude-code.js'
@@ -23,13 +23,9 @@ export const adapters = {
     adapter: claudeCode,
     makeAi: async () => {
       const mod = await import('@anthropic-ai/claude-agent-sdk')
-      // The SDK's `query` has a richer Options type than our internal
-      // QueryFn; the cast scopes the surface to what we actually use.
-      return claudeAgentSdk({
-        queryFn: mod.query as unknown as Parameters<
-          typeof claudeAgentSdk
-        >[0]['queryFn'],
-      })
+      // SDK's `query` returns `Query` (an AsyncGenerator of SDKMessage);
+      // QueryFn is structurally a subset, so a narrow cast suffices.
+      return claudeAgentSdk({ queryFn: mod.query as unknown as QueryFn })
     },
   },
   codex: {

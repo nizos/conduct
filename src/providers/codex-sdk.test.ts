@@ -1,3 +1,4 @@
+import type { ThreadOptions } from '@openai/codex-sdk'
 import { describe, it, expect } from 'vitest'
 
 import { codexSdk } from './codex-sdk.js'
@@ -96,14 +97,6 @@ describe('codexSdk', () => {
     expect(verdict.reason).toMatch(/codex CLI not found/)
   })
 })
-
-type ThreadOptions = {
-  skipGitRepoCheck?: boolean
-  sandboxMode?: string
-  approvalPolicy?: string
-  networkAccessEnabled?: boolean
-  webSearchEnabled?: boolean
-}
 
 function captureCodex() {
   const state: {

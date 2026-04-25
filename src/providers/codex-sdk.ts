@@ -1,13 +1,7 @@
+import type { ThreadOptions } from '@openai/codex-sdk'
+
 import type { AiClient } from '../rule.js'
 import { aiClientFromText } from './ai-client-from-text.js'
-
-type ThreadOptions = {
-  skipGitRepoCheck?: boolean
-  sandboxMode?: 'read-only' | 'workspace-write' | 'danger-full-access'
-  approvalPolicy?: 'never' | 'on-request' | 'on-failure' | 'untrusted'
-  networkAccessEnabled?: boolean
-  webSearchEnabled?: boolean
-}
 
 type CodexLike = {
   startThread(options?: ThreadOptions): {

@@ -1,3 +1,5 @@
+import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
+
 import type { AiClient } from '../rule.js'
 import { aiClientFromText } from './ai-client-from-text.js'
 
@@ -5,15 +7,7 @@ type Msg = { type: string; [k: string]: unknown }
 
 export type QueryFn = (args: {
   prompt: string
-  options?: {
-    maxTurns?: number
-    allowedTools?: string[]
-    disallowedTools?: string[]
-    thinking?: { type: 'disabled' | 'enabled' }
-    permissionMode?: 'default' | 'dontAsk' | 'acceptEdits' | 'bypassPermissions'
-    settingSources?: ('user' | 'project' | 'local')[]
-    env?: Record<string, string | undefined>
-  }
+  options?: ClaudeQueryOptions
 }) => AsyncIterable<Msg>
 
 export function claudeAgentSdk(options: { queryFn: QueryFn }): AiClient {

@@ -1,3 +1,4 @@
+import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
 import { describe, it, expect } from 'vitest'
 
 import { claudeAgentSdk } from './claude-agent-sdk.js'
@@ -135,15 +136,7 @@ describe('claudeAgentSdk', () => {
 
 type CapturedArgs = {
   prompt: string
-  options?: {
-    maxTurns?: number
-    allowedTools?: string[]
-    disallowedTools?: string[]
-    thinking?: { type: 'disabled' | 'enabled' }
-    permissionMode?: string
-    settingSources?: string[]
-    env?: Record<string, string | undefined>
-  }
+  options?: ClaudeQueryOptions
 }
 
 function captureQuery() {
