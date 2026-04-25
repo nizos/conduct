@@ -1,4 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+
+import { describe, it, expect, onTestFinished } from 'vitest'
 
 import type { Action, SessionEvent, Verdict } from '../rule.js'
 import { enforceTdd } from './enforce-tdd.js'
@@ -121,6 +125,41 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('CUSTOM: only dog-driven development')
   })
 
+  it('includes current file content in the prompt when the file exists', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'enforce-tdd-before-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const filePath = path.join(dir, 'calc.ts')
+    await writeFile(filePath, 'export const previous = 1')
+    const s = setup()
+
+    await s.rule(
+      { type: 'write', path: filePath, content: 'new content' },
+      s.ctx,
+    )
+
+    expect(s.capturedPrompt).toContain('export const previous = 1')
+  })
+
+  it('renders JSON-string event inputs as objects (no escape noise)', async () => {
+    const s = setup({
+      history: [
+        {
+          kind: 'action',
+          tool: 'shell',
+          input: '{"command":"npx vitest run"}',
+          output: '1 test passed',
+          toolUseId: 'tu_1',
+        },
+      ],
+    })
+
+    await s.rule(writeAction(), s.ctx)
+
+    expect(s.capturedPrompt).toContain('shell({"command":"npx vitest run"})')
+  })
+
   it('limits the history block to the last maxEvents events', async () => {
     const events: SessionEvent[] = Array.from({ length: 15 }, (_, i) => ({
       kind: 'prompt' as const,
@@ -133,6 +172,16 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('event-14')
     expect(s.capturedPrompt).toContain('event-10')
     expect(s.capturedPrompt).not.toContain('event-9')
+  })
+
+  it('rubric instructs the validator to flag multi-test additions', async () => {
+    const s = setup()
+
+    await s.rule(writeAction(), s.ctx)
+
+    expect(s.capturedPrompt).toMatch(
+      /one new test|single (?:new )?test|at most one/i,
+    )
   })
 
   it('includes a TDD rubric and a JSON response spec in the prompt', async () => {
