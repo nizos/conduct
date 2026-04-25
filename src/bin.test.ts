@@ -36,6 +36,27 @@ describe('bin main', () => {
     expect(result.stderr).toMatch(/exceeds|cap|bytes/i)
   })
 
+  it('prints usage with --help including the repo URL and exits 0', async () => {
+    const result = await main({
+      argv: ['node', 'bin.js', '--help'],
+      stdin: '',
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toMatch(/Usage:/)
+    expect(result.stdout).toContain('github.com/nizos/conduct')
+  })
+
+  it('prints the package version to stdout and exits 0 with --version', async () => {
+    const result = await main({
+      argv: ['node', 'bin.js', '--version'],
+      stdin: '',
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout?.trim()).toMatch(/^\d+\.\d+\.\d+/)
+  })
+
   it('writes the run() response to stdout and exits 0 on success', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-kebab-case.json',

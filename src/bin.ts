@@ -1,12 +1,47 @@
 #!/usr/bin/env node
-import { readSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
+import { readFileSync, readSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { vendors, isVendor } from './registry.js'
 import { run } from './cli.js'
 import { readCapped } from './read-capped.js'
 
 const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
+
+const PACKAGE_JSON = JSON.parse(
+  readFileSync(
+    path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      'package.json',
+    ),
+    'utf8',
+  ),
+) as { version: string; description?: string; homepage?: string }
+
+const VERSION = PACKAGE_JSON.version
+
+const HELP = `conduct ${VERSION}
+${PACKAGE_JSON.description ?? 'Process discipline for coding agents.'}
+
+Usage:
+  conduct --agent <vendor> < <hook-payload-json>
+
+Reads a hook payload from stdin, dispatches it through the rules
+configured in conduct.config.ts, and writes the vendor's response
+format to stdout.
+
+Vendors:
+  ${Object.keys(vendors).join(', ')}
+
+Options:
+  --agent <vendor>  Required. The host coding agent.
+  --version         Print the package version and exit.
+  --help            Print this help and exit.
+
+Repo: ${PACKAGE_JSON.homepage ?? 'https://github.com/nizos/conduct'}
+`
 
 export type MainResult = {
   stdout?: string
@@ -18,6 +53,12 @@ export async function main(args: {
   argv: readonly string[]
   stdin: string | (() => string)
 }): Promise<MainResult> {
+  if (args.argv.includes('--version')) {
+    return { stdout: `${VERSION}\n`, exitCode: 0 }
+  }
+  if (args.argv.includes('--help')) {
+    return { stdout: HELP, exitCode: 0 }
+  }
   const agentIndex = args.argv.indexOf('--agent')
   if (agentIndex === -1) {
     return {
