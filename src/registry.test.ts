@@ -14,6 +14,11 @@ describe('isVendor', () => {
   it('rejects a non-string value', () => {
     expect(isVendor(undefined)).toBe(false)
   })
+
+  it('rejects names inherited from Object.prototype', () => {
+    expect(isVendor('toString')).toBe(false)
+    expect(isVendor('hasOwnProperty')).toBe(false)
+  })
 })
 
 describe('vendors registry', () => {

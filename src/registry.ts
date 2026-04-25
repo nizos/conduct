@@ -45,5 +45,5 @@ export const vendors = {
 export type Vendor = keyof typeof vendors
 
 export function isVendor(value: unknown): value is Vendor {
-  return typeof value === 'string' && value in vendors
+  return typeof value === 'string' && Object.hasOwn(vendors, value)
 }
