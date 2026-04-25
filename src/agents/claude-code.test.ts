@@ -1,11 +1,11 @@
 import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
 import { describe, it, expect } from 'vitest'
 
-import { claudeAgentSdk } from './claude-agent-sdk.js'
+import { claudeCode } from './claude-code.js'
 
-describe('claudeAgentSdk', () => {
+describe('claudeCode', () => {
   it('returns the verdict parsed from the final result message', async () => {
-    const client = claudeAgentSdk({
+    const client = claudeCode({
       queryFn: fakeQuery('{"verdict":"violation","reason":"no test"}'),
     })
 
@@ -15,7 +15,7 @@ describe('claudeAgentSdk', () => {
   })
 
   it('parses a distinct verdict from a different query result', async () => {
-    const client = claudeAgentSdk({
+    const client = claudeCode({
       queryFn: fakeQuery('{"verdict":"pass","reason":"looks fine"}'),
     })
 
@@ -26,7 +26,7 @@ describe('claudeAgentSdk', () => {
 
   it('limits the query to a single turn', async () => {
     const capture = captureQuery()
-    const client = claudeAgentSdk({ queryFn: capture.fn })
+    const client = claudeCode({ queryFn: capture.fn })
 
     await client.reason('prompt')
 
@@ -35,7 +35,7 @@ describe('claudeAgentSdk', () => {
 
   it('disallows tool use so the validator cannot act', async () => {
     const capture = captureQuery()
-    const client = claudeAgentSdk({ queryFn: capture.fn })
+    const client = claudeCode({ queryFn: capture.fn })
 
     await client.reason('prompt')
 
@@ -46,7 +46,7 @@ describe('claudeAgentSdk', () => {
 
   it('disables extended thinking for fast turnaround', async () => {
     const capture = captureQuery()
-    const client = claudeAgentSdk({ queryFn: capture.fn })
+    const client = claudeCode({ queryFn: capture.fn })
 
     await client.reason('prompt')
 
@@ -55,7 +55,7 @@ describe('claudeAgentSdk', () => {
 
   it('hard-denies any tool use via dontAsk + empty allowedTools', async () => {
     const capture = captureQuery()
-    const client = claudeAgentSdk({ queryFn: capture.fn })
+    const client = claudeCode({ queryFn: capture.fn })
 
     await client.reason('prompt')
 
@@ -65,7 +65,7 @@ describe('claudeAgentSdk', () => {
 
   it('does not inherit host project or user settings', async () => {
     const capture = captureQuery()
-    const client = claudeAgentSdk({ queryFn: capture.fn })
+    const client = claudeCode({ queryFn: capture.fn })
 
     await client.reason('prompt')
 
@@ -73,7 +73,7 @@ describe('claudeAgentSdk', () => {
   })
 
   it('parses a verdict from a fenced code block', async () => {
-    const client = claudeAgentSdk({
+    const client = claudeCode({
       queryFn: fakeQuery('```json\n{"verdict":"pass","reason":"fine"}\n```'),
     })
 
@@ -83,7 +83,7 @@ describe('claudeAgentSdk', () => {
   })
 
   it('returns a fail-closed violation when the response is not valid JSON', async () => {
-    const client = claudeAgentSdk({
+    const client = claudeCode({
       queryFn: fakeQuery('not valid json at all'),
     })
 
@@ -94,7 +94,7 @@ describe('claudeAgentSdk', () => {
   })
 
   it('returns a fail-closed violation when verdict is not pass or violation', async () => {
-    const client = claudeAgentSdk({
+    const client = claudeCode({
       queryFn: fakeQuery('{"verdict":"maybe","reason":"unsure"}'),
     })
 
@@ -105,7 +105,7 @@ describe('claudeAgentSdk', () => {
   })
 
   it('fails closed when the result message has a non-string result', async () => {
-    const client = claudeAgentSdk({
+    const client = claudeCode({
       queryFn: () => {
         async function* gen() {
           yield {
@@ -126,7 +126,7 @@ describe('claudeAgentSdk', () => {
 
   it('does not pass an env option (SDK handles session context)', async () => {
     const capture = captureQuery()
-    const client = claudeAgentSdk({ queryFn: capture.fn })
+    const client = claudeCode({ queryFn: capture.fn })
 
     await client.reason('prompt')
 

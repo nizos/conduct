@@ -10,10 +10,21 @@ export type QueryFn = (args: {
   options?: ClaudeQueryOptions
 }) => AsyncIterable<Msg>
 
-export function claudeAgentSdk(options: { queryFn: QueryFn }): Agent {
+export function claudeCode(deps: { queryFn?: QueryFn } = {}): Agent {
   return {
-    reason: (prompt) => toVerdict(() => getResultText(options.queryFn, prompt)),
+    reason: (prompt) =>
+      toVerdict(async () => {
+        const queryFn = deps.queryFn ?? (await loadDefaultQueryFn())
+        return getResultText(queryFn, prompt)
+      }),
   }
+}
+
+async function loadDefaultQueryFn(): Promise<QueryFn> {
+  const mod = await import('@anthropic-ai/claude-agent-sdk')
+  // SDK's `query` returns `Query` (an AsyncGenerator of SDKMessage);
+  // QueryFn is structurally a subset, so a narrow cast suffices.
+  return mod.query as unknown as QueryFn
 }
 
 async function getResultText(

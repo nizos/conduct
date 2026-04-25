@@ -1,9 +1,9 @@
 import type { Agent } from '../rule.js'
-import { claudeAgentSdk, type QueryFn } from '../agents/claude-agent-sdk.js'
+import { claudeCode } from '../agents/claude-code.js'
 import { codexSdk } from '../agents/codex-sdk.js'
 import { githubCopilotSdk } from '../agents/github-copilot-sdk.js'
 import type { Adapter } from './adapter.js'
-import * as claudeCode from './claude-code.js'
+import * as claudeCodeAdapter from './claude-code.js'
 import * as codex from './codex.js'
 import * as githubCopilot from './github-copilot.js'
 
@@ -21,13 +21,8 @@ export type VendorEntry = {
 
 export const adapters = {
   'claude-code': {
-    adapter: claudeCode,
-    makeAi: async () => {
-      const mod = await import('@anthropic-ai/claude-agent-sdk')
-      // SDK's `query` returns `Query` (an AsyncGenerator of SDKMessage);
-      // QueryFn is structurally a subset, so a narrow cast suffices.
-      return claudeAgentSdk({ queryFn: mod.query as unknown as QueryFn })
-    },
+    adapter: claudeCodeAdapter,
+    makeAi: async () => claudeCode(),
   },
   codex: {
     adapter: codex,
