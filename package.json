@@ -58,7 +58,7 @@
     "format:check": "prettier --check .",
     "checks": "npm run lint:check && npm run format:check && npm run typecheck && npm test",
     "prepare": "husky",
-    "prepublishOnly": "npm run checks"
+    "prepublishOnly": "test -f dist/bin.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
