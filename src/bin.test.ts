@@ -74,6 +74,30 @@ describe('bin main', () => {
     expect(result.stdout?.trim()).toMatch(/^\d+\.\d+\.\d+/)
   })
 
+  it('honors --config <path> by loading that file instead of discovering one', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-kebab-case.json',
+      'utf8',
+    )
+
+    const result = await main({
+      argv: [
+        'node',
+        'bin.js',
+        '--agent',
+        'claude-code',
+        '--config',
+        'test/fixtures/configs/kebab-only.config.ts',
+      ],
+      stdin: payload,
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(
+      JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision,
+    ).toBe('allow')
+  })
+
   it('forwards an injected config loader through to run()', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/write-kebab-case.json',

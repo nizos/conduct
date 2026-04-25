@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { vendors, isVendor } from './registry.js'
 import { run, type ConfigLoader } from './cli.js'
+import { loadConfig } from './config.js'
 import { readCapped } from './read-capped.js'
 
 const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
@@ -85,10 +86,17 @@ export async function main(args: {
       exitCode: 1,
     }
   }
+  const configIdx = args.argv.indexOf('--config')
+  const configPath = configIdx !== -1 ? args.argv[configIdx + 1] : undefined
+  const cliLoader: ConfigLoader | undefined =
+    configPath !== undefined
+      ? () => loadConfig(path.resolve(configPath))
+      : undefined
+
   try {
     const response = await run(stdin, {
       vendor: agentArg,
-      loadConfig: args.loadConfig,
+      loadConfig: args.loadConfig ?? cliLoader,
     })
     return { stdout: response, exitCode: 0 }
   } catch (error) {
