@@ -16,18 +16,20 @@ type CopilotClientLike = {
   stop(): Promise<unknown>
 }
 
-export function githubCopilotSdk(options: {
-  copilotClientFactory: () => CopilotClientLike
-  onPermissionRequest?: unknown
-}): Agent {
+export function githubCopilot(
+  deps: {
+    client?: CopilotClientLike
+    onPermissionRequest?: unknown
+  } = {},
+): Agent {
   return {
     reason: (prompt) =>
       toVerdict(async () => {
-        const client = options.copilotClientFactory()
+        const { client, onPermissionRequest } = await resolveClient(deps)
         await client.start()
         const session = await client.createSession({
           availableTools: [],
-          onPermissionRequest: options.onPermissionRequest,
+          onPermissionRequest,
         })
         const event = await session.sendAndWait({ prompt })
         await client.stop()
@@ -38,5 +40,22 @@ export function githubCopilotSdk(options: {
         }
         return event.data.content
       }),
+  }
+}
+
+async function resolveClient(deps: {
+  client?: CopilotClientLike
+  onPermissionRequest?: unknown
+}): Promise<{ client: CopilotClientLike; onPermissionRequest?: unknown }> {
+  if (deps.client) {
+    return {
+      client: deps.client,
+      onPermissionRequest: deps.onPermissionRequest,
+    }
+  }
+  const mod = await import('@github/copilot-sdk')
+  return {
+    client: new mod.CopilotClient({}),
+    onPermissionRequest: deps.onPermissionRequest ?? mod.approveAll,
   }
 }

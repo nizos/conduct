@@ -1,13 +1,11 @@
 import { describe, it, expect } from 'vitest'
 
-import { githubCopilotSdk } from './github-copilot-sdk.js'
+import { githubCopilot } from './github-copilot.js'
 
-describe('githubCopilotSdk', () => {
+describe('githubCopilot', () => {
   it('returns the verdict parsed from the assistant message content', async () => {
-    const client = githubCopilotSdk({
-      copilotClientFactory: fakeClient(
-        '{"verdict":"violation","reason":"no test"}',
-      ),
+    const client = githubCopilot({
+      client: fakeClient('{"verdict":"violation","reason":"no test"}'),
     })
 
     const verdict = await client.reason('some prompt')
@@ -16,10 +14,8 @@ describe('githubCopilotSdk', () => {
   })
 
   it('parses a distinct verdict from a different assistant response', async () => {
-    const client = githubCopilotSdk({
-      copilotClientFactory: fakeClient(
-        '{"verdict":"pass","reason":"looks fine"}',
-      ),
+    const client = githubCopilot({
+      client: fakeClient('{"verdict":"pass","reason":"looks fine"}'),
     })
 
     const verdict = await client.reason('some prompt')
@@ -29,7 +25,7 @@ describe('githubCopilotSdk', () => {
 
   it('forwards the rule prompt verbatim to session.sendAndWait', async () => {
     const capture = captureCopilotClient()
-    const client = githubCopilotSdk({ copilotClientFactory: capture.factory })
+    const client = githubCopilot({ client: capture.client })
 
     await client.reason('rule prompt text')
 
@@ -38,7 +34,7 @@ describe('githubCopilotSdk', () => {
 
   it('creates the session with availableTools: [] so the validator cannot act', async () => {
     const capture = captureCopilotClient()
-    const client = githubCopilotSdk({ copilotClientFactory: capture.factory })
+    const client = githubCopilot({ client: capture.client })
 
     await client.reason('prompt')
 
@@ -47,7 +43,7 @@ describe('githubCopilotSdk', () => {
 
   it('calls client.start() before creating the session', async () => {
     const capture = captureCopilotClient()
-    const client = githubCopilotSdk({ copilotClientFactory: capture.factory })
+    const client = githubCopilot({ client: capture.client })
 
     await client.reason('prompt')
 
@@ -56,18 +52,18 @@ describe('githubCopilotSdk', () => {
 
   it('calls client.stop() to release the spawned CLI subprocess', async () => {
     const capture = captureCopilotClient()
-    const client = githubCopilotSdk({ copilotClientFactory: capture.factory })
+    const client = githubCopilot({ client: capture.client })
 
     await client.reason('prompt')
 
     expect(capture.stopCalled).toBe(true)
   })
 
-  it('forwards the onPermissionRequest handler from options into createSession', async () => {
+  it('forwards the onPermissionRequest handler from deps into createSession', async () => {
     const capture = captureCopilotClient()
     const handler = () => ({ kind: 'allow' as const })
-    const client = githubCopilotSdk({
-      copilotClientFactory: capture.factory,
+    const client = githubCopilot({
+      client: capture.client,
       onPermissionRequest: handler,
     })
 
@@ -77,8 +73,8 @@ describe('githubCopilotSdk', () => {
   })
 
   it('returns a fail-closed violation when sendAndWait returns undefined', async () => {
-    const client = githubCopilotSdk({
-      copilotClientFactory: () => ({
+    const client = githubCopilot({
+      client: {
         async start() {},
         async createSession() {
           return {
@@ -90,7 +86,7 @@ describe('githubCopilotSdk', () => {
         async stop() {
           return []
         },
-      }),
+      },
     })
 
     const verdict = await client.reason('prompt')
@@ -100,8 +96,8 @@ describe('githubCopilotSdk', () => {
   })
 
   it('returns a fail-closed violation when the SDK call throws', async () => {
-    const client = githubCopilotSdk({
-      copilotClientFactory: () => ({
+    const client = githubCopilot({
+      client: {
         async start() {},
         async createSession() {
           return {
@@ -113,7 +109,7 @@ describe('githubCopilotSdk', () => {
         async stop() {
           return []
         },
-      }),
+      },
     })
 
     const verdict = await client.reason('prompt')
@@ -135,7 +131,7 @@ function captureCopilotClient() {
     startCalled: boolean
     stopCalled: boolean
   } = { startCalled: false, stopCalled: false }
-  const factory = () => ({
+  const client = {
     async start() {
       state.startCalled = true
     },
@@ -152,9 +148,9 @@ function captureCopilotClient() {
       state.stopCalled = true
       return []
     },
-  })
+  }
   return {
-    factory,
+    client,
     get lastSendAndWaitOptions() {
       return state.lastSendAndWaitOptions
     },
@@ -171,7 +167,7 @@ function captureCopilotClient() {
 }
 
 function fakeClient(assistantContent: string) {
-  return () => ({
+  return {
     async start() {},
     async createSession() {
       return {
@@ -183,5 +179,5 @@ function fakeClient(assistantContent: string) {
     async stop() {
       return []
     },
-  })
+  }
 }

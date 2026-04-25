@@ -1,11 +1,11 @@
 import type { Agent } from '../rule.js'
 import { claudeCode } from '../agents/claude-code.js'
 import { codex } from '../agents/codex.js'
-import { githubCopilotSdk } from '../agents/github-copilot-sdk.js'
+import { githubCopilot } from '../agents/github-copilot.js'
 import type { Adapter } from './adapter.js'
 import * as claudeCodeAdapter from './claude-code.js'
 import * as codexAdapter from './codex.js'
-import * as githubCopilot from './github-copilot.js'
+import * as githubCopilotAdapter from './github-copilot.js'
 
 /**
  * Each vendor entry bundles the vendor-specific adapter (payload
@@ -29,14 +29,8 @@ export const adapters = {
     makeAi: async () => codex(),
   },
   'github-copilot': {
-    adapter: githubCopilot,
-    makeAi: async () => {
-      const mod = await import('@github/copilot-sdk')
-      return githubCopilotSdk({
-        copilotClientFactory: () => new mod.CopilotClient({}),
-        onPermissionRequest: mod.approveAll,
-      })
-    },
+    adapter: githubCopilotAdapter,
+    makeAi: async () => githubCopilot(),
   },
 } satisfies Record<string, VendorEntry>
 
