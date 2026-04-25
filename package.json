@@ -9,8 +9,11 @@
   "homepage": "https://github.com/nizos/conduct#readme",
   "keywords": [
     "claude-code",
+    "codex",
+    "github-copilot",
+    "coding-agent",
     "hooks",
-    "agent",
+    "tdd",
     "policy",
     "guardrails"
   ],
