@@ -8,7 +8,13 @@ Process discipline for coding agents.
 
 ## Overview
 
-Conduct evaluates actions your coding agent attempts against configurable rules. Each rule returns allow, block, or modify, along with a reason the agent can act on. Rules are agent-agnostic; a thin adapter plugs into each agent's native extension points.
+Conduct evaluates actions your coding agent attempts against configurable rules. Each rule returns allow or block along with a reason the agent can act on. Rules are agent-agnostic; a thin adapter plugs into each agent's native extension points.
+
+## Supported agents
+
+- Claude Code
+- OpenAI Codex
+- GitHub Copilot
 
 ## Status
 
@@ -21,6 +27,7 @@ Rules live in `conduct.config.ts` at your project root:
 ```ts
 import {
   defineConfig,
+  enforceTdd,
   filenameCasing,
   forbidCommandPattern,
   forbidContentPattern,
@@ -28,6 +35,7 @@ import {
 
 export default defineConfig({
   rules: [
+    enforceTdd({ paths: ['src/**', '!src/**/*.test.ts'] }),
     filenameCasing({ style: 'kebab-case' }),
     forbidCommandPattern({
       match: 'npm install',
@@ -47,6 +55,16 @@ export default defineConfig({
 ```
 
 Each rule is a factory called with its options. The engine evaluates them in order against every action the agent attempts; the first violation blocks the action and surfaces `reason` back to the agent.
+
+## CLI
+
+Conduct ships a CLI that reads a hook payload from stdin and writes the vendor's response format to stdout. Configure your agent's `PreToolUse` hook to invoke `conduct --agent <vendor>` with the vendor matching your runtime.
+
+```bash
+conduct --agent claude-code     # or: codex, github-copilot
+conduct --version
+conduct --help
+```
 
 ## Background
 
