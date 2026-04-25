@@ -1,0 +1,21 @@
+{
+  "name": "conduct",
+  "description": "Process discipline for coding agents — TDD enforcement and configurable rules.",
+  "version": "0.0.4",
+  "author": {
+    "name": "Nizar Selander"
+  },
+  "homepage": "https://github.com/nizos/conduct",
+  "repository": "https://github.com/nizos/conduct",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "github-copilot",
+    "coding-agent",
+    "hooks",
+    "tdd",
+    "policy",
+    "guardrails"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "nizos",
+  "owner": {
+    "name": "Nizar Selander"
+  },
+  "plugins": [
+    {
+      "name": "conduct",
+      "source": "./",
+      "description": "Process discipline for coding agents — TDD enforcement and configurable rules."
+    }
+  ]
+}
