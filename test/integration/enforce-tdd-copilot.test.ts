@@ -2,11 +2,10 @@ import { mkdtemp, mkdir, cp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { afterAll, beforeAll, describe, it, expect } from 'vitest'
+import { describe, it, expect, onTestFinished } from 'vitest'
 
 import { vendors } from '../../src/registry.js'
 import { dispatch } from '../../src/cli.js'
-import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
@@ -16,35 +15,8 @@ const CLEAN_SESSION = 'integration-copilot-tdd-clean'
 const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
 
 describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
-  let home: string
-  let prevHome: string | undefined
-  let agent: Agent
-
-  beforeAll(async () => {
-    agent = entry.agent()
-    home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
-    for (const [session, fixture] of [
-      [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
-      [NO_RUN_SESSION, 'copilot-tdd-no-test-run.jsonl'],
-    ] as const) {
-      const sessionDir = path.join(home, 'session-state', session)
-      await mkdir(sessionDir, { recursive: true })
-      await cp(
-        `test/fixtures/transcripts/${fixture}`,
-        path.join(sessionDir, 'events.jsonl'),
-      )
-    }
-    prevHome = process.env.COPILOT_HOME
-    process.env.COPILOT_HOME = home
-  })
-
-  afterAll(async () => {
-    if (prevHome === undefined) delete process.env.COPILOT_HOME
-    else process.env.COPILOT_HOME = prevHome
-    await rm(home, { recursive: true, force: true })
-  })
-
   it('allows a minimal add implementation after a failing test was run', async () => {
+    const { agent } = await setup()
     const payload = buildCreatePayload({
       sessionId: CLEAN_SESSION,
       file_path: '/workspaces/conduct/src/calculator.ts',
@@ -59,6 +31,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   }, 60000)
 
   it('blocks an over-implementation that adds many unrequested functions', async () => {
+    const { agent } = await setup()
     const payload = buildCreatePayload({
       sessionId: CLEAN_SESSION,
       file_path: '/workspaces/conduct/src/calculator.ts',
@@ -72,6 +45,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   }, 60000)
 
   it('blocks implementation when the failing test has not been run', async () => {
+    const { agent } = await setup()
     const payload = buildCreatePayload({
       sessionId: NO_RUN_SESSION,
       file_path: '/workspaces/conduct/src/calculator.ts',
@@ -85,6 +59,29 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
     expect(parsed.permissionDecision).toBe('deny')
   }, 60000)
 })
+
+async function setup() {
+  const home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
+  for (const [session, fixture] of [
+    [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
+    [NO_RUN_SESSION, 'copilot-tdd-no-test-run.jsonl'],
+  ] as const) {
+    const sessionDir = path.join(home, 'session-state', session)
+    await mkdir(sessionDir, { recursive: true })
+    await cp(
+      `test/fixtures/transcripts/${fixture}`,
+      path.join(sessionDir, 'events.jsonl'),
+    )
+  }
+  const prevHome = process.env.COPILOT_HOME
+  process.env.COPILOT_HOME = home
+  onTestFinished(async () => {
+    if (prevHome === undefined) delete process.env.COPILOT_HOME
+    else process.env.COPILOT_HOME = prevHome
+    await rm(home, { recursive: true, force: true })
+  })
+  return { home, agent: entry.agent() }
+}
 
 const OVER_IMPL = `export function add(a: number, b: number): number { return a + b }
 export function subtract(a: number, b: number): number { return a - b }

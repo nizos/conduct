@@ -1,20 +1,15 @@
-import { beforeAll, describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 import { vendors } from '../../src/registry.js'
 import { dispatch } from '../../src/cli.js'
-import type { Agent } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
 const entry = vendors['claude-code']
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
-  let agent: Agent
-  beforeAll(() => {
-    agent = entry.agent()
-  })
-
   it('allows clean TDD with minimal implementation', async () => {
+    const { agent } = setup()
     const payload = buildWritePayload({
       transcript: 'test/fixtures/transcripts/tdd-clean.jsonl',
       file_path: '/workspaces/conduct/src/add.ts',
@@ -28,6 +23,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
   }, 60000)
 
   it('blocks clear over-implementation', async () => {
+    const { agent } = setup()
     const payload = buildWritePayload({
       transcript: 'test/fixtures/transcripts/tdd-over-impl.jsonl',
       file_path: '/workspaces/conduct/src/add.ts',
@@ -41,6 +37,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
   }, 60000)
 
   it('blocks implementation when the failing test has not been run', async () => {
+    const { agent } = setup()
     const payload = buildWritePayload({
       transcript: 'test/fixtures/transcripts/tdd-no-test-run.jsonl',
       file_path: '/workspaces/conduct/src/add.ts',
@@ -53,6 +50,10 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
   }, 60000)
 })
+
+function setup() {
+  return { agent: entry.agent() }
+}
 
 const OVER_IMPL = `export const add = (a: number, b: number): number => a + b
 export const subtract = (a: number, b: number): number => a - b
