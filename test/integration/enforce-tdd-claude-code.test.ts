@@ -14,7 +14,6 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
     agent = entry.agent()
   })
 
-  const claudeCode = entry.adapter
   it('allows clean TDD with minimal implementation', async () => {
     const payload = buildWritePayload({
       transcript: 'test/fixtures/transcripts/tdd-clean.jsonl',
@@ -22,7 +21,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: 'export const add = (a: number, b: number): number => a + b\n',
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()], agent)
+    const response = await dispatch(entry, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('allow')
@@ -35,7 +34,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: OVER_IMPL,
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()], agent)
+    const response = await dispatch(entry, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -48,7 +47,7 @@ describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
       content: 'export const add = (a: number, b: number): number => a + b\n',
     })
 
-    const response = await dispatch(claudeCode, payload, [enforceTdd()], agent)
+    const response = await dispatch(entry, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')

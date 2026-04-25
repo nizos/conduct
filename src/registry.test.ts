@@ -24,4 +24,10 @@ describe('vendors registry', () => {
     const agent = entry.agent()
     expect(agent.reason).toBeTypeOf('function')
   })
+
+  it('exposes the matching transcript reader on each vendor entry', () => {
+    expect(vendors['claude-code'].readTranscript).toBeTypeOf('function')
+    expect(vendors['codex'].readTranscript).toBeTypeOf('function')
+    expect(vendors['github-copilot'].readTranscript).toBeTypeOf('function')
+  })
 })

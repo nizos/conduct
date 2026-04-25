@@ -3,8 +3,10 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import { dispatch, run } from './cli.js'
-import * as claudeCode from './vendors/claude-code/adapter.js'
-import type { Agent, Rule } from './rule.js'
+import { vendors, type VendorEntry } from './registry.js'
+import type { Agent, Rule, SessionEvent } from './rule.js'
+
+const claudeCodeEntry = vendors['claude-code']
 
 const stubAgent: Agent = {
   reason: async () => ({ verdict: 'pass', reason: '' }),
@@ -66,35 +68,49 @@ describe('cli', () => {
       tool_input: { command: 'x' },
     })
 
-    await dispatch(claudeCode, payload, [capturingRule], customAgent)
+    await dispatch(claudeCodeEntry, payload, [capturingRule], customAgent)
 
     const ctx = captured as { agent?: Agent }
     expect(ctx.agent).toBe(customAgent)
   })
 
-  it('passes a context with a working history() to rules', async () => {
+  it('wires ctx.history through entry.readTranscript using the path from sessionPath', async () => {
     let captured: unknown = undefined
+    let readPath: string | undefined
     const capturingRule: Rule = (_action, ctx) => {
       captured = ctx
       return { kind: 'pass' as const }
     }
-    const payload = JSON.stringify({
-      transcript_path: 'test/fixtures/transcripts/basic.jsonl',
-      tool_name: 'Bash',
-      tool_input: { command: 'x' },
-    })
+    const stubEntry: VendorEntry = {
+      adapter: {
+        toAction: () => ({ type: 'command', command: 'x' }),
+        toResponse: () => 'ok',
+        sessionPath: (payload) => (payload as { path?: string }).path,
+      },
+      agent: () => stubAgent,
+      readTranscript: async (path) => {
+        readPath = path
+        return [{ kind: 'prompt', text: 'mocked' }]
+      },
+    }
 
-    await dispatch(claudeCode, payload, [capturingRule], stubAgent)
+    await dispatch(
+      stubEntry,
+      JSON.stringify({ path: '/transcript.jsonl' }),
+      [capturingRule],
+      stubAgent,
+    )
 
-    const ctx = captured as { history: () => Promise<unknown[]> }
+    const ctx = captured as { history?: () => Promise<SessionEvent[]> }
     expect(typeof ctx.history).toBe('function')
-    const events = await ctx.history()
-    expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
+    const events = await ctx.history!()
+    expect(readPath).toBe('/transcript.jsonl')
+    expect(events).toEqual([{ kind: 'prompt', text: 'mocked' }])
   })
 
   it('returns a deny response when the payload is not valid JSON', async () => {
     const response = await dispatch(
-      claudeCode,
+      claudeCodeEntry,
       'not json at all',
       [],
       stubAgent,
@@ -108,15 +124,18 @@ describe('cli', () => {
   })
 
   it('returns a deny response when the adapter.toAction throws', async () => {
-    const throwingAdapter = {
-      toAction: () => {
-        throw new Error('unsupported tool shape')
+    const throwingEntry: VendorEntry = {
+      ...claudeCodeEntry,
+      adapter: {
+        ...claudeCodeEntry.adapter,
+        toAction: () => {
+          throw new Error('unsupported tool shape')
+        },
       },
-      toResponse: claudeCode.toResponse,
     }
     const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })
 
-    const response = await dispatch(throwingAdapter, payload, [], stubAgent)
+    const response = await dispatch(throwingEntry, payload, [], stubAgent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')

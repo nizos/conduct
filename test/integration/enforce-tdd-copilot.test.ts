@@ -11,7 +11,6 @@ import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
 const entry = vendors['github-copilot']
-const copilot = entry.adapter
 
 const CLEAN_SESSION = 'integration-copilot-tdd-clean'
 const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
@@ -53,7 +52,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
         'export function add(a: number, b: number): number {\n  return a + b\n}\n',
     })
 
-    const response = await dispatch(copilot, payload, [enforceTdd()], agent)
+    const response = await dispatch(entry, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.permissionDecision).toBe('allow')
@@ -66,7 +65,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
       file_text: OVER_IMPL,
     })
 
-    const response = await dispatch(copilot, payload, [enforceTdd()], agent)
+    const response = await dispatch(entry, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.permissionDecision).toBe('deny')
@@ -80,7 +79,7 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
         'export function add(a: number, b: number): number {\n  return a + b\n}\n',
     })
 
-    const response = await dispatch(copilot, payload, [enforceTdd()], agent)
+    const response = await dispatch(entry, payload, [enforceTdd()], agent)
     const parsed = JSON.parse(response)
 
     expect(parsed.permissionDecision).toBe('deny')

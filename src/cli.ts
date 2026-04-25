@@ -1,8 +1,7 @@
-import type { Action, Agent, Rule } from './rule.js'
+import type { Action, Agent, Rule, SessionEvent } from './rule.js'
 import { findConfig, loadConfig } from './config.js'
 import { evaluateSafely } from './engine.js'
-import { vendors, type Vendor } from './registry.js'
-import type { Adapter } from './vendors/adapter.js'
+import { vendors, type Vendor, type VendorEntry } from './registry.js'
 
 export type { Vendor } from './registry.js'
 
@@ -19,15 +18,16 @@ export async function run(
   }
   const config = await loadConfig(findConfig(process.cwd()))
   const agent = config.agent ?? entry.agent()
-  return dispatch(entry.adapter, rawPayload, config.rules, agent)
+  return dispatch(entry, rawPayload, config.rules, agent)
 }
 
 export async function dispatch(
-  adapter: Adapter,
+  entry: VendorEntry,
   rawPayload: string,
   rules: readonly Rule[],
   agent: Agent,
 ): Promise<string> {
+  const { adapter } = entry
   let payload: unknown
   try {
     payload = JSON.parse(rawPayload)
@@ -39,10 +39,11 @@ export async function dispatch(
     })
   }
   let action: Action
-  let baseCtx: Record<string, unknown> = {}
+  let history: (() => Promise<SessionEvent[]>) | undefined
   try {
     action = adapter.toAction(payload)
-    baseCtx = adapter.buildContext?.(payload) ?? {}
+    const path = adapter.sessionPath?.(payload)
+    history = path ? () => entry.readTranscript(path) : undefined
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
     return adapter.toResponse({
@@ -50,11 +51,7 @@ export async function dispatch(
       reason: `invalid hook payload: ${reason}`,
     })
   }
-  // CLI-injected `agent` overrides anything the adapter might have put
-  // in baseCtx — the config/default agent is the canonical source of
-  // `agent`, and adapters only supply session capabilities like
-  // history().
-  const ctx = { ...baseCtx, agent }
+  const ctx = { agent, history }
   const decision = await evaluateSafely(action, rules, ctx)
   return adapter.toResponse(decision)
 }
