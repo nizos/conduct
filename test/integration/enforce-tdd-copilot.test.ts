@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, cp, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, cp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -16,51 +16,58 @@ const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
 
 describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   it('allows a minimal add implementation after a failing test was run', async () => {
-    const { agent } = await setup()
-    const payload = buildCreatePayload({
+    const { decision } = await setup({
       sessionId: CLEAN_SESSION,
-      file_path: '/workspaces/conduct/src/calculator.ts',
-      file_text:
-        'export function add(a: number, b: number): number {\n  return a + b\n}\n',
+      pendingContent: MINIMAL_IMPL,
     })
 
-    const response = await dispatch(entry, payload, [enforceTdd()], agent)
-    const parsed = JSON.parse(response)
-
-    expect(parsed.permissionDecision).toBe('allow')
+    expect(decision).toBe('allow')
   }, 60000)
 
   it('blocks an over-implementation that adds many unrequested functions', async () => {
-    const { agent } = await setup()
-    const payload = buildCreatePayload({
+    const { decision } = await setup({
       sessionId: CLEAN_SESSION,
-      file_path: '/workspaces/conduct/src/calculator.ts',
-      file_text: OVER_IMPL,
+      pendingContent: OVER_IMPL,
     })
 
-    const response = await dispatch(entry, payload, [enforceTdd()], agent)
-    const parsed = JSON.parse(response)
-
-    expect(parsed.permissionDecision).toBe('deny')
+    expect(decision).toBe('deny')
   }, 60000)
 
   it('blocks implementation when the failing test has not been run', async () => {
-    const { agent } = await setup()
-    const payload = buildCreatePayload({
+    const { decision } = await setup({
       sessionId: NO_RUN_SESSION,
-      file_path: '/workspaces/conduct/src/calculator.ts',
-      file_text:
-        'export function add(a: number, b: number): number {\n  return a + b\n}\n',
+      pendingContent: MINIMAL_IMPL,
     })
 
-    const response = await dispatch(entry, payload, [enforceTdd()], agent)
-    const parsed = JSON.parse(response)
+    expect(decision).toBe('deny')
+  }, 60000)
 
-    expect(parsed.permissionDecision).toBe('deny')
+  it('allows adding a second test to an existing test file', async () => {
+    const { decision } = await setup({
+      sessionId: CLEAN_SESSION,
+      beforeFile: EXISTING_TEST_CONTENT,
+      pendingContent: PLUS_ONE_TEST,
+    })
+
+    expect(decision).toBe('allow')
+  }, 60000)
+
+  it('blocks when two new tests are added in a single write', async () => {
+    const { decision } = await setup({
+      sessionId: CLEAN_SESSION,
+      beforeFile: EXISTING_TEST_CONTENT,
+      pendingContent: PLUS_TWO_TESTS,
+    })
+
+    expect(decision).toBe('deny')
   }, 60000)
 })
 
-async function setup() {
+async function setup(opts: {
+  sessionId: string
+  pendingContent: string
+  beforeFile?: string
+}): Promise<{ decision: string }> {
   const home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
   for (const [session, fixture] of [
     [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
@@ -75,13 +82,79 @@ async function setup() {
   }
   const prevHome = process.env.COPILOT_HOME
   process.env.COPILOT_HOME = home
+  const fileDir = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-file-'))
   onTestFinished(async () => {
     if (prevHome === undefined) delete process.env.COPILOT_HOME
     else process.env.COPILOT_HOME = prevHome
     await rm(home, { recursive: true, force: true })
+    await rm(fileDir, { recursive: true, force: true })
   })
-  return { home, agent: entry.agent() }
+  const filePath = path.join(fileDir, 'target.ts')
+  if (opts.beforeFile !== undefined) {
+    await writeFile(filePath, opts.beforeFile)
+  }
+  const payload = JSON.stringify({
+    sessionId: opts.sessionId,
+    timestamp: Date.now(),
+    cwd: '/workspaces/conduct',
+    toolName: 'create',
+    toolArgs: JSON.stringify({
+      path: filePath,
+      file_text: opts.pendingContent,
+    }),
+  })
+  const agent = entry.agent()
+  const response = await dispatch(entry, payload, [enforceTdd()], agent)
+  const parsed = JSON.parse(response)
+  return { decision: parsed.permissionDecision }
 }
+
+const EXISTING_TEST_CONTENT = `import { describe, expect, it } from 'vitest'
+import { add } from './calculator.js'
+
+describe('calculator', () => {
+  it('adds two numbers', () => {
+    expect(add(2, 3)).toBe(5)
+  })
+})
+`
+
+const PLUS_ONE_TEST = `import { describe, expect, it } from 'vitest'
+import { add } from './calculator.js'
+
+describe('calculator', () => {
+  it('adds two numbers', () => {
+    expect(add(2, 3)).toBe(5)
+  })
+
+  it('adds negative numbers', () => {
+    expect(add(-1, -1)).toBe(-2)
+  })
+})
+`
+
+const PLUS_TWO_TESTS = `import { describe, expect, it } from 'vitest'
+import { add } from './calculator.js'
+
+describe('calculator', () => {
+  it('adds two numbers', () => {
+    expect(add(2, 3)).toBe(5)
+  })
+
+  it('adds negative numbers', () => {
+    expect(add(-1, -1)).toBe(-2)
+  })
+
+  it('adds zeros', () => {
+    expect(add(0, 0)).toBe(0)
+  })
+})
+`
+
+const MINIMAL_IMPL = `export function add(a: number, b: number): number {
+  return a + b
+}
+`
 
 const OVER_IMPL = `export function add(a: number, b: number): number { return a + b }
 export function subtract(a: number, b: number): number { return a - b }
@@ -105,20 +178,3 @@ export class Calculator {
   }
 }
 `
-
-function buildCreatePayload(opts: {
-  sessionId: string
-  file_path: string
-  file_text: string
-}): string {
-  return JSON.stringify({
-    sessionId: opts.sessionId,
-    timestamp: Date.now(),
-    cwd: '/workspaces/conduct',
-    toolName: 'create',
-    toolArgs: JSON.stringify({
-      path: opts.file_path,
-      file_text: opts.file_text,
-    }),
-  })
-}
