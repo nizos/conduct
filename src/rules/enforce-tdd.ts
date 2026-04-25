@@ -1,6 +1,6 @@
 import type { Action, RuleContext, SessionEvent } from '../rule.js'
-import { buildMatcher } from './match-paths.js'
-import { trimHistory } from './trim-history.js'
+import { buildMatcher } from './utils/match-paths.js'
+import { trimHistory } from './utils/trim-history.js'
 
 const DEFAULT_MAX_EVENTS = 10
 const DEFAULT_MAX_CONTENT_CHARS = 1000

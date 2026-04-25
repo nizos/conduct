@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import type { SessionEvent } from '../rule.js'
+import type { SessionEvent } from '../../rule.js'
 import { trimHistory } from './trim-history.js'
 
 describe('trimHistory', () => {

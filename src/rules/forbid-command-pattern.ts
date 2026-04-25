@@ -1,5 +1,5 @@
 import type { Rule } from '../rule.js'
-import { stringOrRegexMatches } from './string-or-regex-matches.js'
+import { stringOrRegexMatches } from './utils/string-or-regex-matches.js'
 
 /**
  * Blocks a command whose text matches `match` — a literal substring or

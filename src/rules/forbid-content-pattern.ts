@@ -1,6 +1,6 @@
 import type { Rule } from '../rule.js'
-import { buildMatcher } from './match-paths.js'
-import { stringOrRegexMatches } from './string-or-regex-matches.js'
+import { buildMatcher } from './utils/match-paths.js'
+import { stringOrRegexMatches } from './utils/string-or-regex-matches.js'
 
 /**
  * Blocks a write whose content matches `match` — a literal substring or

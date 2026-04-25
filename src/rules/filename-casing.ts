@@ -1,5 +1,5 @@
 import type { Rule, RuleResult } from '../rule.js'
-import { buildMatcher } from './match-paths.js'
+import { buildMatcher } from './utils/match-paths.js'
 
 /**
  * Supported filename casing styles.
