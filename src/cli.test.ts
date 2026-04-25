@@ -88,17 +88,6 @@ describe('cli', () => {
       /payload|unsupported tool shape/i,
     )
   })
-
-  it('throws a clear error for an unknown agent', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-new-file.json',
-      'utf8',
-    )
-
-    await expect(
-      run(payload, { vendor: 'bogus' as unknown as 'claude-code' }),
-    ).rejects.toThrow(/unknown vendor.*bogus/i)
-  })
 })
 
 async function setup(fixtureName: string) {

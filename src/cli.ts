@@ -10,12 +10,6 @@ export async function run(
   options: { vendor: Vendor },
 ): Promise<string> {
   const entry = vendors[options.vendor]
-  if (!entry) {
-    const known = Object.keys(vendors).join(', ')
-    throw new Error(
-      `unknown vendor: ${String(options.vendor)}. Expected one of: ${known}`,
-    )
-  }
   const config = await loadConfig(findConfig(process.cwd()))
   const agent = config.agent ?? entry.agent()
   return dispatch(entry, rawPayload, config.rules, agent)
