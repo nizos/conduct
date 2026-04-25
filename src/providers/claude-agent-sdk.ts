@@ -1,5 +1,5 @@
-import type { AiClient, Verdict } from '../rule.js'
-import { parseVerdict } from './parse-verdict.js'
+import type { AiClient } from '../rule.js'
+import { aiClientFromText } from './ai-client-from-text.js'
 
 type Msg = { type: string; [k: string]: unknown }
 
@@ -17,18 +17,7 @@ export type QueryFn = (args: {
 }) => AsyncIterable<Msg>
 
 export function claudeAgentSdk(options: { queryFn: QueryFn }): AiClient {
-  return {
-    reason: async (prompt: string): Promise<Verdict> => {
-      let text: string
-      try {
-        text = await getResultText(options.queryFn, prompt)
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error)
-        return { verdict: 'violation', reason }
-      }
-      return parseVerdict(text)
-    },
-  }
+  return aiClientFromText((prompt) => getResultText(options.queryFn, prompt))
 }
 
 async function getResultText(

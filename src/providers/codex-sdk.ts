@@ -1,5 +1,5 @@
-import type { AiClient, Verdict } from '../rule.js'
-import { parseVerdict } from './parse-verdict.js'
+import type { AiClient } from '../rule.js'
+import { aiClientFromText } from './ai-client-from-text.js'
 
 type ThreadOptions = {
   skipGitRepoCheck?: boolean
@@ -16,25 +16,15 @@ type CodexLike = {
 }
 
 export function codexSdk(options: { codexFactory: () => CodexLike }): AiClient {
-  return {
-    reason: async (prompt: string): Promise<Verdict> => {
-      let text: string
-      try {
-        const codex = options.codexFactory()
-        const thread = codex.startThread({
-          skipGitRepoCheck: true,
-          sandboxMode: 'read-only',
-          approvalPolicy: 'never',
-          networkAccessEnabled: false,
-          webSearchEnabled: false,
-        })
-        const turn = await thread.run(prompt)
-        text = turn.finalResponse
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error)
-        return { verdict: 'violation', reason }
-      }
-      return parseVerdict(text)
-    },
-  }
+  return aiClientFromText(async (prompt) => {
+    const thread = options.codexFactory().startThread({
+      skipGitRepoCheck: true,
+      sandboxMode: 'read-only',
+      approvalPolicy: 'never',
+      networkAccessEnabled: false,
+      webSearchEnabled: false,
+    })
+    const turn = await thread.run(prompt)
+    return turn.finalResponse
+  })
 }
