@@ -39,6 +39,8 @@ If you'd rather wire the hook yourself, add a `PreToolUse` entry to `.claude/set
 
 The matcher controls which tools fire the hook. `Bash|Write|Edit` covers commands and file modifications.
 
+Further reading: [Claude Code's hooks documentation](https://code.claude.com/docs/en/hooks).
+
 ## OpenAI Codex
 
 Codex hooks are gated behind a feature flag. Enable it in `~/.codex/config.toml`:
@@ -70,22 +72,51 @@ Then add a `PreToolUse` hook in `~/.codex/hooks.json`:
 
 Codex's matcher is a regex. `^(Bash|apply_patch|Edit|Write)$` covers shell commands and file modifications (Codex sends file writes as `apply_patch`; `Edit`/`Write` are matcher synonyms documented by Codex).
 
+Further reading: [Codex's hooks documentation](https://developers.openai.com/codex/hooks).
+
 ## GitHub Copilot
 
-Configure Copilot's hook system to invoke:
+GitHub Copilot loads hooks from the `.github/hooks/` directory in your project root — the same path the cloud agent reads from your repo's default branch. Create `.github/hooks/conduct.json`:
 
-```
-npx @nizos/conduct@latest --agent github-copilot
+```json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "npx @nizos/conduct@latest --agent github-copilot",
+        "timeoutSec": 60
+      }
+    ]
+  }
+}
 ```
 
-Refer to GitHub Copilot's hooks documentation for the precise config file and matcher syntax. Conduct accepts Copilot's `bash`, `create`, and `edit` tool payloads.
+A few schema differences from the Claude Code config worth noting:
+
+- Event names are camelCase (`preToolUse`, not `PreToolUse`)
+- Hook entries use `bash` (or `powershell` on Windows) instead of `command`
+- There's no `matcher` field — every tool call fires the hook; conduct's rules short-circuit on non-write actions
+- The default `timeoutSec` is 30; bump to 60 to give AI-validated rules headroom
+
+Conduct accepts Copilot's `bash`, `create`, and `edit` tool payloads.
+
+Further reading: [GitHub Copilot's hooks reference](https://docs.github.com/en/copilot/reference/hooks-configuration).
 
 ## CLI
 
+The `conduct` bin is what each vendor's hook command invokes. You can also run it directly — for testing rule changes, scripting CI checks, or pointing at a config that lives outside the repo.
+
 ```bash
-npx @nizos/conduct@latest --agent <vendor>   # claude-code | codex | github-copilot
-npx @nizos/conduct@latest --version
-npx @nizos/conduct@latest --help
+npx @nizos/conduct@latest --agent <vendor> < hook-payload.json
 ```
 
-`conduct` reads the hook payload from stdin (capped at 10 MiB) and writes the vendor's response JSON to stdout.
+The bin reads a hook payload from stdin (capped at 10 MiB) and writes the vendor's response JSON to stdout.
+
+### Options
+
+- `--agent <vendor>` — Required. One of `claude-code`, `codex`, or `github-copilot`.
+- `--config <path>` — Load rules from `<path>` instead of auto-discovering `conduct.config.ts`. Use for gitignored configs, CI overrides, or A/B comparisons.
+- `--version` — Print the package version.
+- `--help` — Print usage and exit.
