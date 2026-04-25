@@ -3,9 +3,10 @@ import { readFileSync, readSync, realpathSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { vendors, isVendor } from './registry.js'
+import { vendors } from './registry.js'
 import { run, type ConfigLoader } from './cli.js'
 import { loadConfig } from './config.js'
+import { parseArgs } from './parse-args.js'
 import { readCapped } from './read-capped.js'
 
 const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
@@ -55,56 +56,35 @@ export async function main(args: {
   stdin: string | (() => string)
   loadConfig?: ConfigLoader
 }): Promise<MainResult> {
-  if (args.argv.includes('--version')) {
-    return { stdout: `${VERSION}\n`, exitCode: 0 }
+  const parsed = parseArgs(args.argv)
+  if (parsed.kind === 'version') return { stdout: `${VERSION}\n`, exitCode: 0 }
+  if (parsed.kind === 'help') return { stdout: HELP, exitCode: 0 }
+  if (parsed.kind === 'error') {
+    return { stderr: parsed.stderr, exitCode: parsed.exitCode }
   }
-  if (args.argv.includes('--help')) {
-    return { stdout: HELP, exitCode: 0 }
-  }
-  const agentIndex = args.argv.indexOf('--agent')
-  if (agentIndex === -1) {
-    return {
-      stderr: 'conduct: --agent is missing\n',
-      exitCode: 2,
-    }
-  }
-  const agentArg = args.argv[agentIndex + 1]
-  if (!isVendor(agentArg)) {
-    const known = Object.keys(vendors).join(', ')
-    return {
-      stderr: `conduct: --agent ${String(agentArg)} is not a known agent. Expected one of: ${known}\n`,
-      exitCode: 2,
-    }
-  }
+
   let stdin: string
   try {
     stdin = typeof args.stdin === 'function' ? args.stdin() : args.stdin
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    return {
-      stderr: `conduct: ${reason}\n`,
-      exitCode: 1,
-    }
+    return { stderr: `conduct: ${reason}\n`, exitCode: 1 }
   }
-  const configIdx = args.argv.indexOf('--config')
-  const configPath = configIdx !== -1 ? args.argv[configIdx + 1] : undefined
+
   const cliLoader: ConfigLoader | undefined =
-    configPath !== undefined
-      ? () => loadConfig(path.resolve(configPath))
+    parsed.configPath !== undefined
+      ? () => loadConfig(path.resolve(parsed.configPath as string))
       : undefined
 
   try {
     const response = await run(stdin, {
-      vendor: agentArg,
+      vendor: parsed.vendor,
       loadConfig: args.loadConfig ?? cliLoader,
     })
     return { stdout: response, exitCode: 0 }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    return {
-      stderr: `conduct: ${reason}\n`,
-      exitCode: 1,
-    }
+    return { stderr: `conduct: ${reason}\n`, exitCode: 1 }
   }
 }
 

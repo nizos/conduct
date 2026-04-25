@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { main } from './bin.js'
+import { main, type MainResult } from './bin.js'
+import type { ConfigLoader } from './cli.js'
 import type { Config } from './config.js'
 import type { Agent } from './rule.js'
 import { filenameCasing } from './rules/filename-casing.js'
@@ -21,9 +22,32 @@ const testConfig: Config = {
   agent: stubAgent,
 }
 
+const KEBAB_PAYLOAD = readFileSync(
+  'test/fixtures/claude-code/write-kebab-case.json',
+  'utf8',
+)
+
+async function setup(
+  opts: {
+    argv?: readonly string[]
+    stdin?: string | (() => string)
+    loadConfig?: ConfigLoader
+  } = {},
+): Promise<MainResult> {
+  return main({
+    argv: opts.argv ?? ['node', 'bin.js', '--agent', 'claude-code'],
+    stdin: opts.stdin ?? '',
+    loadConfig: opts.loadConfig,
+  })
+}
+
+function decisionOf(result: MainResult): string {
+  return JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision
+}
+
 describe('bin main', () => {
   it('returns exit code 2 and a helpful stderr when --agent is missing', async () => {
-    const result = await main({ argv: ['node', 'bin.js'], stdin: '' })
+    const result = await setup({ argv: ['node', 'bin.js'] })
 
     expect(result.exitCode).toBe(2)
     expect(result.stderr).toMatch(/--agent/)
@@ -31,10 +55,7 @@ describe('bin main', () => {
   })
 
   it('returns exit code 2 and lists known agents when --agent is unknown', async () => {
-    const result = await main({
-      argv: ['node', 'bin.js', '--agent', 'bogus'],
-      stdin: '',
-    })
+    const result = await setup({ argv: ['node', 'bin.js', '--agent', 'bogus'] })
 
     expect(result.exitCode).toBe(2)
     expect(result.stderr).toMatch(/bogus/)
@@ -42,8 +63,7 @@ describe('bin main', () => {
   })
 
   it('returns exit 1 with a cap message when stdin reading throws', async () => {
-    const result = await main({
-      argv: ['node', 'bin.js', '--agent', 'claude-code'],
+    const result = await setup({
       stdin: () => {
         throw new Error('input exceeds 10 bytes')
       },
@@ -54,10 +74,7 @@ describe('bin main', () => {
   })
 
   it('prints usage with --help including the repo URL and exits 0', async () => {
-    const result = await main({
-      argv: ['node', 'bin.js', '--help'],
-      stdin: '',
-    })
+    const result = await setup({ argv: ['node', 'bin.js', '--help'] })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toMatch(/Usage:/)
@@ -65,22 +82,14 @@ describe('bin main', () => {
   })
 
   it('prints the package version to stdout and exits 0 with --version', async () => {
-    const result = await main({
-      argv: ['node', 'bin.js', '--version'],
-      stdin: '',
-    })
+    const result = await setup({ argv: ['node', 'bin.js', '--version'] })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout?.trim()).toMatch(/^\d+\.\d+\.\d+/)
   })
 
   it('honors --config <path> by loading that file instead of discovering one', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-kebab-case.json',
-      'utf8',
-    )
-
-    const result = await main({
+    const result = await setup({
       argv: [
         'node',
         'bin.js',
@@ -89,49 +98,31 @@ describe('bin main', () => {
         '--config',
         'test/fixtures/configs/kebab-only.config.ts',
       ],
-      stdin: payload,
+      stdin: KEBAB_PAYLOAD,
     })
 
     expect(result.exitCode).toBe(0)
-    expect(
-      JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision,
-    ).toBe('allow')
+    expect(decisionOf(result)).toBe('allow')
   })
 
   it('forwards an injected config loader through to run()', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-kebab-case.json',
-      'utf8',
-    )
-
-    const result = await main({
-      argv: ['node', 'bin.js', '--agent', 'claude-code'],
-      stdin: payload,
+    const result = await setup({
+      stdin: KEBAB_PAYLOAD,
       loadConfig: async () => testConfig,
     })
 
     expect(result.exitCode).toBe(0)
-    expect(
-      JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision,
-    ).toBe('allow')
+    expect(decisionOf(result)).toBe('allow')
   })
 
   it('writes the run() response to stdout and exits 0 on success', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-kebab-case.json',
-      'utf8',
-    )
-
-    const result = await main({
-      argv: ['node', 'bin.js', '--agent', 'claude-code'],
-      stdin: payload,
+    const result = await setup({
+      stdin: KEBAB_PAYLOAD,
       loadConfig: async () => testConfig,
     })
 
     expect(result.exitCode).toBe(0)
     expect(result.stderr).toBeUndefined()
-    expect(
-      JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision,
-    ).toBe('allow')
+    expect(decisionOf(result)).toBe('allow')
   })
 })
