@@ -15,5 +15,4 @@ export type Adapter = {
   toAction: (payload: unknown) => Action
   toResponse: (decision: Decision) => string
   sessionPath?: (payload: unknown) => string | undefined
-  buildContext?: (payload: unknown) => Record<string, unknown>
 }

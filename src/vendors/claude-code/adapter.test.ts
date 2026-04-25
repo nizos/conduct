@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { buildContext, sessionPath, toAction, toResponse } from './adapter.js'
+import { sessionPath, toAction, toResponse } from './adapter.js'
 
 describe('claude-code adapter', () => {
   it('extracts the file path from a Write payload', () => {
@@ -90,16 +90,6 @@ describe('claude-code adapter', () => {
     expect(sessionPath({ transcript_path: '/some/transcript.jsonl' })).toBe(
       '/some/transcript.jsonl',
     )
-  })
-
-  it('builds a context whose history reads from the payload transcript_path', async () => {
-    const ctx = buildContext({
-      transcript_path: 'test/fixtures/transcripts/basic.jsonl',
-    })
-
-    const events = await ctx.history()
-
-    expect(events).toContainEqual({ kind: 'prompt', text: 'add a test' })
   })
 })
 

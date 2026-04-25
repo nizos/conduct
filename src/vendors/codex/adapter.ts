@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../rule.js'
-import { readTranscript } from './transcript.js'
 
 const PayloadSchema = z.object({
   tool_name: z.literal('Bash'),
@@ -27,11 +26,6 @@ export function toAction(payload: unknown): Action {
 export function sessionPath(payload: unknown): string | undefined {
   const parsed = ContextPayloadSchema.safeParse(payload)
   return parsed.success ? parsed.data.transcript_path : undefined
-}
-
-export function buildContext(payload: unknown): Record<string, unknown> {
-  const { transcript_path } = ContextPayloadSchema.parse(payload)
-  return { history: () => readTranscript(transcript_path) }
 }
 
 export function toResponse(decision: Decision): string {

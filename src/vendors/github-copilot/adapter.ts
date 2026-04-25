@@ -4,7 +4,6 @@ import path from 'node:path'
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../rule.js'
-import { readTranscript } from './transcript.js'
 
 const PayloadSchema = z.discriminatedUnion('toolName', [
   z.object({ toolName: z.literal('bash'), toolArgs: z.string() }),
@@ -77,13 +76,6 @@ export function sessionPath(payload: unknown): string | undefined {
   if (!parsed.success) return undefined
   const home = process.env.COPILOT_HOME ?? path.join(homedir(), '.copilot')
   return path.join(home, 'session-state', parsed.data.sessionId, 'events.jsonl')
-}
-
-export function buildContext(payload: unknown): Record<string, unknown> {
-  const { sessionId } = ContextPayloadSchema.parse(payload)
-  const home = process.env.COPILOT_HOME ?? path.join(homedir(), '.copilot')
-  const events = path.join(home, 'session-state', sessionId, 'events.jsonl')
-  return { history: () => readTranscript(events) }
 }
 
 export function toResponse(decision: Decision): string {
