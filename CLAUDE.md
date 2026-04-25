@@ -9,16 +9,11 @@ Process discipline for coding agents. A vendor-agnostic policy engine that sits 
 
 ## Layout
 
-Grows organically as tests drive new modules into existence; the shape below is the vision.
-
-- `src/rules/` — rules
-- `src/adapters/` — agent adapters (per-vendor hook payload translation)
-- `src/providers/` — AI providers (pluggable back-ends for rules that reason)
-- `src/engine.ts` — engine
-- `src/config.ts` — config
-- `src/cli.ts` — CLI
-- `src/bin.ts` — CLI shell entry
-- `src/rule.ts` — canonical rule and action types
-- `src/index.ts` — public barrel
-- `test/fixtures/` — captured hook payloads and example inputs
-- `test/integration/` — integration tests
+- `src/rule.ts` — canonical types (Action, Decision, Rule, Agent, …)
+- `src/rules/` — built-in rules; `rules/utils/` holds shared rule helpers
+- `src/vendors/<vendor>/{adapter,agent,transcript}.ts` — per-vendor pieces
+- `src/vendors/{adapter,to-verdict,read-jsonl}.ts` — shared types and helpers
+- `src/registry.ts` — vendor entries (adapter + agent + transcript per vendor)
+- `src/{cli,bin,config,engine,index}.ts` — application wiring
+- `test/fixtures/` — captured hook payloads and transcript fixtures
+- `test/integration/` — integration tests (gated on `CONDUCT_INTEGRATION_AI=1`)
