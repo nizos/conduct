@@ -42,24 +42,4 @@ describe('codex transcript', () => {
       expect(patch.output.length).toBeGreaterThan(0)
     }
   })
-
-  it('rejects a transcript that exceeds the maxBytes cap', async () => {
-    await expect(
-      readTranscript('test/fixtures/transcripts/codex-basic.jsonl', {
-        maxBytes: 100,
-      }),
-    ).rejects.toThrow(/bytes|cap|exceeds/i)
-  })
-
-  it('rejects a transcript that is a symbolic link', async () => {
-    const { symlink, rm } = await import('node:fs/promises')
-    const link = 'test/fixtures/transcripts/codex-symlink-tmp.jsonl'
-    await rm(link, { force: true })
-    await symlink('codex-basic.jsonl', link)
-    try {
-      await expect(readTranscript(link)).rejects.toThrow(/symlink|symbolic/i)
-    } finally {
-      await rm(link, { force: true })
-    }
-  })
 })

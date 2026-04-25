@@ -52,26 +52,6 @@ describe('claude-code transcript', () => {
     expect(events).toEqual([{ kind: 'prompt', text: 'hello' }])
   })
 
-  it('rejects a transcript that is a symbolic link', async () => {
-    const { symlink, rm } = await import('node:fs/promises')
-    const link = 'test/fixtures/transcripts/symlink-tmp.jsonl'
-    await rm(link, { force: true })
-    await symlink('basic.jsonl', link)
-    try {
-      await expect(readTranscript(link)).rejects.toThrow(/symlink|symbolic/i)
-    } finally {
-      await rm(link, { force: true })
-    }
-  })
-
-  it('rejects a transcript that exceeds the maxBytes cap', async () => {
-    await expect(
-      readTranscript('test/fixtures/transcripts/basic.jsonl', {
-        maxBytes: 10,
-      }),
-    ).rejects.toThrow(/bytes|cap|exceeds/i)
-  })
-
   it('returns events in the order they appear in the transcript', async () => {
     const events = await readTranscript(
       'test/fixtures/transcripts/interleaved.jsonl',

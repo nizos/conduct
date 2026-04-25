@@ -1,10 +1,7 @@
-import { lstat, readFile, stat } from 'node:fs/promises'
-
 import { z } from 'zod'
 
 import type { SessionEvent } from '../../rule.js'
-
-const DEFAULT_MAX_TRANSCRIPT_BYTES = 100 * 1024 * 1024
+import { readJsonl } from '../read-jsonl.js'
 
 const UserMessageSchema = z.object({
   type: z.literal('user.message'),
@@ -37,28 +34,10 @@ export async function readTranscript(
   path: string,
   options: { maxBytes?: number } = {},
 ): Promise<SessionEvent[]> {
-  const maxBytes = options.maxBytes ?? DEFAULT_MAX_TRANSCRIPT_BYTES
-  const linkInfo = await lstat(path)
-  if (linkInfo.isSymbolicLink()) {
-    throw new Error(`transcript at ${path} is a symbolic link (refusing)`)
-  }
-  const info = await stat(path)
-  if (info.size > maxBytes) {
-    throw new Error(
-      `transcript at ${path} exceeds ${maxBytes} bytes (got ${info.size})`,
-    )
-  }
-  const raw = await readFile(path, 'utf8')
+  const entries = await readJsonl(path, options)
   const pending = new Map<string, SessionEvent>()
   const emitted: SessionEvent[] = []
-  for (const line of raw.split('\n')) {
-    if (!line.trim()) continue
-    let rawEntry: unknown
-    try {
-      rawEntry = JSON.parse(line)
-    } catch {
-      continue
-    }
+  for (const rawEntry of entries) {
     const user = UserMessageSchema.safeParse(rawEntry)
     if (user.success) {
       emitted.push({ kind: 'prompt', text: user.data.data.content })
