@@ -18,7 +18,7 @@ export async function run(
     )
   }
   const config = await loadConfig(findConfig(process.cwd()))
-  const ai = config.ai ?? entry.makeAi()
+  const ai = config.ai ?? (await entry.makeAi())
   return dispatch(entry.adapter, rawPayload, config.rules, ai)
 }
 

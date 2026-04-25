@@ -17,11 +17,11 @@ describe('isAgent', () => {
 })
 
 describe('adapters registry', () => {
-  it('pairs each agent with an adapter and a lazy makeAi factory', () => {
+  it('pairs each agent with an adapter and a lazy async makeAi factory', async () => {
     const entry = adapters['claude-code']
     expect(entry.adapter.toAction).toBeTypeOf('function')
     expect(entry.makeAi).toBeTypeOf('function')
-    const ai = entry.makeAi()
+    const ai = await entry.makeAi()
     expect(ai.reason).toBeTypeOf('function')
   })
 })

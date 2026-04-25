@@ -1,14 +1,20 @@
-import { describe, it, expect } from 'vitest'
+import { beforeAll, describe, it, expect } from 'vitest'
 
-import * as claudeCode from '../../src/adapters/claude-code.js'
+import { adapters } from '../../src/adapters/registry.js'
 import { dispatch } from '../../src/cli.js'
-import { claudeAgentSdk } from '../../src/providers/claude-agent-sdk.js'
+import type { AiClient } from '../../src/rule.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
-const ai = claudeAgentSdk()
+const entry = adapters['claude-code']
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
+  let ai: AiClient
+  beforeAll(async () => {
+    ai = await entry.makeAi()
+  })
+
+  const claudeCode = entry.adapter
   it('allows clean TDD with minimal implementation', async () => {
     const payload = buildWritePayload({
       transcript: 'test/fixtures/transcripts/tdd-clean.jsonl',

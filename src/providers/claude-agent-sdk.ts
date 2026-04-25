@@ -3,7 +3,7 @@ import { parseVerdict } from './parse-verdict.js'
 
 type Msg = { type: string; [k: string]: unknown }
 
-type QueryFn = (args: {
+export type QueryFn = (args: {
   prompt: string
   options?: {
     maxTurns?: number
@@ -16,23 +16,12 @@ type QueryFn = (args: {
   }
 }) => AsyncIterable<Msg>
 
-/**
- * The SDK import is ~670 KB of JS. We defer it to the first time a rule
- * actually asks for a verdict so hook invocations whose rules are all
- * static (filenameCasing, forbid*) don't pay the cold-start cost.
- */
-async function loadSdkQuery(): Promise<QueryFn> {
-  const mod = await import('@anthropic-ai/claude-agent-sdk')
-  return mod.query as unknown as QueryFn
-}
-
-export function claudeAgentSdk(options: { queryFn?: QueryFn } = {}): AiClient {
+export function claudeAgentSdk(options: { queryFn: QueryFn }): AiClient {
   return {
     reason: async (prompt: string): Promise<Verdict> => {
-      const queryFn = options.queryFn ?? (await loadSdkQuery())
       let text: string
       try {
-        text = await getResultText(queryFn, prompt)
+        text = await getResultText(options.queryFn, prompt)
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error)
         return { verdict: 'violation', reason }
