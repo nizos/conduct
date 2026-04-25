@@ -8,8 +8,8 @@ const DEFAULT_MAX_EVENTS = 10
 const DEFAULT_MAX_CONTENT_CHARS = 1000
 const MAX_BEFORE_CONTENT_BYTES = 1024 * 1024
 
-const SYSTEM_RUBRIC = `You are a TDD validator. Judge whether the pending write
-follows test-driven development.
+const PROCESS_INSTRUCTIONS = `You are a TDD validator. Judge whether the pending
+write follows test-driven development.
 
 You will see three inputs:
 
@@ -20,9 +20,9 @@ You will see three inputs:
 2. "Current file content" — what's on disk right now at the file the
    agent is about to write. May be absent if the file does not exist.
 3. "Pending action" — what the agent is about to write. Content may be
-   raw file text or a patch/diff in any common format.
+   raw file text or a patch/diff in any common format.`
 
-Rules:
+const DEFAULT_TDD_RULES = `Rules:
 1. Production code may only be introduced to satisfy a failing test
    that the session has actually observed. Writing a test file is not
    enough; the test must have been run and seen to fail before the
@@ -59,12 +59,12 @@ function formatInput(input: unknown): string {
 }
 
 function buildPrompt(
-  rubric: string,
+  rules: string,
   historyBlock: string,
   beforeContent: string | undefined,
   action: { path: string; content: string },
 ): string {
-  const sections = [rubric]
+  const sections = [PROCESS_INSTRUCTIONS, rules]
   if (historyBlock) sections.push(`Recent session:\n${historyBlock}`)
   sections.push(
     beforeContent === undefined
@@ -96,17 +96,18 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * against the transcript.
  *
  * Applies to: write actions.
- * Supported agents: Claude Code. (The rule requires `ctx.agent` and
- * `ctx.history` — Codex and GitHub Copilot adapters don't currently
- * supply these.)
+ * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
  * Cost note: every matching write triggers an AI call, which is the
  * most expensive rule in the library. Scope with `paths` so the rule
  * only fires on the code you care about.
  *
- * @param options.instructions — overrides the built-in TDD rubric
- *   the validator is given. Defaults to a two-rule spec (failing test
- *   observed; minimum implementation).
+ * @param options.instructions — overrides the default TDD rules text
+ *   the validator is given. The generic process instructions (what
+ *   inputs the validator sees and how to read them) stay regardless;
+ *   only the numbered TDD rules are replaced. Defaults to a three-rule
+ *   spec (failing test observed; minimum implementation; one new test
+ *   per write).
  * @param options.paths — gitignore-style path globs to scope which
  *   writes are checked. Leading `!` negates. When omitted, every
  *   write is checked.
@@ -131,7 +132,7 @@ export function enforceTdd(
     maxContentChars?: number
   } = {},
 ) {
-  const rubric = options.instructions ?? SYSTEM_RUBRIC
+  const rules = options.instructions ?? DEFAULT_TDD_RULES
   const matchesPaths = options.paths ? buildMatcher(options.paths) : () => true
   const window = {
     maxEvents: options.maxEvents ?? DEFAULT_MAX_EVENTS,
@@ -146,7 +147,7 @@ export function enforceTdd(
     const windowed = trimHistory(events, window)
     const historyBlock = windowed.map(formatEvent).join('\n')
     const beforeContent = await readBeforeContent(action.path)
-    const prompt = buildPrompt(rubric, historyBlock, beforeContent, action)
+    const prompt = buildPrompt(rules, historyBlock, beforeContent, action)
     const verdict = await ctx.agent.reason(prompt)
     if (verdict.verdict === 'violation') {
       return { kind: 'violation' as const, reason: verdict.reason }

@@ -125,6 +125,16 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('CUSTOM: only dog-driven development')
   })
 
+  it('keeps the process instructions even when custom rules are provided', async () => {
+    const s = setup({
+      instructions: 'CUSTOM: only dog-driven development allowed',
+    })
+
+    await s.rule(writeAction('src/foo.ts', 'x'), s.ctx)
+
+    expect(s.capturedPrompt).toMatch(/three inputs|chronological/i)
+  })
+
   it('includes current file content in the prompt when the file exists', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'enforce-tdd-before-'))
     onTestFinished(async () => {

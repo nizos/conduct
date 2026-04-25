@@ -14,8 +14,7 @@ export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
  * Passes non-write actions through.
  *
  * Applies to: write actions.
- * Supported agents: Claude Code. (Codex and GitHub Copilot don't
- * currently emit hook events for file writes — see PreToolUse docs.)
+ * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
  * @example
  * filenameCasing({ style: 'kebab-case' })

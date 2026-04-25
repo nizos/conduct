@@ -9,8 +9,7 @@ import { stringOrRegexMatches } from './utils/string-or-regex-matches.js'
  * include, and a leading `!` negates (excludes) matching paths.
  *
  * Applies to: write actions.
- * Supported agents: Claude Code. (Codex and GitHub Copilot don't
- * currently emit hook events for file writes — see PreToolUse docs.)
+ * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
  * @example
  * forbidContentPattern({
