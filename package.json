@@ -30,9 +30,9 @@
       "types": "./dist/engine.d.ts",
       "default": "./dist/engine.js"
     },
-    "./rule": {
-      "types": "./dist/rule.d.ts",
-      "default": "./dist/rule.js"
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
     },
     "./rules/*": {
       "types": "./dist/rules/*.d.ts",
