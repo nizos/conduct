@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { buildContext, toAction, toResponse } from './adapter.js'
+import { buildContext, sessionPath, toAction, toResponse } from './adapter.js'
 
 describe('github-copilot adapter', () => {
   it('tags the action type as command for a bash payload', () => {
@@ -89,6 +89,19 @@ describe('github-copilot adapter', () => {
     expect(() => toAction(payload)).toThrow(
       /report_intent|unsupported|toolName/i,
     )
+  })
+
+  it('builds the session path under COPILOT_HOME for a valid sessionId', () => {
+    const prevHome = process.env.COPILOT_HOME
+    process.env.COPILOT_HOME = '/tmp/fake-copilot-home'
+    try {
+      expect(sessionPath({ sessionId: 'abc-123' })).toBe(
+        '/tmp/fake-copilot-home/session-state/abc-123/events.jsonl',
+      )
+    } finally {
+      if (prevHome === undefined) delete process.env.COPILOT_HOME
+      else process.env.COPILOT_HOME = prevHome
+    }
   })
 
   it('buildContext throws for a sessionId containing path separators', () => {

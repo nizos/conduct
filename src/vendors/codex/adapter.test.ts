@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { buildContext, toAction, toResponse } from './adapter.js'
+import { buildContext, sessionPath, toAction, toResponse } from './adapter.js'
 
 describe('codex adapter', () => {
   it('tags the action type as command for a Bash payload', () => {
@@ -39,6 +39,12 @@ describe('codex adapter', () => {
         tool_input: { patch: 'diff' },
       }),
     ).toThrow(/apply_patch|unsupported|Bash/i)
+  })
+
+  it('returns the transcript_path from the payload as the session path', () => {
+    expect(
+      sessionPath({ transcript_path: '/some/codex-transcript.jsonl' }),
+    ).toBe('/some/codex-transcript.jsonl')
   })
 
   it('buildContext throws when transcript_path is missing', () => {

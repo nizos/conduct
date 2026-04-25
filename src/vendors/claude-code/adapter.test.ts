@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { buildContext, toAction, toResponse } from './adapter.js'
+import { buildContext, sessionPath, toAction, toResponse } from './adapter.js'
 
 describe('claude-code adapter', () => {
   it('extracts the file path from a Write payload', () => {
@@ -84,6 +84,12 @@ describe('claude-code adapter', () => {
         tool_input: { file_path: 'x', edits: [] },
       }),
     ).toThrow(/MultiEdit|unsupported|unknown/i)
+  })
+
+  it('returns the transcript_path from the payload as the session path', () => {
+    expect(sessionPath({ transcript_path: '/some/transcript.jsonl' })).toBe(
+      '/some/transcript.jsonl',
+    )
   })
 
   it('builds a context whose history reads from the payload transcript_path', async () => {

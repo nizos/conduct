@@ -55,6 +55,11 @@ export function toAction(payload: unknown): Action {
   }
 }
 
+export function sessionPath(payload: unknown): string | undefined {
+  const parsed = ContextPayloadSchema.safeParse(payload)
+  return parsed.success ? parsed.data.transcript_path : undefined
+}
+
 export function buildContext(payload: unknown) {
   const { transcript_path } = ContextPayloadSchema.parse(payload)
   return {
