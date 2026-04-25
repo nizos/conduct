@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { sessionPath, toAction, toResponse } from './adapter.js'
+import { actionSchema, sessionPath, toResponse } from './adapter.js'
 
 describe('claude-code adapter', () => {
   it('extracts the file path from a Write payload', () => {
@@ -72,18 +72,18 @@ describe('claude-code adapter', () => {
   })
 
   it('throws when a Bash payload is missing the command field', () => {
-    expect(() => toAction({ tool_name: 'Bash', tool_input: {} })).toThrow(
-      /Bash|tool_input|command/i,
-    )
+    expect(() =>
+      actionSchema.parse({ tool_name: 'Bash', tool_input: {} }),
+    ).toThrow()
   })
 
   it('throws for an unsupported tool_name so dispatch can reject the payload', () => {
     expect(() =>
-      toAction({
+      actionSchema.parse({
         tool_name: 'MultiEdit',
         tool_input: { file_path: 'x', edits: [] },
       }),
-    ).toThrow(/MultiEdit|unsupported|unknown/i)
+    ).toThrow()
   })
 
   it('returns the transcript_path from the payload as the session path', () => {
@@ -91,12 +91,22 @@ describe('claude-code adapter', () => {
       '/some/transcript.jsonl',
     )
   })
+
+  it('exposes actionSchema that parses a payload to a typed Action', () => {
+    const payload = JSON.parse(
+      readFileSync('test/fixtures/claude-code/bash-npm-install.json', 'utf8'),
+    )
+
+    const action = actionSchema.parse(payload)
+
+    expect(action.type).toBe('command')
+  })
 })
 
 function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/claude-code/${fixtureName}`, 'utf8'),
   )
-  const action = toAction(payload)
+  const action = actionSchema.parse(payload)
   return { action, payload }
 }

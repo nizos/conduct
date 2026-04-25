@@ -1,3 +1,5 @@
+import type { z } from 'zod'
+
 import type { Action, Decision } from '../rule.js'
 
 /**
@@ -12,7 +14,7 @@ import type { Action, Decision } from '../rule.js'
  * `ctx.history` to rules.
  */
 export type Adapter = {
-  toAction: (payload: unknown) => Action
+  actionSchema: z.ZodType<Action>
   toResponse: (decision: Decision) => string
   sessionPath?: (payload: unknown) => string | undefined
 }

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { sessionPath, toAction, toResponse } from './adapter.js'
+import { actionSchema, sessionPath, toResponse } from './adapter.js'
 
 describe('codex adapter', () => {
   it('tags the action type as command for a Bash payload', () => {
@@ -32,13 +32,13 @@ describe('codex adapter', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
-  it('throws for a non-Bash tool_name (Codex only intercepts Bash today)', () => {
+  it('throws for a malformed apply_patch payload (missing command field)', () => {
     expect(() =>
-      toAction({
+      actionSchema.parse({
         tool_name: 'apply_patch',
         tool_input: { patch: 'diff' },
       }),
-    ).toThrow(/apply_patch|unsupported|Bash/i)
+    ).toThrow()
   })
 
   it('maps an apply_patch payload to a write action with path + patch content', () => {
@@ -46,7 +46,7 @@ describe('codex adapter', () => {
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
     )
 
-    const action = toAction(payload)
+    const action = actionSchema.parse(payload)
 
     expect(action.type).toBe('write')
     if (action.type !== 'write') throw new Error('expected write')
@@ -60,12 +60,22 @@ describe('codex adapter', () => {
       sessionPath({ transcript_path: '/some/codex-transcript.jsonl' }),
     ).toBe('/some/codex-transcript.jsonl')
   })
+
+  it('exposes actionSchema that parses a payload to a typed Action', () => {
+    const payload = JSON.parse(
+      readFileSync('test/fixtures/codex/pre-bash-pwd.json', 'utf8'),
+    )
+
+    const action = actionSchema.parse(payload)
+
+    expect(action.type).toBe('command')
+  })
 })
 
 function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/codex/${fixtureName}`, 'utf8'),
   )
-  const action = toAction(payload)
+  const action = actionSchema.parse(payload)
   return { action, payload }
 }

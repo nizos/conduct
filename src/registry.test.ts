@@ -24,7 +24,7 @@ describe('isVendor', () => {
 describe('vendors registry', () => {
   it('pairs each vendor with an adapter and a sync agent factory', () => {
     const entry = vendors['claude-code']
-    expect(entry.adapter.toAction).toBeTypeOf('function')
+    expect(entry.adapter.actionSchema).toBeDefined()
     expect(entry.agent).toBeTypeOf('function')
     const agent = entry.agent()
     expect(agent.reason).toBeTypeOf('function')

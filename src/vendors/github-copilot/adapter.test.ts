@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { sessionPath, toAction, toResponse } from './adapter.js'
+import { actionSchema, sessionPath, toResponse } from './adapter.js'
 
 describe('github-copilot adapter', () => {
   it('tags the action type as command for a bash payload', () => {
@@ -37,8 +37,8 @@ describe('github-copilot adapter', () => {
 
   it('throws when toolArgs is missing or not a JSON-encoded string', () => {
     expect(() =>
-      toAction({ toolName: 'bash', toolArgs: 'not-valid-json' }),
-    ).toThrow(/toolArgs|command|payload/i)
+      actionSchema.parse({ toolName: 'bash', toolArgs: 'not-valid-json' }),
+    ).toThrow()
   })
 
   it('tags a create payload as a write action', () => {
@@ -75,7 +75,7 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(() => toAction(payload)).toThrow(/view|unsupported|toolName/i)
+    expect(() => actionSchema.parse(payload)).toThrow()
   })
 
   it('throws for metadata tools like report_intent', () => {
@@ -86,9 +86,7 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(() => toAction(payload)).toThrow(
-      /report_intent|unsupported|toolName/i,
-    )
+    expect(() => actionSchema.parse(payload)).toThrow()
   })
 
   it('builds the session path under COPILOT_HOME for a valid sessionId', () => {
@@ -107,12 +105,25 @@ describe('github-copilot adapter', () => {
   it('returns undefined when sessionId contains path separators', () => {
     expect(sessionPath({ sessionId: '../../../etc' })).toBeUndefined()
   })
+
+  it('exposes actionSchema that parses a payload to a typed Action', () => {
+    const payload = JSON.parse(
+      readFileSync(
+        'test/fixtures/github-copilot/pre-bash-npm-test.json',
+        'utf8',
+      ),
+    )
+
+    const action = actionSchema.parse(payload)
+
+    expect(action.type).toBe('command')
+  })
 })
 
 function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/github-copilot/${fixtureName}`, 'utf8'),
   )
-  const action = toAction(payload)
+  const action = actionSchema.parse(payload)
   return { action, payload }
 }

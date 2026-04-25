@@ -4,7 +4,7 @@ import type { Action, Decision } from '../../rule.js'
 
 const PATCH_HEADER = /^\*\*\* (?:Add|Update|Delete) File: (.+)$/m
 
-const ActionSchema = z.discriminatedUnion('tool_name', [
+export const actionSchema = z.discriminatedUnion('tool_name', [
   z
     .object({
       tool_name: z.literal('Bash'),
@@ -32,18 +32,6 @@ const ActionSchema = z.discriminatedUnion('tool_name', [
 ])
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
-
-export function toAction(payload: unknown): Action {
-  const parsed = ActionSchema.safeParse(payload)
-  if (parsed.success) return parsed.data
-  const toolName =
-    typeof payload === 'object' && payload !== null && 'tool_name' in payload
-      ? String((payload as { tool_name: unknown }).tool_name)
-      : 'unknown'
-  throw new Error(
-    `unsupported codex tool_name or malformed tool_input: ${toolName}`,
-  )
-}
 
 export function sessionPath(payload: unknown): string | undefined {
   const parsed = ContextPayloadSchema.safeParse(payload)

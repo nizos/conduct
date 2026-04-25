@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
+import { z } from 'zod'
 
 import { dispatch, run } from './cli.js'
 import type { Config } from './config.js'
 import { vendors, type VendorEntry } from './registry.js'
-import type { Agent } from './rule.js'
+import type { Action, Agent } from './rule.js'
 import { filenameCasing } from './rules/filename-casing.js'
 
 const claudeCodeEntry = vendors['claude-code']
@@ -100,19 +101,21 @@ describe('cli', () => {
     expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
   })
 
-  it('returns a deny response when the adapter.toAction throws', async () => {
-    const throwingEntry: VendorEntry = {
+  it('returns a deny response when the adapter actionSchema rejects the payload', async () => {
+    const rejectingSchema = z.unknown().transform((_, ctx) => {
+      ctx.addIssue({ code: 'custom', message: 'unsupported tool shape' })
+      return z.NEVER
+    }) as unknown as z.ZodType<Action>
+    const rejectingEntry: VendorEntry = {
       ...claudeCodeEntry,
       adapter: {
         ...claudeCodeEntry.adapter,
-        toAction: () => {
-          throw new Error('unsupported tool shape')
-        },
+        actionSchema: rejectingSchema,
       },
     }
     const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })
 
-    const response = await dispatch(throwingEntry, payload, [], stubAgent)
+    const response = await dispatch(rejectingEntry, payload, [], stubAgent)
     const parsed = JSON.parse(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')

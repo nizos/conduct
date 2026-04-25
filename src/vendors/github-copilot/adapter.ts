@@ -4,17 +4,9 @@ import path from 'node:path'
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../rule.js'
+import { JsonString } from '../json-string.js'
 
-const JsonString = z.string().transform((s, ctx): unknown => {
-  try {
-    return JSON.parse(s)
-  } catch {
-    ctx.addIssue({ code: 'custom', message: 'toolArgs is not valid JSON' })
-    return z.NEVER
-  }
-})
-
-const ActionSchema = z.discriminatedUnion('toolName', [
+export const actionSchema = z.discriminatedUnion('toolName', [
   z
     .object({
       toolName: z.literal('bash'),
@@ -52,18 +44,6 @@ const ActionSchema = z.discriminatedUnion('toolName', [
       }),
     ),
 ])
-
-export function toAction(payload: unknown): Action {
-  const parsed = ActionSchema.safeParse(payload)
-  if (parsed.success) return parsed.data
-  const toolName =
-    typeof payload === 'object' && payload !== null && 'toolName' in payload
-      ? String((payload as { toolName: unknown }).toolName)
-      : 'unknown'
-  throw new Error(
-    `unsupported github-copilot toolName or malformed payload: ${toolName}`,
-  )
-}
 
 const ContextPayloadSchema = z.object({
   sessionId: z.string().regex(/^[A-Za-z0-9_-]+$/, {

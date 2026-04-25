@@ -1,7 +1,10 @@
-import type { Action, Agent, Rule, SessionEvent } from './rule.js'
+import { z } from 'zod'
+
+import type { Action, Agent, Decision, Rule, SessionEvent } from './rule.js'
 import { findConfig, loadConfig, type Config } from './config.js'
 import { evaluateSafely } from './engine.js'
 import { vendors, type Vendor, type VendorEntry } from './registry.js'
+import { JsonString } from './vendors/json-string.js'
 
 export type { Vendor } from './registry.js'
 
@@ -26,31 +29,47 @@ export async function dispatch(
   rules: readonly Rule[],
   agent: Agent,
 ): Promise<string> {
-  const { adapter } = entry
-  let payload: unknown
-  try {
-    payload = JSON.parse(rawPayload)
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    return adapter.toResponse({
-      kind: 'block',
-      reason: `invalid hook payload: could not parse JSON (${reason})`,
-    })
+  const parsed = parsePayload(entry, rawPayload)
+  const decision =
+    parsed.kind === 'invalid'
+      ? parsed.decision
+      : await evaluateSafely(parsed.action, rules, {
+          agent,
+          history: parsed.history,
+        })
+  return entry.adapter.toResponse(decision)
+}
+
+type ParseResult =
+  | {
+      kind: 'ok'
+      action: Action
+      history: (() => Promise<SessionEvent[]>) | undefined
+    }
+  | { kind: 'invalid'; decision: Decision }
+
+function parsePayload(entry: VendorEntry, rawPayload: string): ParseResult {
+  const json = JsonString.safeParse(rawPayload)
+  if (!json.success) return invalid(formatZodError(json.error))
+
+  const action = entry.adapter.actionSchema.safeParse(json.data)
+  if (!action.success) return invalid(formatZodError(action.error))
+
+  const sessionPath = entry.adapter.sessionPath?.(json.data)
+  return {
+    kind: 'ok',
+    action: action.data,
+    history: sessionPath ? () => entry.readTranscript(sessionPath) : undefined,
   }
-  let action: Action
-  let history: (() => Promise<SessionEvent[]>) | undefined
-  try {
-    action = adapter.toAction(payload)
-    const path = adapter.sessionPath?.(payload)
-    history = path ? () => entry.readTranscript(path) : undefined
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    return adapter.toResponse({
-      kind: 'block',
-      reason: `invalid hook payload: ${reason}`,
-    })
+}
+
+function invalid(reason: string): ParseResult {
+  return {
+    kind: 'invalid',
+    decision: { kind: 'block', reason: `invalid hook payload: ${reason}` },
   }
-  const ctx = { agent, history }
-  const decision = await evaluateSafely(action, rules, ctx)
-  return adapter.toResponse(decision)
+}
+
+function formatZodError(error: z.ZodError): string {
+  return error.issues.map((i) => i.message).join('; ')
 }
