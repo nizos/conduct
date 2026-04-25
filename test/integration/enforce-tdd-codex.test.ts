@@ -63,6 +63,10 @@ describe.skipIf(!runAi)(
   },
 )
 
+function inferFilename(content: string): string {
+  return /describe\(|\bit\(/.test(content) ? 'target.test.ts' : 'target.ts'
+}
+
 async function setup(opts: {
   transcript: string
   pendingContent: string
@@ -72,7 +76,7 @@ async function setup(opts: {
   onTestFinished(async () => {
     await rm(dir, { recursive: true, force: true })
   })
-  const filePath = path.join(dir, 'target.ts')
+  const filePath = path.join(dir, inferFilename(opts.pendingContent))
   if (opts.beforeFile !== undefined) {
     await writeFile(filePath, opts.beforeFile)
   }

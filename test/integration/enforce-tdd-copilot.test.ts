@@ -63,6 +63,10 @@ describe.skipIf(!runAi)('enforce-tdd + github-copilot (integration)', () => {
   }, 60000)
 })
 
+function inferFilename(content: string): string {
+  return /describe\(|\bit\(/.test(content) ? 'target.test.ts' : 'target.ts'
+}
+
 async function setup(opts: {
   sessionId: string
   pendingContent: string
@@ -89,7 +93,7 @@ async function setup(opts: {
     await rm(home, { recursive: true, force: true })
     await rm(fileDir, { recursive: true, force: true })
   })
-  const filePath = path.join(fileDir, 'target.ts')
+  const filePath = path.join(fileDir, inferFilename(opts.pendingContent))
   if (opts.beforeFile !== undefined) {
     await writeFile(filePath, opts.beforeFile)
   }
