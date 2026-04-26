@@ -15,8 +15,8 @@ Conduct is a policy engine that sits between coding agents and your codebase, ev
 
 - **Multi-Agent Support** - Works with Claude Code, OpenAI Codex, and GitHub Copilot
 - **TDD Enforcement** - Blocks code without a failing test, works with any test runner
-- **Pattern Rules** - Block command or content patterns by string or regex
 - **Customizable Validation** - Adjust TDD rules to match your team's style
+- **Pattern Rules** - Block command or content patterns by string or regex
 - **Deterministic + AI** - Fast text rules; AI judgment only where it matters
 - **Extensible** - Drop in your own rules
 
@@ -26,7 +26,10 @@ Early development. API subject to change.
 
 ## Getting started
 
-Define your rules in `conduct.config.ts` at your project root:
+- **[Setup guide](docs/setup.md)** - Connect conduct to your agent
+- **[Rules reference](docs/rules.md)** - Built-in rules and their options
+
+Create `conduct.config.ts` at your project root. Example:
 
 ```ts
 import {
@@ -60,8 +63,6 @@ export default defineConfig({
   ],
 })
 ```
-
-See the [rules reference](docs/rules.md) for each rule's options and the [setup guide](docs/setup.md) for how to wire conduct into your agent.
 
 ## License
 
