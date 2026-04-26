@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx @nizos/conduct@latest --agent claude-code"
+            "command": "npx @nizos/conduct --agent claude-code"
           }
         ]
       }

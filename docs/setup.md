@@ -1,6 +1,12 @@
 # Setup
 
-Wire conduct into your agent's hook system. Each vendor's section below shows the hook config to add.
+Install conduct as a dev dependency, then wire it into your agent's hook system. Each vendor's section below shows the config to add.
+
+```
+npm install -D @nizos/conduct
+```
+
+For non-Node projects (C++, PHP, Python, etc.), install globally with `npm install -g @nizos/conduct` instead.
 
 ## Claude Code
 
@@ -28,7 +34,7 @@ If you'd rather wire the hook yourself, add a `PreToolUse` entry to `.claude/set
         "hooks": [
           {
             "type": "command",
-            "command": "npx @nizos/conduct@latest --agent claude-code"
+            "command": "npx @nizos/conduct --agent claude-code"
           }
         ]
       }
@@ -61,7 +67,7 @@ Then add a `PreToolUse` hook in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "npx @nizos/conduct@latest --agent codex"
+            "command": "npx @nizos/conduct --agent codex"
           }
         ]
       }
@@ -85,7 +91,7 @@ GitHub Copilot loads hooks from the `.github/hooks/` directory in your project r
     "preToolUse": [
       {
         "type": "command",
-        "bash": "npx @nizos/conduct@latest --agent github-copilot"
+        "bash": "npx @nizos/conduct --agent github-copilot"
       }
     ]
   }
@@ -101,7 +107,7 @@ Further reading: [GitHub Copilot's hooks reference](https://docs.github.com/en/c
 The `conduct` bin is what each vendor's hook command invokes. You can also run it directly — for testing rule changes, scripting CI checks, or pointing at a config that lives outside the repo.
 
 ```bash
-npx @nizos/conduct@latest --agent <vendor> < hook-payload.json
+npx @nizos/conduct --agent <vendor> < hook-payload.json
 ```
 
 The bin reads a hook payload from stdin (capped at 10 MiB) and writes the vendor's response JSON to stdout.

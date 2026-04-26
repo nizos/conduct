@@ -27,10 +27,9 @@ Early development. API subject to change.
 
 ## Getting started
 
-- **[Setup guide](docs/setup.md)** - Connect conduct to your agent
-- **[Rules reference](docs/rules.md)** - Built-in rules and their options
+[Install and wire conduct into your agent](docs/setup.md) and then create a `conduct.config.ts` config file at the root of your project. See the [rules reference](docs/rules.md) for all built-in rules and their options.
 
-Create `conduct.config.ts` at your project root. Example:
+### Example Configuration
 
 ```ts
 import {
