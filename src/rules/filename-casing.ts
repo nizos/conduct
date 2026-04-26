@@ -1,3 +1,5 @@
+import { basename } from 'node:path'
+
 import type { Rule, RuleResult } from './contract.js'
 import { buildMatcher } from './utils/match-paths.js'
 
@@ -32,7 +34,7 @@ export function filenameCasing(options: {
     if (action.type !== 'write') return pass
     const { path } = action
     if (!matchesPaths(path)) return pass
-    if (violations[style](path)) {
+    if (violations[style](basename(path))) {
       return { kind: 'violation', reason: `${path} does not match ${style}` }
     }
     return pass
@@ -41,17 +43,18 @@ export function filenameCasing(options: {
 
 const pass: RuleResult = { kind: 'pass' }
 
-// kebab-case: no uppercase, no underscores.
-const violatesKebab = (path: string): boolean => /[A-Z_]/.test(path)
-// camelCase: no hyphens; no path segment may start with an uppercase
-// letter. `/\/[A-Z]/` catches `src/UserProfile.ts` (segment-initial cap).
-const violatesCamel = (path: string): boolean =>
-  path.includes('-') || /\/[A-Z]/.test(path)
-// snake_case: no uppercase anywhere.
-const violatesSnake = (path: string): boolean => /[A-Z]/.test(path)
+// kebab-case: no uppercase, no underscores in the filename.
+const violatesKebab = (name: string): boolean => /[A-Z_]/.test(name)
+// camelCase: filename must not start with an uppercase letter and must
+// not contain hyphens. Catches PascalCase (`UserProfile.ts`) and
+// kebab-cased filenames.
+const violatesCamel = (name: string): boolean =>
+  name.includes('-') || /^[A-Z]/.test(name)
+// snake_case: no uppercase anywhere in the filename.
+const violatesSnake = (name: string): boolean => /[A-Z]/.test(name)
 
 const violations = {
   'kebab-case': violatesKebab,
   camelCase: violatesCamel,
   snake_case: violatesSnake,
-} satisfies Record<Style, (path: string) => boolean>
+} satisfies Record<Style, (name: string) => boolean>
