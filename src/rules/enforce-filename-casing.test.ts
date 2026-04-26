@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
-import { filenameCasing, type Style } from './filename-casing.js'
+import { enforceFilenameCasing, type Style } from './enforce-filename-casing.js'
 
-describe('filename-casing', () => {
+describe('enforce-filename-casing', () => {
   describe('kebab-case', () => {
     const style = 'kebab-case'
 
@@ -97,14 +97,14 @@ describe('filename-casing', () => {
   })
 
   it('passes a non-write action without inspecting path', () => {
-    const rule = filenameCasing({ style: 'camelCase' })
+    const rule = enforceFilenameCasing({ style: 'camelCase' })
     const result = rule({ type: 'command', command: 'npm install' })
 
     expect(result).toEqual({ kind: 'pass' })
   })
 
   it('skips a write whose path is outside the configured paths', () => {
-    const rule = filenameCasing({
+    const rule = enforceFilenameCasing({
       style: 'kebab-case',
       paths: ['src/**'],
     })
@@ -115,7 +115,7 @@ describe('filename-casing', () => {
 })
 
 function setup({ path, style }: { path: string; style: Style }) {
-  const rule = filenameCasing({ style })
+  const rule = enforceFilenameCasing({ style })
   const result = rule({ type: 'write', path, content: '' })
   return { result }
 }

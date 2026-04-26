@@ -7,7 +7,7 @@ import { dispatch, run } from './cli.js'
 import type { Config } from './config.js'
 import { vendors, type VendorEntry } from './registry.js'
 import type { Action, Agent } from './types.js'
-import { filenameCasing } from './rules/filename-casing.js'
+import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
 
 const claudeCodeEntry = vendors['claude-code']
 
@@ -86,7 +86,7 @@ describe('cli', () => {
     )
     const injectedConfig: Config = {
       rules: [
-        filenameCasing({
+        enforceFilenameCasing({
           style: 'kebab-case',
           paths: ['**/src/**', '**/test/**'],
         }),
@@ -128,7 +128,7 @@ describe('cli', () => {
 
 const defaultTestConfig: Config = {
   rules: [
-    filenameCasing({
+    enforceFilenameCasing({
       style: 'kebab-case',
       paths: ['**/src/**', '**/test/**'],
     }),

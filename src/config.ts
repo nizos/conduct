@@ -46,10 +46,10 @@ export type Config = {
  * export is inferred as `Config` without the user typing it.
  *
  * @example
- * import { defineConfig, filenameCasing } from '@nizos/conduct'
+ * import { defineConfig, enforceFilenameCasing } from '@nizos/conduct'
  *
  * export default defineConfig({
- *   rules: [filenameCasing({ style: 'kebab-case' })],
+ *   rules: [enforceFilenameCasing({ style: 'kebab-case' })],
  * })
  */
 export function defineConfig(config: Config): Config {

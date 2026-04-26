@@ -37,7 +37,7 @@ Every matching write triggers an AI call — the most expensive rule in the libr
 
 ---
 
-## filenameCasing
+## enforceFilenameCasing
 
 Blocks a write whose filename doesn't match the configured casing style. Passes non-write actions through.
 
@@ -54,8 +54,8 @@ Blocks a write whose filename doesn't match the configured casing style. Passes 
 ### Examples
 
 ```ts
-filenameCasing({ style: 'kebab-case' })
-filenameCasing({ style: 'kebab-case', paths: ['src/**', 'test/**'] })
+enforceFilenameCasing({ style: 'kebab-case' })
+enforceFilenameCasing({ style: 'kebab-case', paths: ['src/**', 'test/**'] })
 ```
 
 ---

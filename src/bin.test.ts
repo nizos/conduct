@@ -6,7 +6,7 @@ import { main, type MainResult } from './bin.js'
 import type { ConfigLoader } from './cli.js'
 import type { Config } from './config.js'
 import type { Agent } from './types.js'
-import { filenameCasing } from './rules/filename-casing.js'
+import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
 
 describe('bin main', () => {
   it('returns exit code 2 and a helpful stderr when --agent is missing', async () => {
@@ -102,7 +102,7 @@ const stubAgent: Agent = {
 
 const testConfig: Config = {
   rules: [
-    filenameCasing({
+    enforceFilenameCasing({
       style: 'kebab-case',
       paths: ['**/src/**', '**/test/**'],
     }),

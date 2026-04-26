@@ -1,8 +1,8 @@
-import { defineConfig, filenameCasing } from '../../../src/index.js'
+import { defineConfig, enforceFilenameCasing } from '../../../src/index.js'
 
 export default defineConfig({
   rules: [
-    filenameCasing({
+    enforceFilenameCasing({
       style: 'kebab-case',
       paths: ['**/src/**', '**/test/**'],
     }),

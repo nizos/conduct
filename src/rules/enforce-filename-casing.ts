@@ -19,12 +19,12 @@ export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
  * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
  * @example
- * filenameCasing({ style: 'kebab-case' })
+ * enforceFilenameCasing({ style: 'kebab-case' })
  *
  * @example
- * filenameCasing({ style: 'kebab-case', paths: ['src/**', 'test/**'] })
+ * enforceFilenameCasing({ style: 'kebab-case', paths: ['src/**', 'test/**'] })
  */
-export function filenameCasing(options: {
+export function enforceFilenameCasing(options: {
   style: Style
   paths?: string[]
 }): Rule {

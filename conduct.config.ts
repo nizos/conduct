@@ -1,14 +1,14 @@
 import {
   defineConfig,
   enforceTdd,
-  filenameCasing,
+  enforceFilenameCasing,
   forbidContentPattern,
 } from './src/index.js'
 
 export default defineConfig({
   rules: [
     enforceTdd({ paths: ['**/src/**', '**/test/**'] }),
-    filenameCasing({
+    enforceFilenameCasing({
       style: 'kebab-case',
       paths: ['**/src/**', '**/test/**'],
     }),
