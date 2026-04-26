@@ -12,6 +12,14 @@ Process discipline for coding agents.
 
 Conduct is a policy engine that sits between coding agents and your codebase, evaluating each attempted action against configurable rules. It generalizes [tdd-guard](https://github.com/nizos/tdd-guard) beyond TDD and across coding agents.
 
+<p align="center">
+  <a href="https://nizar.se/uploads/videos/conduct-demo.mp4">
+    <img src="docs/assets/conduct-demo-screenshot.gif" alt="Conduct demo showing TDD enforcement" width="600">
+  </a>
+  <br>
+  <em>Click to watch Conduct enforce TDD</em>
+</p>
+
 ## Features
 
 - **Multi-Agent Support** - Works with Claude Code, OpenAI Codex, and GitHub Copilot
@@ -21,13 +29,9 @@ Conduct is a policy engine that sits between coding agents and your codebase, ev
 - **Deterministic + AI** - Fast text rules; AI judgment only where it matters
 - **Extensible** - Drop in your own rules
 
-## Status
-
-Early development. API subject to change.
-
 ## Getting started
 
-[Install and wire conduct into your agent](docs/setup.md) and then create a `conduct.config.ts` config file at the root of your project. See the [rules reference](docs/rules.md) for all built-in rules and their options.
+[Install and wire Conduct into your agent](docs/setup.md) and then create a `conduct.config.ts` config file at the root of your project. See the [rules reference](docs/rules.md) for all built-in rules and their options.
 
 ### Example Configuration
 
