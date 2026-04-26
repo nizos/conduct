@@ -81,6 +81,27 @@ describe('engine', () => {
     expect(decision).toEqual({ kind: 'block', reason: 'no' })
   })
 
+  it('processes multiple rule blocks in order, skipping non-matches and short-circuiting on the first violation', async () => {
+    const fail: Rule = () => ({
+      kind: 'violation' as const,
+      reason: 'second block fired',
+    })
+    const unreached: Rule = () => {
+      throw new Error('block should never run')
+    }
+
+    const decision = await evaluate(
+      { type: 'write', path: 'src/foo.ts', content: '' },
+      [
+        { files: ['lib/**'], rules: [unreached] },
+        { files: ['src/**'], rules: [fail] },
+        { files: ['**/*.md'], rules: [unreached] },
+      ],
+    )
+
+    expect(decision).toEqual({ kind: 'block', reason: 'second block fired' })
+  })
+
   it('evaluateSafely turns a rule crash into a block decision', async () => {
     const crashing: Rule = () => {
       throw new Error('kaboom')

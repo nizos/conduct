@@ -84,6 +84,18 @@ describe('bin main', () => {
     expect(result.stdout).toBe('')
   })
 
+  it('returns exit 1 with a stderr message when the config loader throws', async () => {
+    const result = await setup({
+      stdin: KEBAB_PAYLOAD,
+      loadConfig: async () => {
+        throw new Error('config blew up')
+      },
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toMatch(/config blew up/)
+  })
+
   it('writes the run() response to stdout and exits 0 on success', async () => {
     const result = await setup({
       stdin: KEBAB_PAYLOAD,

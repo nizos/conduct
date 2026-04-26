@@ -41,6 +41,15 @@ describe('codex adapter', () => {
     ).toThrow()
   })
 
+  it('throws when apply_patch command lacks an Add/Update/Delete File header', () => {
+    expect(() =>
+      actionSchema.parse({
+        tool_name: 'apply_patch',
+        tool_input: { command: 'just a string with no header' },
+      }),
+    ).toThrow()
+  })
+
   it('maps an apply_patch payload to a write action with path + patch content', () => {
     const payload = JSON.parse(
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
