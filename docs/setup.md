@@ -85,22 +85,14 @@ GitHub Copilot loads hooks from the `.github/hooks/` directory in your project r
     "preToolUse": [
       {
         "type": "command",
-        "bash": "npx @nizos/conduct@latest --agent github-copilot",
-        "timeoutSec": 60
+        "bash": "npx @nizos/conduct@latest --agent github-copilot"
       }
     ]
   }
 }
 ```
 
-A few schema differences from the Claude Code config worth noting:
-
-- Event names are camelCase (`preToolUse`, not `PreToolUse`)
-- Hook entries use `bash` (or `powershell` on Windows) instead of `command`
-- There's no `matcher` field — every tool call fires the hook; conduct's rules short-circuit on non-write actions
-- The default `timeoutSec` is 30; bump to 60 to give AI-validated rules headroom
-
-Conduct accepts Copilot's `bash`, `create`, and `edit` tool payloads.
+Every tool call fires the hook; conduct's rules pass through non-write actions. Conduct accepts Copilot's `bash`, `create`, and `edit` tool payloads.
 
 Further reading: [GitHub Copilot's hooks reference](https://docs.github.com/en/copilot/reference/hooks-configuration).
 
