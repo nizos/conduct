@@ -61,6 +61,47 @@ describe('conduct cli (integration)', () => {
     expect(stdout).toBe('')
   })
 
+  it('blocks a write whose path matches a { files, rules } block scope', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-new-file.json',
+      'utf8',
+    )
+
+    const { stdout } = await runCliAt(
+      'dist/bin.js',
+      [
+        '--agent',
+        'claude-code',
+        '--config',
+        'test/fixtures/configs/blocks.config.ts',
+      ],
+      payload,
+    )
+    const response = JSON.parse(stdout)
+
+    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+  })
+
+  it('skips a { files, rules } block when the write path is outside its files glob', async () => {
+    const payload = readFileSync(
+      'test/fixtures/claude-code/write-outside-src.json',
+      'utf8',
+    )
+
+    const { stdout } = await runCliAt(
+      'dist/bin.js',
+      [
+        '--agent',
+        'claude-code',
+        '--config',
+        'test/fixtures/configs/blocks.config.ts',
+      ],
+      payload,
+    )
+
+    expect(stdout).toBe('')
+  })
+
   it('runs main() when invoked via a symlink (the npx case)', async () => {
     const dir = await new Promise<string>((resolve, reject) => {
       mkdtemp(path.join(tmpdir(), 'conduct-bin-link-'), (err, d) =>
