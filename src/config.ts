@@ -7,17 +7,35 @@ import type { Agent } from './types.js'
 import type { Rule } from './rules/contract.js'
 
 /**
+ * A scoped rule block. Groups rules under a shared `files` filter so
+ * the same path glob doesn't have to be repeated on each rule. When
+ * `files` is omitted, the block applies to every action (the same as
+ * a flat rule). Mirrors the ESLint flat-config shape.
+ */
+export type RuleBlock = {
+  files?: readonly string[]
+  rules: readonly Rule[]
+}
+
+/**
+ * What a `Config.rules` entry can be: either a flat rule (applies
+ * everywhere) or a `RuleBlock` (applies under a `files` filter).
+ */
+export type RuleEntry = Rule | RuleBlock
+
+/**
  * A project's Conduct configuration.
  *
- * - `rules` — the active rules for the session, each produced by
- *   calling a rule factory with its options.
+ * - `rules` — the active rules for the session. Entries can be flat
+ *   rules or `{ files, rules }` blocks; blocks scope their rules to
+ *   write actions whose path matches `files`.
  * - `agent` — optional AI validator to inject into every rule's ctx.
  *   When omitted, the engine uses the validator that pairs with the
  *   selected vendor (e.g. Claude Agent SDK for `claude-code`), which
  *   piggybacks on the user's logged-in session.
  */
 export type Config = {
-  rules: readonly Rule[]
+  rules: readonly RuleEntry[]
   agent?: Agent
 }
 

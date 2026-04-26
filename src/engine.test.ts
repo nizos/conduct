@@ -50,6 +50,37 @@ describe('engine', () => {
     expect(received).toBe(ctx)
   })
 
+  it('applies the rules in a rule block', async () => {
+    const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
+
+    const decision = await evaluate({ type: 'command', command: 'x' }, [
+      { rules: [violate] },
+    ])
+
+    expect(decision).toEqual({ kind: 'block', reason: 'no' })
+  })
+
+  it('skips a rule block when the write path does not match files', async () => {
+    const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
+
+    const decision = await evaluate(
+      { type: 'write', path: 'README.md', content: '' },
+      [{ files: ['src/**'], rules: [violate] }],
+    )
+
+    expect(decision).toEqual({ kind: 'allow' })
+  })
+
+  it('applies a rule block with files to a command action (files only filters writes)', async () => {
+    const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
+
+    const decision = await evaluate({ type: 'command', command: 'rm -rf /' }, [
+      { files: ['src/**'], rules: [violate] },
+    ])
+
+    expect(decision).toEqual({ kind: 'block', reason: 'no' })
+  })
+
   it('evaluateSafely turns a rule crash into a block decision', async () => {
     const crashing: Rule = () => {
       throw new Error('kaboom')

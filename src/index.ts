@@ -1,3 +1,8 @@
-export { defineConfig, type Config } from './config.js'
+export {
+  defineConfig,
+  type Config,
+  type RuleBlock,
+  type RuleEntry,
+} from './config.js'
 export type { Action, Agent, Decision, SessionEvent, Verdict } from './types.js'
 export * from './rules/index.js'

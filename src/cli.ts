@@ -1,8 +1,12 @@
 import { z } from 'zod'
 
 import type { Action, Agent, Decision, SessionEvent } from './types.js'
-import type { Rule } from './rules/contract.js'
-import { findConfig, loadConfig, type Config } from './config.js'
+import {
+  findConfig,
+  loadConfig,
+  type Config,
+  type RuleEntry,
+} from './config.js'
 import { evaluateSafely } from './engine.js'
 import { vendors, type Vendor, type VendorEntry } from './registry.js'
 import { JsonString } from './utils/json-string.js'
@@ -27,7 +31,7 @@ export async function run(
 export async function dispatch(
   entry: VendorEntry,
   rawPayload: string,
-  rules: readonly Rule[],
+  rules: readonly RuleEntry[],
   agent: Agent,
 ): Promise<string> {
   const parsed = parsePayload(entry, rawPayload)
