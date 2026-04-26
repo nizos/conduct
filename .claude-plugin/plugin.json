@@ -1,6 +1,6 @@
 {
   "name": "conduct",
-  "description": "Process discipline for coding agents — TDD enforcement and configurable rules.",
+  "description": "Process discipline for AI coding agents — TDD enforcement and policies.",
   "version": "0.0.9",
   "author": {
     "name": "Nizar Selander"

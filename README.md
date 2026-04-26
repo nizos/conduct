@@ -6,7 +6,7 @@
 [![Security](https://github.com/nizos/conduct/actions/workflows/security.yml/badge.svg)](https://github.com/nizos/conduct/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Process discipline for coding agents.
+Process discipline for AI coding agents.
 
 ## Overview
 
@@ -24,10 +24,9 @@ Conduct is a policy engine that sits between coding agents and your codebase, ev
 
 - **Multi-Agent Support** - Works with Claude Code, OpenAI Codex, and GitHub Copilot
 - **TDD Enforcement** - Blocks code without a failing test, works with any test runner
-- **Customizable Validation** - Adjust TDD rules to match your team's style
 - **Pattern Rules** - Block command or content patterns by string or regex
-- **Deterministic + AI** - Fast text rules; AI judgment only where it matters
-- **Extensible** - Drop in your own rules
+- **Deterministic and AI Rules** - Fast pattern matching for simple checks, model-based validation where it's needed
+- **Custom Rules** - Define your own rules alongside the built-in ones
 
 ## Getting started
 

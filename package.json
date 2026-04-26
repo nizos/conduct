@@ -1,7 +1,7 @@
 {
   "name": "@nizos/conduct",
   "version": "0.0.9",
-  "description": "Process discipline for coding agents.",
+  "description": "Process discipline for AI coding agents.",
   "license": "MIT",
   "author": "Nizar Selander",
   "repository": "github:nizos/conduct",

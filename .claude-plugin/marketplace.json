@@ -7,7 +7,7 @@
     {
       "name": "conduct",
       "source": "./",
-      "description": "Process discipline for coding agents — TDD enforcement and configurable rules."
+      "description": "Process discipline for AI coding agents — TDD enforcement and policies."
     }
   ]
 }
