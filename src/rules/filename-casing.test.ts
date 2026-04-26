@@ -20,6 +20,15 @@ describe('filename-casing', () => {
 
       expect(result).toMatchObject({ kind: 'violation' })
     })
+
+    it('allows a kebab-case basename when the path is absolute', () => {
+      const { result } = setup({
+        path: '/Users/foo/Project/src/user-profile.ts',
+        style,
+      })
+
+      expect(result).toEqual({ kind: 'pass' })
+    })
   })
 
   describe('camelCase', () => {
