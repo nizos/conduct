@@ -48,6 +48,15 @@ describe('filename-casing', () => {
 
       expect(result).toMatchObject({ kind: 'violation' })
     })
+
+    it('allows a camelCase basename when the path is absolute', () => {
+      const { result } = setup({
+        path: '/Users/foo/Project/src/userProfile.ts',
+        style,
+      })
+
+      expect(result).toEqual({ kind: 'pass' })
+    })
   })
 
   describe('snake_case', () => {
@@ -63,6 +72,15 @@ describe('filename-casing', () => {
       const { result } = setup({ path: 'src/userProfile.ts', style })
 
       expect(result).toMatchObject({ kind: 'violation' })
+    })
+
+    it('allows a snake_case basename when the path is absolute', () => {
+      const { result } = setup({
+        path: '/Users/foo/Project/src/user_profile.ts',
+        style,
+      })
+
+      expect(result).toEqual({ kind: 'pass' })
     })
   })
 
