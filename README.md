@@ -65,6 +65,10 @@ export default defineConfig({
 })
 ```
 
+## Contributing
+
+Contributions are welcome! See the [contributing guidelines](CONTRIBUTING.md) to get started.
+
 ## License
 
 [MIT](LICENSE)
