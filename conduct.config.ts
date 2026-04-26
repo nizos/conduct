@@ -7,15 +7,18 @@ import {
 
 export default defineConfig({
   rules: [
-    enforceTdd({ paths: ['**/src/**', '**/test/**'] }),
-    enforceFilenameCasing({
-      style: 'kebab-case',
-      paths: ['**/src/**', '**/test/**'],
-    }),
-    forbidContentPattern({
-      match: /\p{Extended_Pictographic}/u,
-      reason: 'No emojis in documentation',
-      paths: ['**/*.md'],
-    }),
+    {
+      files: ['**/src/**', '**/test/**'],
+      rules: [enforceTdd(), enforceFilenameCasing({ style: 'kebab-case' })],
+    },
+    {
+      files: ['**/*.md'],
+      rules: [
+        forbidContentPattern({
+          match: /\p{Extended_Pictographic}/u,
+          reason: 'No emojis in documentation',
+        }),
+      ],
+    },
   ],
 })
