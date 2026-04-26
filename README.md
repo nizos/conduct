@@ -25,14 +25,22 @@ Conduct is a policy engine that sits between coding agents and your codebase, ev
 - **Multi-Agent Support** - Works with Claude Code, OpenAI Codex, and GitHub Copilot
 - **TDD Enforcement** - Blocks code without a failing test, works with any test runner
 - **Pattern Rules** - Block command or content patterns by string or regex
-- **Deterministic and AI Rules** - Fast pattern matching for simple checks, model-based validation where it's needed
+- **Deterministic and AI Rules** - Deterministic checks when possible, model validation when needed
 - **Custom Rules** - Define your own rules alongside the built-in ones
 
 ## Getting started
 
-[Install and wire Conduct into your agent](docs/setup.md) and then create a `conduct.config.ts` config file at the root of your project. See the [rules reference](docs/rules.md) for all built-in rules and their options.
+Install Conduct as a dev dependency, then [wire it into your agent](docs/setup.md):
+
+```
+npm install -D @nizos/conduct
+```
+
+Create a `conduct.config.ts` config file at the root of your project.
 
 ### Example Configuration
+
+A few rules in action. See the [rules reference](docs/rules.md) for the full list.
 
 ```ts
 import {
