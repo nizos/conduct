@@ -102,6 +102,17 @@ describe('engine', () => {
     expect(decision).toEqual({ kind: 'block', reason: 'second block fired' })
   })
 
+  it('skips a rule block whose files array is empty (explicit "match nothing")', async () => {
+    const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
+
+    const decision = await evaluate(
+      { type: 'write', path: 'src/foo.ts', content: '' },
+      [{ files: [], rules: [violate] }],
+    )
+
+    expect(decision).toEqual({ kind: 'allow' })
+  })
+
   it('evaluateSafely turns a rule crash into a block decision', async () => {
     const crashing: Rule = () => {
       throw new Error('kaboom')

@@ -8,9 +8,14 @@ import type { Rule } from './rules/contract.js'
 
 /**
  * A scoped rule block. Groups rules under a shared `files` filter so
- * the same path glob doesn't have to be repeated on each rule. When
- * `files` is omitted, the block applies to every action (the same as
- * a flat rule). Mirrors the ESLint flat-config shape.
+ * the same path glob doesn't have to be repeated on each rule.
+ * Mirrors the ESLint flat-config shape.
+ *
+ * - `files` omitted — block applies to every action (same as a flat rule).
+ * - `files: []` — explicit "match nothing"; the block is skipped.
+ * - `files: [...]` — write actions are filtered by the glob; non-write
+ *   actions (commands) pass the block-level filter and rules inside
+ *   self-filter by action type.
  */
 export type RuleBlock = {
   files?: readonly string[]
