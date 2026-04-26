@@ -47,10 +47,8 @@ describe('claude-code adapter', () => {
     expect(action).toMatchObject({ path: payload.tool_input.file_path })
   })
 
-  it('builds an allow response from an allow decision', () => {
-    const response = JSON.parse(toResponse({ kind: 'allow' }))
-
-    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+  it('returns no opinion (empty stdout) on an allow decision so normal permission flow takes over', () => {
+    expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
   it('builds a deny response from a block decision', () => {

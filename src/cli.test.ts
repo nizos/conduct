@@ -17,15 +17,16 @@ const stubAgent: Agent = {
 
 describe('cli', () => {
   it('denies a write whose filename violates kebab-case', async () => {
-    const { response } = await setup('write-new-file.json')
+    const { raw } = await setup('write-new-file.json')
+    const response = JSON.parse(raw)
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
-  it('allows a write whose filename matches kebab-case', async () => {
-    const { response } = await setup('write-kebab-case.json')
+  it('returns no opinion (empty stdout) for a write that passes every rule', async () => {
+    const { raw } = await setup('write-kebab-case.json')
 
-    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+    expect(raw).toBe('')
   })
 
   it('produces an empty allow response for a codex Bash payload that passes rules', async () => {
@@ -57,7 +58,8 @@ describe('cli', () => {
   })
 
   it('returns a deny response when a rule crashes on the payload', async () => {
-    const { response } = await setup('multi-edit.json')
+    const { raw } = await setup('multi-edit.json')
+    const response = JSON.parse(raw)
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
@@ -96,9 +98,8 @@ describe('cli', () => {
       vendor: 'claude-code',
       loadConfig: async () => injectedConfig,
     })
-    const response = JSON.parse(raw)
 
-    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+    expect(raw).toBe('')
   })
 
   it('returns a deny response when the adapter actionSchema rejects the payload', async () => {
@@ -144,6 +145,5 @@ async function setup(fixtureName: string, config: Config = defaultTestConfig) {
     vendor: 'claude-code',
     loadConfig: async () => config,
   })
-  const response = JSON.parse(raw)
-  return { response }
+  return { raw }
 }

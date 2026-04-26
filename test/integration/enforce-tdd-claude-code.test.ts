@@ -91,6 +91,7 @@ async function setup(opts: {
   })
   const agent = entry.agent()
   const response = await dispatch(entry, payload, [enforceTdd()], agent)
+  if (response === '') return { decision: 'allow' }
   const parsed = JSON.parse(response)
   return {
     decision: parsed.hookSpecificOutput.permissionDecision,

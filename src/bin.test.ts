@@ -71,7 +71,7 @@ describe('bin main', () => {
     })
 
     expect(result.exitCode).toBe(0)
-    expect(decisionOf(result)).toBe('allow')
+    expect(result.stdout).toBe('')
   })
 
   it('forwards an injected config loader through to run()', async () => {
@@ -81,7 +81,7 @@ describe('bin main', () => {
     })
 
     expect(result.exitCode).toBe(0)
-    expect(decisionOf(result)).toBe('allow')
+    expect(result.stdout).toBe('')
   })
 
   it('writes the run() response to stdout and exits 0 on success', async () => {
@@ -92,7 +92,7 @@ describe('bin main', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stderr).toBeUndefined()
-    expect(decisionOf(result)).toBe('allow')
+    expect(result.stdout).toBe('')
   })
 })
 
@@ -127,8 +127,4 @@ async function setup(
     stdin: opts.stdin ?? '',
     loadConfig: opts.loadConfig,
   })
-}
-
-function decisionOf(result: MainResult): string {
-  return JSON.parse(result.stdout ?? '').hookSpecificOutput.permissionDecision
 }

@@ -60,10 +60,8 @@ export function toResponse(decision: Decision): string {
       },
     })
   }
-  return JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      permissionDecision: 'allow',
-    },
-  })
+  // Allow = "no opinion": empty stdout + exit 0 lets Claude Code's normal
+  // permission flow take over. Returning permissionDecision: 'allow' would
+  // skip the user's confirmation prompt for every non-blocked action.
+  return ''
 }

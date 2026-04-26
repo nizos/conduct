@@ -26,7 +26,7 @@ describe('conduct cli (integration)', () => {
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
-  it('allows a Bash payload (write-only rules do not apply)', async () => {
+  it('emits no opinion (empty stdout) for a Bash payload that no rule blocks', async () => {
     const payload = readFileSync(
       'test/fixtures/claude-code/bash-npm-install.json',
       'utf8',
@@ -37,9 +37,8 @@ describe('conduct cli (integration)', () => {
       ['--agent', 'claude-code', '--config', CONFIG_FIXTURE],
       payload,
     )
-    const response = JSON.parse(stdout)
 
-    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+    expect(stdout).toBe('')
   })
 
   it('loads the config from --config <path> instead of discovering one', async () => {
@@ -58,9 +57,8 @@ describe('conduct cli (integration)', () => {
       ],
       payload,
     )
-    const response = JSON.parse(stdout)
 
-    expect(response.hookSpecificOutput.permissionDecision).toBe('allow')
+    expect(stdout).toBe('')
   })
 
   it('runs main() when invoked via a symlink (the npx case)', async () => {
