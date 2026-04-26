@@ -36,31 +36,41 @@ Create `conduct.config.ts` at your project root. Example:
 import {
   defineConfig,
   enforceTdd,
+  enforceFilenameCasing,
   forbidCommandPattern,
   forbidContentPattern,
 } from '@nizos/conduct'
 
 export default defineConfig({
   rules: [
-    enforceTdd({ paths: ['**/*.ts'] }),
     forbidCommandPattern({
       match: 'npm install',
       reason: 'Use pnpm install instead',
     }),
-    forbidContentPattern({
-      match: 'setTimeout',
-      reason: 'No timers in source code',
-      paths: ['src/**'],
-    }),
-    forbidContentPattern({
-      match: 'eslint-disable',
-      reason: 'Fix the lint violation rather than disabling the rule',
-    }),
-    forbidContentPattern({
-      match: /\p{Extended_Pictographic}/u,
-      reason: 'No emojis in documentation',
-      paths: ['**/*.md'],
-    }),
+    {
+      files: ['src/**', 'test/**'],
+      rules: [
+        enforceTdd(),
+        enforceFilenameCasing({ style: 'kebab-case' }),
+        forbidContentPattern({
+          match: 'setTimeout',
+          reason: 'No timers in source code',
+        }),
+        forbidContentPattern({
+          match: 'eslint-disable',
+          reason: 'Fix the lint violation rather than disabling the rule',
+        }),
+      ],
+    },
+    {
+      files: ['**/*.md'],
+      rules: [
+        forbidContentPattern({
+          match: /\p{Extended_Pictographic}/u,
+          reason: 'No emojis in documentation',
+        }),
+      ],
+    },
   ],
 })
 ```
