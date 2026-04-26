@@ -43,7 +43,7 @@ describe('cli', () => {
     expect(response).toBe('')
   })
 
-  it('produces an allow response for a github-copilot bash payload that passes rules', async () => {
+  it('produces an empty allow response for a github-copilot bash payload that passes rules', async () => {
     const payload = readFileSync(
       'test/fixtures/github-copilot/pre-bash-npm-test.json',
       'utf8',
@@ -54,7 +54,7 @@ describe('cli', () => {
       loadConfig: async () => defaultTestConfig,
     })
 
-    expect(JSON.parse(response)).toEqual({ permissionDecision: 'allow' })
+    expect(response).toBe('')
   })
 
   it('returns a deny response when a rule crashes on the payload', async () => {

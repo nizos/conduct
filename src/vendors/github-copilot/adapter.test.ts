@@ -29,10 +29,8 @@ describe('github-copilot adapter', () => {
     })
   })
 
-  it('builds an allow response with permissionDecision: allow', () => {
-    const response = JSON.parse(toResponse({ kind: 'allow' }))
-
-    expect(response).toEqual({ permissionDecision: 'allow' })
+  it('returns no opinion (empty stdout) on an allow decision so Copilot keeps its built-in confirmations', () => {
+    expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
   it('throws when toolArgs is missing or not a JSON-encoded string', () => {

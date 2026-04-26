@@ -65,7 +65,9 @@ export function toResponse(decision: Decision): string {
       permissionDecisionReason: decision.reason,
     })
   }
-  // Per docs, only `deny` is currently processed by the CLI; `allow`
-  // is emitted for compliance but doesn't bypass built-in confirmations.
-  return JSON.stringify({ permissionDecision: 'allow' })
+  // Allow = "no opinion": empty stdout keeps Copilot's normal flow and
+  // built-in confirmations intact. Today only `deny` is acted on, but
+  // emitting `allow` would silently grant permission once Copilot starts
+  // honoring it.
+  return ''
 }
