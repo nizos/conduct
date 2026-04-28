@@ -1,0 +1,3 @@
+{"kind":0,"v":{"requests":[]}}
+{"kind":2,"k":["requests"],"v":[{}]}
+{"kind":1,"k":["requests",0,"result"],"v":{"metadata":{"toolCallResults":{"call_d1":{"$mid":20,"content":[{"$mid":21,"value":"the derived result"}]}}}}}

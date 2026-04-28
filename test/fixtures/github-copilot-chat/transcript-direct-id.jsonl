@@ -1,0 +1,2 @@
+{"type":"user.message","data":{"content":"do something"},"id":"e1","timestamp":"2026-01-01T00:00:00.000Z","parentId":null}
+{"type":"tool.execution_start","data":{"toolCallId":"call_x","toolName":"some_tool","arguments":{"k":"v"}},"id":"e2","timestamp":"2026-01-01T00:00:01.000Z","parentId":"e1"}
