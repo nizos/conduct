@@ -34,5 +34,13 @@ describe('vendors registry', () => {
     expect(vendors['claude-code'].readTranscript).toBeTypeOf('function')
     expect(vendors['codex'].readTranscript).toBeTypeOf('function')
     expect(vendors['github-copilot'].readTranscript).toBeTypeOf('function')
+    expect(vendors['github-copilot-chat'].readTranscript).toBeTypeOf('function')
+  })
+
+  it('exposes the github-copilot-chat entry with adapter, agent, and transcript reader', () => {
+    const entry = vendors['github-copilot-chat']
+    expect(entry.adapter.actionSchema).toBeDefined()
+    expect(entry.agent).toBeTypeOf('function')
+    expect(entry.readTranscript).toBeTypeOf('function')
   })
 })

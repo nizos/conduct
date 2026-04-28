@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-04-28T06:42:52.527Z",
+  "hook_event_name": "PreToolUse",
+  "session_id": "967299fa-bbad-4984-aeae-68511999212e",
+  "transcript_path": "/tmp/copilot-chat-transcript.jsonl",
+  "tool_name": "read_file",
+  "tool_input": {
+    "filePath": "/workspaces/conduct/src/cart.test.ts",
+    "startLine": 1,
+    "endLine": 200
+  },
+  "tool_use_id": "call_eFV0QVJZvntEHiTD42ctK5tw",
+  "cwd": "/workspaces/conduct"
+}

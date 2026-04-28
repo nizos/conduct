@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-04-28T06:43:22.211Z",
+  "hook_event_name": "PreToolUse",
+  "session_id": "08d49286-27dc-4eb0-ae51-29461e73a07b",
+  "transcript_path": "/tmp/copilot-chat-transcript.jsonl",
+  "tool_name": "list_dir",
+  "tool_input": {
+    "path": "/workspaces/conduct/src"
+  },
+  "tool_use_id": "call_tXbuwvnUavXTXCqloKhSBQ0c",
+  "cwd": "/workspaces/conduct"
+}
