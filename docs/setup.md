@@ -80,9 +80,29 @@ Codex's matcher is a regex. `^(Bash|apply_patch|Edit|Write)$` covers shell comma
 
 Further reading: [Codex's hooks documentation](https://developers.openai.com/codex/hooks).
 
-## GitHub Copilot
+## GitHub Copilot Chat
 
-GitHub Copilot loads hooks from the `.github/hooks/` directory in your project root — the same path the cloud agent reads from your repo's default branch. Create `.github/hooks/conduct.json`:
+The Copilot Chat extension (VS Code) reads hooks from `.github/hooks/conduct.json` in your project root — the same location the CLI uses. Create the file with:
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "npx @nizos/conduct --agent github-copilot-chat"
+      }
+    ]
+  }
+}
+```
+
+Every tool call fires the hook; conduct's rules pass through non-write actions. The Chat adapter accepts `run_in_terminal`, `create_file`, and `replace_string_in_file` payloads.
+
+## GitHub Copilot CLI
+
+GitHub Copilot CLI reads hooks from the same `.github/hooks/conduct.json` — the cloud agent also reads it from your repo's default branch. The shape is identical to Chat; only the `--agent` value changes:
 
 ```json
 {
@@ -114,7 +134,7 @@ The bin reads a hook payload from stdin (capped at 10 MiB) and writes the vendor
 
 ### Options
 
-- `--agent <vendor>` — Required. One of `claude-code`, `codex`, or `github-copilot`.
+- `--agent <vendor>` — Required. One of `claude-code`, `codex`, `github-copilot`, or `github-copilot-chat`.
 - `--config <path>` — Load rules from `<path>` instead of auto-discovering `conduct.config.ts`. Use for gitignored configs, CI overrides, or A/B comparisons.
 - `--version` — Print the package version.
 - `--help` — Print usage and exit.

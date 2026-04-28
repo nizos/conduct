@@ -1,6 +1,17 @@
 import { describe, it, expect } from 'vitest'
 
 import { vendors, isVendor } from './registry.js'
+import { claudeCode } from './vendors/claude-code/agent.js'
+import * as claudeCodeAdapter from './vendors/claude-code/adapter.js'
+import { readTranscript as readClaudeCodeTranscript } from './vendors/claude-code/transcript.js'
+import { codex } from './vendors/codex/agent.js'
+import * as codexAdapter from './vendors/codex/adapter.js'
+import { readTranscript as readCodexTranscript } from './vendors/codex/transcript.js'
+import { githubCopilot } from './vendors/github-copilot/agent.js'
+import * as githubCopilotAdapter from './vendors/github-copilot/adapter.js'
+import { readTranscript as readGithubCopilotTranscript } from './vendors/github-copilot/transcript.js'
+import * as githubCopilotChatAdapter from './vendors/github-copilot-chat/adapter.js'
+import { readTranscript as readGithubCopilotChatTranscript } from './vendors/github-copilot-chat/transcript.js'
 
 describe('isVendor', () => {
   it('accepts a known agent name', () => {
@@ -22,25 +33,57 @@ describe('isVendor', () => {
 })
 
 describe('vendors registry', () => {
-  it('pairs each vendor with an adapter and a sync agent factory', () => {
-    const entry = vendors['claude-code']
-    expect(entry.adapter.actionSchema).toBeDefined()
-    expect(entry.agent).toBeTypeOf('function')
-    const agent = entry.agent()
-    expect(agent.reason).toBeTypeOf('function')
+  it('wires the claude-code adapter module', () => {
+    expect(vendors['claude-code'].adapter).toBe(claudeCodeAdapter)
   })
 
-  it('exposes the matching transcript reader on each vendor entry', () => {
-    expect(vendors['claude-code'].readTranscript).toBeTypeOf('function')
-    expect(vendors['codex'].readTranscript).toBeTypeOf('function')
-    expect(vendors['github-copilot'].readTranscript).toBeTypeOf('function')
-    expect(vendors['github-copilot-chat'].readTranscript).toBeTypeOf('function')
+  it('wires the claude-code agent factory', () => {
+    expect(vendors['claude-code'].agent).toBe(claudeCode)
   })
 
-  it('exposes the github-copilot-chat entry with adapter, agent, and transcript reader', () => {
-    const entry = vendors['github-copilot-chat']
-    expect(entry.adapter.actionSchema).toBeDefined()
-    expect(entry.agent).toBeTypeOf('function')
-    expect(entry.readTranscript).toBeTypeOf('function')
+  it('wires the claude-code transcript reader', () => {
+    expect(vendors['claude-code'].readTranscript).toBe(readClaudeCodeTranscript)
+  })
+
+  it('wires the codex adapter module', () => {
+    expect(vendors['codex'].adapter).toBe(codexAdapter)
+  })
+
+  it('wires the codex agent factory', () => {
+    expect(vendors['codex'].agent).toBe(codex)
+  })
+
+  it('wires the codex transcript reader', () => {
+    expect(vendors['codex'].readTranscript).toBe(readCodexTranscript)
+  })
+
+  it('wires the github-copilot adapter module', () => {
+    expect(vendors['github-copilot'].adapter).toBe(githubCopilotAdapter)
+  })
+
+  it('wires the github-copilot agent factory', () => {
+    expect(vendors['github-copilot'].agent).toBe(githubCopilot)
+  })
+
+  it('wires the github-copilot transcript reader', () => {
+    expect(vendors['github-copilot'].readTranscript).toBe(
+      readGithubCopilotTranscript,
+    )
+  })
+
+  it('wires the github-copilot-chat adapter module', () => {
+    expect(vendors['github-copilot-chat'].adapter).toBe(
+      githubCopilotChatAdapter,
+    )
+  })
+
+  it('shares the github-copilot agent factory with the chat surface (same SDK)', () => {
+    expect(vendors['github-copilot-chat'].agent).toBe(githubCopilot)
+  })
+
+  it('wires the github-copilot-chat transcript reader', () => {
+    expect(vendors['github-copilot-chat'].readTranscript).toBe(
+      readGithubCopilotChatTranscript,
+    )
   })
 })

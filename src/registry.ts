@@ -9,7 +9,6 @@ import { readTranscript as readCodexTranscript } from './vendors/codex/transcrip
 import { githubCopilot } from './vendors/github-copilot/agent.js'
 import * as githubCopilotAdapter from './vendors/github-copilot/adapter.js'
 import { readTranscript as readGithubCopilotTranscript } from './vendors/github-copilot/transcript.js'
-import { githubCopilotChat } from './vendors/github-copilot-chat/agent.js'
 import * as githubCopilotChatAdapter from './vendors/github-copilot-chat/adapter.js'
 import { readTranscript as readGithubCopilotChatTranscript } from './vendors/github-copilot-chat/transcript.js'
 
@@ -45,7 +44,7 @@ export const vendors = {
   },
   'github-copilot-chat': {
     adapter: githubCopilotChatAdapter,
-    agent: githubCopilotChat,
+    agent: githubCopilot,
     readTranscript: readGithubCopilotChatTranscript,
   },
 } satisfies Record<string, VendorEntry>
