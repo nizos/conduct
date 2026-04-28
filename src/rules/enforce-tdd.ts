@@ -10,8 +10,12 @@ const DEFAULT_MAX_EVENTS = 10
 const DEFAULT_MAX_CONTENT_CHARS = 1000
 const MAX_BEFORE_CONTENT_BYTES = 1024 * 1024
 
-const PROCESS_INSTRUCTIONS = `You are a TDD validator. Judge whether the pending
-write follows test-driven development.
+const PROCESS_INSTRUCTIONS = `## Role
+
+You are a TDD validator. Judge whether the pending write follows
+test-driven development.
+
+## Inputs
 
 You will see three inputs:
 
@@ -24,20 +28,69 @@ You will see three inputs:
 3. "Pending action" — what the agent is about to write. Content may be
    raw file text or a patch/diff in any common format.`
 
-const DEFAULT_TDD_RULES = `Rules:
-1. Production code may only be introduced to satisfy a failing test
-   that the session has actually observed. Writing a test file is not
-   enough; the test must have been run and seen to fail before the
-   pending implementation.
-2. The implementation must not exceed the minimum needed to make the
-   observed failing test pass. Functions, classes, or branches not
-   required by the currently failing test are over-implementation.
-3. A single write should add at most one new test. Compare "Current
-   file content" with "Pending action" to count newly added tests;
-   tests already present in "Current file content" do not count. If
-   more than one new test appears, block.`
+const DEFAULT_TDD_RULES = `## TDD rules
 
-const RESPONSE_SPEC = `Respond with a single JSON object of exactly this shape:
+The TDD cycle is Red -> Green -> Refactor. Each phase has its own rules.
+
+### Red phase: write a failing test first
+
+A single write should add at most one new test. Compare current file
+content with pending action to count newly added tests; existing
+tests do not count. Restructuring existing tests is not "adding".
+
+  - Adding a test is always allowed and does not require prior test
+    output.
+  - A test added to drive new behavior must fail for the right reason
+    (an assertion, not a syntax or import error) before production
+    code may be written to satisfy it.
+  - A test added to capture existing behavior may pass immediately.
+    Examples: characterization tests, tests at a new layer (e.g. an
+    e2e covering code already exercised by units), pinning tests
+    added before a refactor pulls a seam out from under them.
+
+#### Reaching a clean red
+
+A test can fail before reaching an assertion (import unresolved,
+signature mismatch). The agent may resolve these without violating TDD:
+
+  - Import or symbol unresolved -> create empty stub only
+  - Signature mismatch -> adjust signature, stub body minimally
+  - Assertion failure -> implement minimal logic to pass
+
+No new behavior is permitted at the stub-resolution step.
+
+### Green phase: minimum to pass
+
+The implementation must not exceed the minimum needed to make the
+observed failing test pass. Functions, classes, or branches not
+required by the currently failing test are over-implementation.
+
+### Refactor phase: improve structure under green
+
+Refactoring does not require a failing test to drive it. Production
+and test edits that preserve observable behavior are allowed when all
+relevant tests are passing. Examples:
+
+  - Extracting helpers whose behavior already lives elsewhere (covered
+    by existing tests). Extracting a helper whose behavior appears nowhere
+    else is net new and requires a failing test first.
+  - Adding type declarations, interfaces, or constant literals
+    (no runtime behavior by construction).
+  - Renaming, restructuring control flow, removing dead code.
+  - Reorganizing or deleting redundant tests, or splitting/combining
+    existing tests. The one-new-test rule is about intent to add
+    behavior, not surface diff count.
+
+## Validator behavior
+
+### Block messages
+
+Name the violation, say why it breaks TDD, and point at the next
+TDD-legal step.`
+
+const RESPONSE_SPEC = `## Response format
+
+Respond with a single JSON object of exactly this shape:
 {"verdict":"pass"|"violation","reason":"<short explanation>"}
 Return JSON only. No prose, no code fences.`
 
@@ -68,13 +121,15 @@ function buildPrompt(
   action: { path: string; content: string },
 ): string {
   const sections = [PROCESS_INSTRUCTIONS, rules]
-  if (historyBlock) sections.push(`Recent session:\n${historyBlock}`)
+  if (historyBlock) sections.push(`## Recent session\n\n${historyBlock}`)
   sections.push(
     beforeContent === undefined
-      ? `Current file content: (file does not exist)`
-      : `Current file content:\n${beforeContent}`,
+      ? `## Current file content\n\n(file does not exist)`
+      : `## Current file content\n\n${beforeContent}`,
   )
-  sections.push(`Pending action:\nFile: ${action.path}\n\n${action.content}`)
+  sections.push(
+    `## Pending action\n\nFile: ${action.path}\n\n${action.content}`,
+  )
   sections.push(RESPONSE_SPEC)
   return sections.join('\n\n')
 }
@@ -112,11 +167,10 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * only fires on the code you care about.
  *
  * @param options.instructions — overrides the default TDD rules text
- *   the validator is given. The generic process instructions (what
- *   inputs the validator sees and how to read them) stay regardless;
- *   only the numbered TDD rules are replaced. Defaults to a three-rule
- *   spec (failing test observed; minimum implementation; one new test
- *   per write).
+ *   the validator is given. The role, inputs, and response format stay
+ *   regardless; only the rules text is replaced. Defaults to a
+ *   Red-Green-Refactor spec covering test-first, one-new-test-per-write,
+ *   minimum implementation, clean-red recovery, and refactors under green.
  * @param options.paths — gitignore-style path globs to scope which
  *   writes are checked. Leading `!` negates. When omitted, every
  *   write is checked.

@@ -206,6 +206,21 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toMatch(/verdict/i)
     expect(s.capturedPrompt).toMatch(/reason/i)
   })
+
+  it('labels session, file, and pending-action sections with markdown headings', async () => {
+    const s = setup({
+      history: [{ kind: 'prompt', text: 'add a test' }],
+    })
+
+    await s.rule(
+      writeAction('src/calc.ts', 'export const add = () => 0'),
+      s.ctx,
+    )
+
+    expect(s.capturedPrompt).toContain('## Recent session')
+    expect(s.capturedPrompt).toContain('## Current file content')
+    expect(s.capturedPrompt).toContain('## Pending action')
+  })
 })
 
 function setup(
