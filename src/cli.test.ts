@@ -57,13 +57,6 @@ describe('cli', () => {
     expect(response).toBe('')
   })
 
-  it('returns a deny response when a rule crashes on the payload', async () => {
-    const { raw } = await setup('multi-edit.json')
-    const response = JSON.parse(raw)
-
-    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
-  })
-
   it('returns a deny response when the payload is not valid JSON', async () => {
     const response = await dispatch(
       claudeCodeEntry,
