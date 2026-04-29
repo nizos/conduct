@@ -43,10 +43,12 @@ tests do not count. Restructuring existing tests is not "adding".
   - A test added to drive new behavior must fail for the right reason
     (an assertion, not a syntax or import error) before production
     code may be written to satisfy it.
-  - A test added to capture existing behavior may pass immediately.
-    Examples: characterization tests, tests at a new layer (e.g. an
-    e2e covering code already exercised by units), pinning tests
-    added before a refactor pulls a seam out from under them.
+  - A test added to capture existing behavior is allowed to pass
+    immediately and must not be blocked for not failing first.
+    Examples: characterization tests pinning current implementation,
+    tests at a new layer (e.g. an e2e covering code already exercised
+    by units), pinning tests added before a refactor pulls a seam out
+    from under them.
 
 #### Reaching a clean red
 
@@ -74,6 +76,9 @@ relevant tests are passing. Examples:
   - Extracting helpers whose behavior already lives elsewhere (covered
     by existing tests). Extracting a helper whose behavior appears nowhere
     else is net new and requires a failing test first.
+  - Lifting test setup (fixtures, builders, factories) into a
+    dedicated or reusable helper. The helper is exercised by the tests
+    that call it; no separate test for the helper is required.
   - Adding type declarations, interfaces, or constant literals
     (no runtime behavior by construction).
   - Renaming, restructuring control flow, removing dead code.
