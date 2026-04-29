@@ -65,7 +65,7 @@ describe('github-copilot adapter', () => {
     expect(action).toMatchObject({ path: args.path, content: args.new_str })
   })
 
-  it('throws for non-write / non-command tools like view', () => {
+  it('passes through view as a no-op so reads are not blocked by an unknown-tool error', () => {
     const payload = JSON.parse(
       readFileSync(
         'test/fixtures/github-copilot/pre-view-calculator.json',
@@ -73,10 +73,13 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(() => actionSchema.parse(payload)).toThrow()
+    expect(actionSchema.parse(payload)).toEqual({
+      type: 'command',
+      command: '',
+    })
   })
 
-  it('throws for metadata tools like report_intent', () => {
+  it('passes through report_intent as a no-op so metadata tools are not blocked', () => {
     const payload = JSON.parse(
       readFileSync(
         'test/fixtures/github-copilot/pre-report-intent.json',
@@ -84,7 +87,10 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(() => actionSchema.parse(payload)).toThrow()
+    expect(actionSchema.parse(payload)).toEqual({
+      type: 'command',
+      command: '',
+    })
   })
 
   it('builds the session path under COPILOT_HOME for a valid sessionId', () => {
@@ -102,6 +108,15 @@ describe('github-copilot adapter', () => {
 
   it('returns undefined when sessionId contains path separators', () => {
     expect(sessionPath({ sessionId: '../../../etc' })).toBeUndefined()
+  })
+
+  it('passes through any unknown toolName (catchall, not a hardcoded list of read tools)', () => {
+    expect(
+      actionSchema.parse({
+        toolName: 'some_future_tool',
+        toolArgs: JSON.stringify({ whatever: true }),
+      }),
+    ).toEqual({ type: 'command', command: '' })
   })
 
   it('exposes actionSchema that parses a payload to a typed Action', () => {

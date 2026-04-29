@@ -6,7 +6,9 @@ import { z } from 'zod'
 import type { Action, Decision } from '../../types.js'
 import { JsonString } from '../../utils/json-string.js'
 
-export const actionSchema = z.discriminatedUnion('toolName', [
+const KNOWN_TOOL_NAMES = new Set(['bash', 'create', 'edit'])
+
+const writeToolsSchema = z.discriminatedUnion('toolName', [
   z
     .object({
       toolName: z.literal('bash'),
@@ -44,6 +46,21 @@ export const actionSchema = z.discriminatedUnion('toolName', [
       }),
     ),
 ])
+
+/**
+ * Anything Copilot fires the hook for that we don't explicitly model
+ * (view, report_intent, future tools, etc.) maps to an empty command —
+ * no rule matches it, the engine returns allow, toResponse emits ''.
+ * The refinement excludes known tool names so a malformed `bash` /
+ * `create` / `edit` payload still falls through to the "invalid hook
+ * payload" error rather than silently passing through.
+ */
+const passthroughSchema = z
+  .object({ toolName: z.string() })
+  .refine((d) => !KNOWN_TOOL_NAMES.has(d.toolName))
+  .transform((): Action => ({ type: 'command', command: '' }))
+
+export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
 
 const ContextPayloadSchema = z.object({
   sessionId: z.string().regex(/^[A-Za-z0-9_-]+$/, {
