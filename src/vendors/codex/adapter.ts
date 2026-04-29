@@ -4,7 +4,9 @@ import type { Action, Decision } from '../../types.js'
 
 const PATCH_HEADER = /^\*\*\* (?:Add|Update|Delete) File: (.+)$/m
 
-export const actionSchema = z.discriminatedUnion('tool_name', [
+const KNOWN_TOOL_NAMES = new Set(['Bash', 'apply_patch'])
+
+const writeToolsSchema = z.discriminatedUnion('tool_name', [
   z
     .object({
       tool_name: z.literal('Bash'),
@@ -30,6 +32,22 @@ export const actionSchema = z.discriminatedUnion('tool_name', [
       return { type: 'write', path, content: d.tool_input.command }
     }),
 ])
+
+/**
+ * Anything Codex fires the hook for that we don't explicitly model
+ * (future tools, or a broader user matcher than the recommended
+ * `^(Bash|apply_patch|Edit|Write)$`) maps to an empty command — no
+ * rule matches it, the engine returns allow, toResponse emits ''. The
+ * refinement excludes known tool names so a malformed Bash /
+ * apply_patch payload still throws rather than silently passing
+ * through.
+ */
+const passthroughSchema = z
+  .object({ tool_name: z.string() })
+  .refine((d) => !KNOWN_TOOL_NAMES.has(d.tool_name))
+  .transform((): Action => ({ type: 'command', command: '' }))
+
+export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
 

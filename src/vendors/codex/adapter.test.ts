@@ -64,6 +64,15 @@ describe('codex adapter', () => {
     expect(action.content).toContain('*** Add File:')
   })
 
+  it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
+    expect(
+      actionSchema.parse({
+        tool_name: 'some_future_tool',
+        tool_input: { whatever: true },
+      }),
+    ).toEqual({ type: 'command', command: '' })
+  })
+
   it('returns the transcript_path from the payload as the session path', () => {
     expect(
       sessionPath({ transcript_path: '/some/codex-transcript.jsonl' }),
