@@ -15,14 +15,17 @@ describe('github-copilot-chat adapter', () => {
     expect(sessionPath(null)).toBeUndefined()
   })
 
-  it('builds a deny response with permissionDecision and reason', () => {
+  it('wraps the deny response in hookSpecificOutput so Chat honors it (flat shape is silently ignored)', () => {
     const response = JSON.parse(
       toResponse({ kind: 'block', reason: 'no failing test' }),
     )
 
     expect(response).toEqual({
-      permissionDecision: 'deny',
-      permissionDecisionReason: 'no failing test',
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: 'no failing test',
+      },
     })
   })
 
@@ -72,7 +75,7 @@ describe('github-copilot-chat adapter', () => {
     })
   })
 
-  it('throws for read_file (a pass-through tool with no rule applicability)', () => {
+  it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', () => {
     const payload = JSON.parse(
       readFileSync(
         'test/fixtures/github-copilot-chat/pre-read-file.json',
@@ -80,10 +83,13 @@ describe('github-copilot-chat adapter', () => {
       ),
     )
 
-    expect(() => actionSchema.parse(payload)).toThrow()
+    expect(actionSchema.parse(payload)).toEqual({
+      type: 'command',
+      command: '',
+    })
   })
 
-  it('throws for list_dir (a pass-through tool with no rule applicability)', () => {
+  it('passes through list_dir as a no-op so listings are not blocked by an unknown-tool error', () => {
     const payload = JSON.parse(
       readFileSync(
         'test/fixtures/github-copilot-chat/pre-list-dir.json',
@@ -91,7 +97,19 @@ describe('github-copilot-chat adapter', () => {
       ),
     )
 
-    expect(() => actionSchema.parse(payload)).toThrow()
+    expect(actionSchema.parse(payload)).toEqual({
+      type: 'command',
+      command: '',
+    })
+  })
+
+  it('passes through any unknown tool_name (catchall, not a hardcoded list of read tools)', () => {
+    expect(
+      actionSchema.parse({
+        tool_name: 'some_future_tool',
+        tool_input: { whatever: true },
+      }),
+    ).toEqual({ type: 'command', command: '' })
   })
 })
 
