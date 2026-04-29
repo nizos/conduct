@@ -1,4 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+
+import { describe, it, expect, onTestFinished } from 'vitest'
 
 import { deriveChatSessionsPath, readTranscript } from './transcript.js'
 
@@ -130,9 +134,14 @@ describe('github-copilot-chat transcript', () => {
   })
 
   it('returns prompts and actions with empty outputs when the chatSessions file is missing', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'conduct-transcript-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const missingPath = path.join(dir, 'does-not-exist.jsonl')
     const events = await readTranscript(
       'test/fixtures/github-copilot-chat/transcript-direct-id.jsonl',
-      { chatSessionsPath: '/tmp/conduct-does-not-exist.jsonl' },
+      { chatSessionsPath: missingPath },
     )
     const action = events.find((e) => e.kind === 'action')
 
