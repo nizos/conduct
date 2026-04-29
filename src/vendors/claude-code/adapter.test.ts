@@ -75,13 +75,13 @@ describe('claude-code adapter', () => {
     ).toThrow()
   })
 
-  it('throws for an unsupported tool_name so dispatch can reject the payload', () => {
-    expect(() =>
+  it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
+    expect(
       actionSchema.parse({
         tool_name: 'MultiEdit',
         tool_input: { file_path: 'x', edits: [] },
       }),
-    ).toThrow()
+    ).toEqual({ type: 'command', command: '' })
   })
 
   it('returns the transcript_path from the payload as the session path', () => {

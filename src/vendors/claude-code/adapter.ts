@@ -2,7 +2,9 @@ import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 
-export const actionSchema = z.discriminatedUnion('tool_name', [
+const KNOWN_TOOL_NAMES = new Set(['Bash', 'Edit', 'Write'])
+
+const writeToolsSchema = z.discriminatedUnion('tool_name', [
   z
     .object({
       tool_name: z.literal('Bash'),
@@ -42,6 +44,21 @@ export const actionSchema = z.discriminatedUnion('tool_name', [
       }),
     ),
 ])
+
+/**
+ * Anything Claude Code fires the hook for that we don't explicitly
+ * model (Read, Grep, MultiEdit, NotebookEdit, future tools) maps to an
+ * empty command — no rule matches it, the engine returns allow,
+ * toResponse emits ''. The refinement excludes known tool names so a
+ * malformed Bash / Edit / Write payload still throws rather than
+ * silently passing through.
+ */
+const passthroughSchema = z
+  .object({ tool_name: z.string() })
+  .refine((d) => !KNOWN_TOOL_NAMES.has(d.tool_name))
+  .transform((): Action => ({ type: 'command', command: '' }))
+
+export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
 
