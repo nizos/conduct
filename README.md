@@ -58,7 +58,7 @@ export default defineConfig({
       reason: 'Use pnpm install instead',
     }),
     {
-      files: ['src/**', 'test/**'],
+      files: ['**/src/**', '**/test/**'],
       rules: [
         enforceTdd(),
         enforceFilenameCasing({ style: 'kebab-case' }),

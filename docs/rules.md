@@ -24,7 +24,7 @@ Blocks a write unless the session's recent history shows a failing test that the
 enforceTdd()
 enforceTdd({ paths: ['**/*.ts'] })
 enforceTdd({
-  paths: ['src/**'],
+  paths: ['**/src/**'],
   instructions: `Rules:
 1. Tests must use the project's custom assertion helpers.
 2. ...`,
@@ -55,7 +55,10 @@ Blocks a write whose filename doesn't match the configured casing style. Passes 
 
 ```ts
 enforceFilenameCasing({ style: 'kebab-case' })
-enforceFilenameCasing({ style: 'kebab-case', paths: ['src/**', 'test/**'] })
+enforceFilenameCasing({
+  style: 'kebab-case',
+  paths: ['**/src/**', '**/test/**'],
+})
 ```
 
 ---
@@ -111,7 +114,7 @@ Blocks a write whose content matches `match` — a literal substring or a `RegEx
 forbidContentPattern({
   match: 'setTimeout',
   reason: 'No timers in source code',
-  paths: ['src/**'],
+  paths: ['**/src/**'],
 })
 
 forbidContentPattern({
