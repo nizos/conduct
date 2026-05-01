@@ -1,12 +1,12 @@
 import type { Rule } from './contract.js'
-import { buildMatcher } from './utils/match-paths.js'
 import { stringOrRegexMatches } from './utils/string-or-regex-matches.js'
 
 /**
  * Blocks a write whose content matches `match` — a literal substring or
- * a RegExp. When `paths` is set, only writes to matching paths are
- * checked. Path patterns follow gitignore-style semantics: globs
- * include, and a leading `!` negates (excludes) matching paths.
+ * a RegExp. Passes non-write actions through. To scope to specific
+ * paths, wrap in a `{ files, rules }` block — block-level `files` is
+ * the one path-filtering mechanism, anchored against the config
+ * directory.
  *
  * Applies to: write actions.
  * Supported agents: Claude Code, Codex, GitHub Copilot.
@@ -15,25 +15,25 @@ import { stringOrRegexMatches } from './utils/string-or-regex-matches.js'
  * forbidContentPattern({
  *   match: 'setTimeout',
  *   reason: 'Avoid timers in production code',
- *   paths: ['src/**', '!src/**\/*.test.ts'],
  * })
  *
  * @example
- * forbidContentPattern({
- *   match: /\p{Extended_Pictographic}/u,
- *   reason: 'No emojis in markdown',
- *   paths: ['**\/*.md'],
- * })
+ * {
+ *   files: ['**\/*.md'],
+ *   rules: [
+ *     forbidContentPattern({
+ *       match: /\p{Extended_Pictographic}/u,
+ *       reason: 'No emojis in markdown',
+ *     }),
+ *   ],
+ * }
  */
 export function forbidContentPattern(options: {
   match: string | RegExp
   reason: string
-  paths?: string[]
 }): Rule {
-  const matchesPaths = options.paths ? buildMatcher(options.paths) : () => true
   return (action) => {
     if (action.type !== 'write') return { kind: 'pass' }
-    if (!matchesPaths(action.path)) return { kind: 'pass' }
     if (!stringOrRegexMatches(action.content, options.match)) {
       return { kind: 'pass' }
     }

@@ -48,36 +48,6 @@ describe('forbid-content-pattern', () => {
     })
   })
 
-  it('skips a write whose path is outside the configured paths', () => {
-    const rule = forbidContentPattern({
-      paths: ['src/**/*.ts'],
-      match: 'MockedService',
-      reason: 'Use TestService instead',
-    })
-    const result = rule({
-      type: 'write',
-      path: 'other/location.ts',
-      content: 'import MockedService from "./mocks"',
-    })
-
-    expect(result).toEqual({ kind: 'pass' })
-  })
-
-  it('blocks a write whose path matches the configured glob', () => {
-    const rule = forbidContentPattern({
-      paths: ['src/**/*.ts'],
-      match: 'MockedService',
-      reason: 'Use TestService instead',
-    })
-    const result = rule({
-      type: 'write',
-      path: 'src/user-profile.ts',
-      content: 'import MockedService from "./mocks"',
-    })
-
-    expect(result).toMatchObject({ kind: 'violation' })
-  })
-
   it('blocks a write whose content matches a configured regex', () => {
     const rule = forbidContentPattern({
       match: /Mocked\w+/,
@@ -105,20 +75,5 @@ describe('forbid-content-pattern', () => {
 
     expect(rule(action)).toMatchObject({ kind: 'violation' })
     expect(rule(action)).toMatchObject({ kind: 'violation' })
-  })
-
-  it('respects ! negation to exclude a subpath', () => {
-    const rule = forbidContentPattern({
-      paths: ['src/**/*.ts', '!**/*.test.ts'],
-      match: 'MockedService',
-      reason: 'Use TestService instead',
-    })
-    const result = rule({
-      type: 'write',
-      path: 'src/user-profile.test.ts',
-      content: 'import MockedService from "./mocks"',
-    })
-
-    expect(result).toEqual({ kind: 'pass' })
   })
 })

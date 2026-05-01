@@ -103,11 +103,10 @@ Blocks a write whose content matches `match` — a literal substring or a `RegEx
 
 ### Options
 
-| Option   | Type               | Default   | Description                                                                  |
-| -------- | ------------------ | --------- | ---------------------------------------------------------------------------- |
-| `match`  | `string \| RegExp` | required  | Pattern to match against the file content being written.                     |
-| `reason` | `string`           | required  | Surfaced back to the agent when the rule blocks.                             |
-| `paths`  | `string[]`         | match all | Gitignore-style globs scoping which writes are checked. Leading `!` negates. |
+| Option   | Type               | Default  | Description                                              |
+| -------- | ------------------ | -------- | -------------------------------------------------------- |
+| `match`  | `string \| RegExp` | required | Pattern to match against the file content being written. |
+| `reason` | `string`           | required | Surfaced back to the agent when the rule blocks.         |
 
 ### Examples
 
@@ -115,12 +114,16 @@ Blocks a write whose content matches `match` — a literal substring or a `RegEx
 forbidContentPattern({
   match: 'setTimeout',
   reason: 'No timers in source code',
-  paths: ['**/src/**'],
 })
 
-forbidContentPattern({
-  match: /\p{Extended_Pictographic}/u,
-  reason: 'No emojis in documentation',
-  paths: ['**/*.md'],
-})
+// To scope to specific paths, wrap in a `{ files, rules }` block:
+{
+  files: ['**/*.md'],
+  rules: [
+    forbidContentPattern({
+      match: /\p{Extended_Pictographic}/u,
+      reason: 'No emojis in documentation',
+    }),
+  ],
+}
 ```
