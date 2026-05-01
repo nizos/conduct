@@ -1,6 +1,7 @@
 import picomatch from 'picomatch'
 
 export function buildMatcher(patterns: string[]): (path: string) => boolean {
+  if (patterns.length === 0) return () => false
   const includes = patterns.filter((p) => !p.startsWith('!'))
   const ignore = patterns
     .filter((p) => p.startsWith('!'))

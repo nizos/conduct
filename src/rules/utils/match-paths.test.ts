@@ -20,4 +20,10 @@ describe('buildMatcher', () => {
     expect(matches('src/foo.ts')).toBe(true)
     expect(matches('node_modules/pkg/index.js')).toBe(false)
   })
+
+  it('rejects all paths when given an empty pattern list', () => {
+    const matches = buildMatcher([])
+    expect(matches('src/foo.ts')).toBe(false)
+    expect(matches('anything')).toBe(false)
+  })
 })

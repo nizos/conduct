@@ -29,7 +29,6 @@ export async function evaluate(
 function resolveRules(entry: RuleEntry, action: Action): readonly Rule[] {
   if (typeof entry === 'function') return [entry]
   if (entry.files) {
-    if (entry.files.length === 0) return []
     if (
       action.type === 'write' &&
       !buildMatcher([...entry.files])(action.path)
