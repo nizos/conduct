@@ -1,15 +1,15 @@
-import {
-  defineConfig,
-  enforceTdd,
-  enforceFilenameCasing,
-  forbidContentPattern,
-} from './src/index.js'
+import { defineConfig, enforceTdd, forbidContentPattern } from './src/index.js'
 
 export default defineConfig({
   rules: [
     {
       files: ['**/src/**', '**/test/**'],
-      rules: [enforceTdd(), enforceFilenameCasing({ style: 'kebab-case' })],
+      rules: [
+        enforceTdd({
+          maxEvents: 20,
+          maxContentChars: 5000,
+        }),
+      ],
     },
     {
       files: ['**/*.md'],
