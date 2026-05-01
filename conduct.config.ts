@@ -3,11 +3,15 @@ import { defineConfig, enforceTdd, forbidContentPattern } from './src/index.js'
 export default defineConfig({
   rules: [
     {
-      files: ['**/src/**', '**/test/**'],
+      files: ['src/**', 'test/**'],
       rules: [
         enforceTdd({
-          maxEvents: 20,
-          maxContentChars: 5000,
+          maxEvents: 30,
+          maxContentChars: 8000,
+        }),
+        forbidContentPattern({
+          match: 'eslint-disable',
+          reason: 'Fix the lint violation rather than disabling the rule',
         }),
       ],
     },
