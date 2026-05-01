@@ -11,29 +11,32 @@ Blocks a write unless the session's recent history shows a failing test that the
 
 ### Options
 
-| Option            | Type       | Default                      | Description                                                                                                                               |
-| ----------------- | ---------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `instructions`    | `string`   | built-in three-rule TDD spec | Overrides the default TDD rules text. The generic process instructions (what inputs the validator sees and how to read them) stay.        |
-| `paths`           | `string[]` | match all                    | Gitignore-style globs scoping which writes are checked. Leading `!` negates.                                                              |
-| `maxEvents`       | `number`   | `10`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.        |
-| `maxContentChars` | `number`   | `1000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges. |
+| Option            | Type     | Default                      | Description                                                                                                                               |
+| ----------------- | -------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `instructions`    | `string` | built-in three-rule TDD spec | Overrides the default TDD rules text. The generic process instructions (what inputs the validator sees and how to read them) stay.        |
+| `maxEvents`       | `number` | `10`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.        |
+| `maxContentChars` | `number` | `1000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges. |
 
 ### Examples
 
 ```ts
 enforceTdd()
-enforceTdd({ paths: ['**/*.ts'] })
 enforceTdd({
-  paths: ['**/src/**'],
   instructions: `Rules:
 1. Tests must use the project's custom assertion helpers.
 2. ...`,
 })
+
+// To scope to specific paths, wrap in a `{ files, rules }` block:
+{
+  files: ['**/src/**'],
+  rules: [enforceTdd()],
+}
 ```
 
 ### Cost note
 
-Every matching write triggers an AI call — the most expensive rule in the library. Scope with `paths` so the rule fires only on the code you care about.
+Every matching write triggers an AI call — the most expensive rule in the library. Scope with a `{ files, rules }` block so the rule fires only on the code you care about.
 
 ---
 

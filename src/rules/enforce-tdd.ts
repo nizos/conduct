@@ -3,7 +3,6 @@ import { open } from 'node:fs/promises'
 
 import type { Action, SessionEvent } from '../types.js'
 import type { RuleContext } from './contract.js'
-import { buildMatcher } from './utils/match-paths.js'
 import { trimHistory } from './utils/trim-history.js'
 
 const DEFAULT_MAX_EVENTS = 10
@@ -168,17 +167,14 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
  * Cost note: every matching write triggers an AI call, which is the
- * most expensive rule in the library. Scope with `paths` so the rule
- * only fires on the code you care about.
+ * most expensive rule in the library. Scope with a `{ files, rules }`
+ * block so the rule only fires on the code you care about.
  *
  * @param options.instructions — overrides the default TDD rules text
  *   the validator is given. The role, inputs, and response format stay
  *   regardless; only the rules text is replaced. Defaults to a
  *   Red-Green-Refactor spec covering test-first, one-new-test-per-write,
  *   minimum implementation, clean-red recovery, and refactors under green.
- * @param options.paths — gitignore-style path globs to scope which
- *   writes are checked. Leading `!` negates. When omitted, every
- *   write is checked.
  * @param options.maxEvents — keep at most this many of the most
  *   recent session events when building the prompt (default 10).
  *   Caps token usage when transcripts get long.
@@ -190,25 +186,22 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * enforceTdd()
  *
  * @example
- * enforceTdd({ paths: ['src/**', '!src/**\/*.test.ts'] })
+ * { files: ['src/**', '!src/**\/*.test.ts'], rules: [enforceTdd()] }
  */
 export function enforceTdd(
   options: {
     instructions?: string
-    paths?: string[]
     maxEvents?: number
     maxContentChars?: number
   } = {},
 ) {
   const rules = options.instructions ?? DEFAULT_TDD_RULES
-  const matchesPaths = options.paths ? buildMatcher(options.paths) : () => true
   const window = {
     maxEvents: options.maxEvents ?? DEFAULT_MAX_EVENTS,
     maxContentChars: options.maxContentChars ?? DEFAULT_MAX_CONTENT_CHARS,
   }
   return async (action: Action, ctx?: RuleContext) => {
     if (action.type !== 'write') return { kind: 'pass' as const }
-    if (!matchesPaths(action.path)) return { kind: 'pass' as const }
     if (!ctx?.agent) return { kind: 'pass' as const }
     const events = (await ctx.history?.()) ?? []
     const windowed = trimHistory(events, window)

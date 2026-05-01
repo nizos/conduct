@@ -103,18 +103,6 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('npm test')
   })
 
-  it('skips writes outside the configured paths', async () => {
-    const s = setup({
-      verdict: { verdict: 'violation', reason: 'should not reach' },
-      paths: ['src/**'],
-    })
-
-    const result = await s.rule(writeAction('README.md', 'x'), s.ctx)
-
-    expect(result).toEqual({ kind: 'pass' })
-    expect(s.agentCalled).toBe(false)
-  })
-
   it('uses custom instructions when provided', async () => {
     const s = setup({
       instructions: 'CUSTOM: only dog-driven development allowed',
@@ -227,7 +215,6 @@ function setup(
   options: {
     verdict?: Verdict
     history?: SessionEvent[]
-    paths?: string[]
     instructions?: string
     maxEvents?: number
     maxContentChars?: number
@@ -246,7 +233,6 @@ function setup(
     history: options.history ? async () => options.history! : undefined,
   }
   const rule = enforceTdd({
-    paths: options.paths,
     instructions: options.instructions,
     maxEvents: options.maxEvents,
     maxContentChars: options.maxContentChars,
