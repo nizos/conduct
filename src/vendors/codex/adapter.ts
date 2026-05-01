@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
-import { relativizePath } from '../relativize-path.js'
+import { posixAbsolute } from '../posix-absolute.js'
 
 const PATCH_HEADER = /^\*\*\* (?:Add|Update|Delete) File: (.+)$/m
 
@@ -33,7 +33,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
       }
       return {
         type: 'write',
-        path: relativizePath(d.cwd, path),
+        path: posixAbsolute(d.cwd, path),
         content: d.tool_input.command,
       }
     }),

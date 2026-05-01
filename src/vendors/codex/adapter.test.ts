@@ -50,7 +50,7 @@ describe('codex adapter', () => {
     ).toThrow()
   })
 
-  it('maps an apply_patch payload to a write action with path (relative to cwd) + patch content', () => {
+  it('maps an apply_patch payload to a write action with absolute POSIX path + patch content', () => {
     const payload = JSON.parse(
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
     )
@@ -59,12 +59,12 @@ describe('codex adapter', () => {
 
     expect(action.type).toBe('write')
     if (action.type !== 'write') throw new Error('expected write')
-    expect(action.path).toBe('src/calculator.ts')
+    expect(action.path).toBe('/workspaces/conduct/src/calculator.ts')
     expect(action.content).toContain('*** Begin Patch')
     expect(action.content).toContain('*** Add File:')
   })
 
-  it('relativizes an absolute apply_patch header path against the payload cwd', () => {
+  it('preserves an absolute apply_patch header path emitted by the agent', () => {
     const action = actionSchema.parse({
       cwd: '/workspaces/conduct',
       tool_name: 'apply_patch',
@@ -74,7 +74,10 @@ describe('codex adapter', () => {
       },
     })
 
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+    expect(action).toMatchObject({
+      type: 'write',
+      path: '/workspaces/conduct/src/UpperCase.ts',
+    })
   })
 
   it('fails closed when an apply_patch payload omits cwd (vendors reliably emit it; absence is malformed)', () => {

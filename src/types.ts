@@ -2,10 +2,11 @@
  * Canonical action an agent attempts, as seen by rules and the engine.
  * Adapters translate vendor-specific hook payloads into this shape.
  *
- * - `write` — a file write or edit. `path` is project-relative POSIX
- *   (adapters normalize it against the payload `cwd`), so rule globs
- *   can be authored as `'src/**'`. Rules that read the file from disk
- *   should resolve against `process.cwd()`.
+ * - `write` — a file write or edit. `path` is absolute POSIX
+ *   (adapters resolve it against the payload `cwd`). The engine
+ *   relativizes against the config root at match time, so rule globs
+ *   can be authored as `'src/**'` against the project root. Rules that
+ *   read the file from disk can pass `path` straight to `fs.open`.
  * - `command` — a shell command invocation; carries the command text.
  */
 export type Action =

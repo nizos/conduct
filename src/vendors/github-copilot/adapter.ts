@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 import { JsonString } from '../../utils/json-string.js'
-import { relativizePath } from '../relativize-path.js'
+import { posixAbsolute } from '../posix-absolute.js'
 
 const KNOWN_TOOL_NAMES = new Set(['bash', 'create', 'edit'])
 
@@ -29,7 +29,7 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
     .transform(
       (d): Action => ({
         type: 'write',
-        path: relativizePath(d.cwd, d.toolArgs.path),
+        path: posixAbsolute(d.cwd, d.toolArgs.path),
         content: d.toolArgs.file_text,
       }),
     ),
@@ -44,7 +44,7 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
     .transform(
       (d): Action => ({
         type: 'write',
-        path: relativizePath(d.cwd, d.toolArgs.path),
+        path: posixAbsolute(d.cwd, d.toolArgs.path),
         content: d.toolArgs.new_str,
       }),
     ),

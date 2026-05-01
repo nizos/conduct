@@ -102,9 +102,6 @@ describe('conduct cli (integration)', () => {
     expect(stdout).toBe('')
   })
 
-  // Vendor payloads carry absolute paths; each adapter must relativize
-  // against the payload cwd before the matcher so non-anchored globs
-  // like `files: ['src/**']` reach the rule.
   it.each([
     {
       vendor: 'claude-code',
@@ -133,7 +130,7 @@ describe('conduct cli (integration)', () => {
       expected: 'deny',
     },
   ])(
-    'relativizes absolute paths so files: ["src/**"] reaches the rule on $vendor',
+    'matches absolute paths from $vendor against `**/src/**` globs',
     async ({ vendor, fixture, readDeny, expected }) => {
       const payload = readFileSync(fixture, 'utf8')
 

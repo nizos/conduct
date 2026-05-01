@@ -51,11 +51,11 @@ describe('github-copilot-chat adapter', () => {
     expect(action.type).toBe('write')
   })
 
-  it('maps create_file payload filePath (relative to cwd) + content onto the write action', () => {
+  it('maps create_file payload filePath (absolute POSIX) + content onto the write action', () => {
     const { action, payload } = setup('pre-create-file.json')
 
     expect(action).toMatchObject({
-      path: 'src/shopping-cart.test.ts',
+      path: '/workspaces/conduct/src/shopping-cart.test.ts',
       content: payload.tool_input.content,
     })
   })
@@ -66,16 +66,16 @@ describe('github-copilot-chat adapter', () => {
     expect(action.type).toBe('write')
   })
 
-  it('maps replace_string_in_file payload filePath (relative to cwd) + newString onto the write action', () => {
+  it('maps replace_string_in_file payload filePath (absolute POSIX) + newString onto the write action', () => {
     const { action, payload } = setup('pre-replace-string-in-file.json')
 
     expect(action).toMatchObject({
-      path: 'src/shopping-cart.test.ts',
+      path: '/workspaces/conduct/src/shopping-cart.test.ts',
       content: payload.tool_input.newString,
     })
   })
 
-  it('relativizes an absolute create_file filePath against the payload cwd', () => {
+  it('preserves an absolute create_file filePath emitted by the agent', () => {
     const action = actionSchema.parse({
       cwd: '/workspaces/conduct',
       tool_name: 'create_file',
@@ -85,7 +85,10 @@ describe('github-copilot-chat adapter', () => {
       },
     })
 
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+    expect(action).toMatchObject({
+      type: 'write',
+      path: '/workspaces/conduct/src/UpperCase.ts',
+    })
   })
 
   it('fails closed when a create_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {

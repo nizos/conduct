@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
-import { relativizePath } from '../relativize-path.js'
+import { posixAbsolute } from '../posix-absolute.js'
 
 export function toResponse(decision: Decision): string {
   if (decision.kind === 'block') {
@@ -34,7 +34,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .transform(
       (d): Action => ({
         type: 'write',
-        path: relativizePath(d.cwd, d.tool_input.filePath),
+        path: posixAbsolute(d.cwd, d.tool_input.filePath),
         content: d.tool_input.content,
       }),
     ),
@@ -47,7 +47,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .transform(
       (d): Action => ({
         type: 'write',
-        path: relativizePath(d.cwd, d.tool_input.filePath),
+        path: posixAbsolute(d.cwd, d.tool_input.filePath),
         content: d.tool_input.newString,
       }),
     ),

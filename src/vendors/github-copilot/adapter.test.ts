@@ -45,7 +45,7 @@ describe('github-copilot adapter', () => {
     expect(action.type).toBe('write')
   })
 
-  it('maps create payload path (relative to cwd) + file_text onto the write action', () => {
+  it('maps create payload path (absolute POSIX) + file_text onto the write action', () => {
     const { action, payload } = setup('pre-create-new-test.json')
     const args = JSON.parse(payload.toolArgs) as {
       path: string
@@ -53,12 +53,12 @@ describe('github-copilot adapter', () => {
     }
 
     expect(action).toMatchObject({
-      path: 'test/calculator.test.ts',
+      path: '/workspaces/conduct/test/calculator.test.ts',
       content: args.file_text,
     })
   })
 
-  it('maps an edit payload path (relative to cwd) + new_str onto the write action', () => {
+  it('maps an edit payload path (absolute POSIX) + new_str onto the write action', () => {
     const { action, payload } = setup('pre-edit-add-subtract.json')
     const args = JSON.parse(payload.toolArgs) as {
       path: string
@@ -66,12 +66,12 @@ describe('github-copilot adapter', () => {
     }
 
     expect(action).toMatchObject({
-      path: 'test/calculator.test.ts',
+      path: '/workspaces/conduct/test/calculator.test.ts',
       content: args.new_str,
     })
   })
 
-  it('relativizes an absolute create path against the payload cwd', () => {
+  it('preserves an absolute create path emitted by the agent', () => {
     const action = actionSchema.parse({
       cwd: '/workspaces/conduct',
       toolName: 'create',
@@ -81,7 +81,10 @@ describe('github-copilot adapter', () => {
       }),
     })
 
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+    expect(action).toMatchObject({
+      type: 'write',
+      path: '/workspaces/conduct/src/UpperCase.ts',
+    })
   })
 
   it('fails closed when a create payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
