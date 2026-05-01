@@ -51,11 +51,11 @@ describe('github-copilot-chat adapter', () => {
     expect(action.type).toBe('write')
   })
 
-  it('maps create_file payload filePath + content onto the write action', () => {
+  it('maps create_file payload filePath (relative to cwd) + content onto the write action', () => {
     const { action, payload } = setup('pre-create-file.json')
 
     expect(action).toMatchObject({
-      path: payload.tool_input.filePath,
+      path: 'src/shopping-cart.test.ts',
       content: payload.tool_input.content,
     })
   })
@@ -66,13 +66,38 @@ describe('github-copilot-chat adapter', () => {
     expect(action.type).toBe('write')
   })
 
-  it('maps replace_string_in_file payload filePath + newString onto the write action', () => {
+  it('maps replace_string_in_file payload filePath (relative to cwd) + newString onto the write action', () => {
     const { action, payload } = setup('pre-replace-string-in-file.json')
 
     expect(action).toMatchObject({
-      path: payload.tool_input.filePath,
+      path: 'src/shopping-cart.test.ts',
       content: payload.tool_input.newString,
     })
+  })
+
+  it('relativizes an absolute create_file filePath against the payload cwd', () => {
+    const action = actionSchema.parse({
+      cwd: '/workspaces/conduct',
+      tool_name: 'create_file',
+      tool_input: {
+        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  })
+
+  it('falls back to process.cwd() when the create_file payload omits cwd', () => {
+    const action = actionSchema.parse({
+      tool_name: 'create_file',
+      tool_input: {
+        filePath: `${process.cwd()}/src/UpperCase.ts`,
+        content: 'x',
+      },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
   it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', () => {
