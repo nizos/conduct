@@ -58,7 +58,7 @@ describe('cli', () => {
   it('returns a deny response when the payload is not valid JSON', async () => {
     const response = await run('not json at all', {
       vendor: 'claude-code',
-      loadConfig: () => Promise.resolve({ rules: [], agent: stubAgent }),
+      loadConfig: () => Promise.resolve({ rules: [], ai: stubAgent }),
     })
     const parsed = parseAs<ClaudeCodeResponse>(response)
 
@@ -80,7 +80,7 @@ describe('cli', () => {
           rules: [enforceFilenameCasing({ style: 'kebab-case' })],
         },
       ],
-      agent: stubAgent,
+      ai: stubAgent,
     }
 
     const raw = await run(payload, {
@@ -96,7 +96,7 @@ describe('cli', () => {
 
     const response = await run(payload, {
       vendor: 'claude-code',
-      loadConfig: () => Promise.resolve({ rules: [], agent: stubAgent }),
+      loadConfig: () => Promise.resolve({ rules: [], ai: stubAgent }),
     })
     const parsed = parseAs<ClaudeCodeResponse>(response)
 
@@ -114,7 +114,7 @@ const defaultTestConfig: Config = {
       rules: [enforceFilenameCasing({ style: 'kebab-case' })],
     },
   ],
-  agent: stubAgent,
+  ai: stubAgent,
 }
 
 async function setup(fixtureName: string, config: Config = defaultTestConfig) {

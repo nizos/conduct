@@ -21,7 +21,7 @@ export async function run(
 ): Promise<string> {
   const entry = vendors[options.vendor]
   const config = await (options.loadConfig ?? defaultConfigLoader)()
-  const agent = config.agent ?? entry.agent()
+  const agent = config.ai ?? entry.agent()
   return dispatch(entry, rawPayload, config.rules, agent)
 }
 

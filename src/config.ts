@@ -34,14 +34,16 @@ export type RuleEntry = Rule | RuleBlock
  * - `rules` — the active rules for the session. Entries can be flat
  *   rules or `{ files, rules }` blocks; blocks scope their rules to
  *   write actions whose path matches `files`.
- * - `agent` — optional AI validator to inject into every rule's ctx.
+ * - `ai` — optional AI validator to inject into every rule's ctx.
  *   When omitted, the engine uses the validator that pairs with the
  *   selected vendor (e.g. Claude Agent SDK for `claude-code`), which
- *   piggybacks on the user's logged-in session.
+ *   piggybacks on the user's logged-in session. The field is named
+ *   `ai` (not `agent`) to disambiguate from `--agent <vendor>`, which
+ *   selects the host coding agent.
  */
 export type Config = {
   rules: readonly RuleEntry[]
-  agent?: Agent
+  ai?: Agent
 }
 
 /**

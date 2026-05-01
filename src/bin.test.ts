@@ -117,7 +117,7 @@ const testConfig: Config = {
       rules: [enforceFilenameCasing({ style: 'kebab-case' })],
     },
   ],
-  agent: stubAgent,
+  ai: stubAgent,
 }
 
 const KEBAB_PAYLOAD = readFileSync(
