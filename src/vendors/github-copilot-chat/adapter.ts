@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
+import { relativizePath } from '../relativize-path.js'
 
 export function toResponse(decision: Decision): string {
   if (decision.kind === 'block') {
@@ -28,11 +29,12 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .object({
       tool_name: z.literal('create_file'),
       tool_input: z.object({ filePath: z.string(), content: z.string() }),
+      cwd: z.string().optional(),
     })
     .transform(
       (d): Action => ({
         type: 'write',
-        path: d.tool_input.filePath,
+        path: relativizePath(d.cwd, d.tool_input.filePath),
         content: d.tool_input.content,
       }),
     ),
@@ -40,11 +42,12 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .object({
       tool_name: z.literal('replace_string_in_file'),
       tool_input: z.object({ filePath: z.string(), newString: z.string() }),
+      cwd: z.string().optional(),
     })
     .transform(
       (d): Action => ({
         type: 'write',
-        path: d.tool_input.filePath,
+        path: relativizePath(d.cwd, d.tool_input.filePath),
         content: d.tool_input.newString,
       }),
     ),
