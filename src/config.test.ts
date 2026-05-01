@@ -30,6 +30,28 @@ describe('loadConfig', () => {
       files: ['**/src/**'],
     })
   })
+
+  it('preserves the leading `!` and anchors the rest of a negation glob', async () => {
+    const fixture = path.resolve('test/fixtures/configs/negation.config.ts')
+
+    const config = await loadConfig(fixture)
+
+    expect(config.rules[0]).toMatchObject({
+      files: ['!' + path.posix.join(path.dirname(fixture), 'src/foo.ts')],
+    })
+  })
+
+  it('leaves a `!**`-prefixed glob unanchored (its intent is exclude-anywhere)', async () => {
+    const fixture = path.resolve(
+      'test/fixtures/configs/negation-double-star.config.ts',
+    )
+
+    const config = await loadConfig(fixture)
+
+    expect(config.rules[0]).toMatchObject({
+      files: ['!**/foo.test.ts'],
+    })
+  })
 })
 
 describe('findConfig', () => {

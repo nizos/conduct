@@ -80,12 +80,19 @@ export async function loadConfig(filepath: string): Promise<Config> {
       if (typeof entry === 'function' || !entry.files) return entry
       return {
         ...entry,
-        files: entry.files.map((glob) =>
-          glob.startsWith('**') ? glob : path.posix.join(root, glob),
-        ),
+        files: entry.files.map((glob) => anchorGlob(glob, root)),
       }
     }),
   }
+}
+
+// `**`-prefixed globs are intentional "match anywhere" patterns; anchoring
+// them at the config dir would defeat the user's intent. Negations carry
+// the same convention through the `!` prefix.
+function anchorGlob(glob: string, root: string): string {
+  if (glob.startsWith('!')) return '!' + anchorGlob(glob.slice(1), root)
+  if (glob.startsWith('**')) return glob
+  return path.posix.join(root, glob)
 }
 
 export function findConfig(startDir: string): string {
