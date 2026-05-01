@@ -12,13 +12,13 @@ import type { Rule } from './rules/contract.js'
  * Mirrors the ESLint flat-config shape.
  *
  * - `files` omitted — block applies to every action (same as a flat rule).
- * - `files: []` — explicit "match nothing"; the block is skipped.
  * - `files: [...]` — write actions are filtered by the glob; non-write
  *   actions (commands) pass the block-level filter and rules inside
- *   self-filter by action type.
+ *   self-filter by action type. The tuple type forbids an empty array
+ *   at the type level (a "match nothing" block would just be dead code).
  */
 export type RuleBlock = {
-  files?: readonly string[]
+  files?: readonly [string, ...string[]]
   rules: readonly Rule[]
 }
 
@@ -78,9 +78,10 @@ export async function loadConfig(filepath: string): Promise<Config> {
     ...module.default,
     rules: module.default.rules.map((entry) => {
       if (typeof entry === 'function' || !entry.files) return entry
+      const [first, ...rest] = entry.files.map((glob) => anchorGlob(glob, root))
       return {
         ...entry,
-        files: entry.files.map((glob) => anchorGlob(glob, root)),
+        files: [first!, ...rest] as const,
       }
     }),
   }

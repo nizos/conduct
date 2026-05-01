@@ -102,12 +102,12 @@ describe('engine', () => {
     expect(decision).toEqual({ kind: 'block', reason: 'second block fired' })
   })
 
-  it('skips a rule block whose files array is empty (explicit "match nothing")', async () => {
+  it('runtime-defends against an empty files array even though the type forbids it', async () => {
     const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
 
     const decision = await evaluate(
       { type: 'write', path: 'src/foo.ts', content: '' },
-      [{ files: [], rules: [violate] }],
+      [{ files: [] as unknown as readonly [string], rules: [violate] }],
     )
 
     expect(decision).toEqual({ kind: 'allow' })
