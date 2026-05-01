@@ -20,7 +20,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .object({
       tool_name: z.literal('apply_patch'),
       tool_input: z.object({ command: z.string() }),
-      cwd: z.string().optional(),
+      cwd: z.string().min(1),
     })
     .transform((d, ctx): Action => {
       const path = PATCH_HEADER.exec(d.tool_input.command)?.[1]

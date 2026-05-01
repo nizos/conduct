@@ -21,7 +21,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         file_path: z.string(),
         new_string: z.string(),
       }),
-      cwd: z.string().optional(),
+      cwd: z.string().min(1),
     })
     .transform(
       (d): Action => ({
@@ -37,7 +37,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         file_path: z.string(),
         content: z.string(),
       }),
-      cwd: z.string().optional(),
+      cwd: z.string().min(1),
     })
     .transform(
       (d): Action => ({

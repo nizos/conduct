@@ -27,11 +27,6 @@ describe('relativizePath', () => {
     )
   })
 
-  it('falls back to process.cwd() when cwd is undefined', () => {
-    const here = process.cwd()
-    expect(relativizePath(undefined, `${here}/foo/bar.ts`)).toBe('foo/bar.ts')
-  })
-
   it('returns POSIX-style separators even on hosts where path.sep is "\\"', () => {
     const result = relativizePath(
       '/workspaces/conduct',
@@ -40,10 +35,5 @@ describe('relativizePath', () => {
 
     expect(result).not.toContain('\\')
     expect(result).toBe('src/sub/foo.ts')
-  })
-
-  it('falls back to process.cwd() when cwd is an empty string', () => {
-    const here = process.cwd()
-    expect(relativizePath('', `${here}/foo/bar.ts`)).toBe('foo/bar.ts')
   })
 })

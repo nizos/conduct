@@ -84,16 +84,28 @@ describe('github-copilot adapter', () => {
     expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
-  it('falls back to process.cwd() when the create payload omits cwd', () => {
-    const action = actionSchema.parse({
-      toolName: 'create',
-      toolArgs: JSON.stringify({
-        path: `${process.cwd()}/src/UpperCase.ts`,
-        file_text: 'x',
+  it('fails closed when a create payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
+    expect(() =>
+      actionSchema.parse({
+        toolName: 'create',
+        toolArgs: JSON.stringify({
+          path: '/workspaces/conduct/src/UpperCase.ts',
+          file_text: 'x',
+        }),
       }),
-    })
+    ).toThrow()
+  })
 
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  it('fails closed when an edit payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
+    expect(() =>
+      actionSchema.parse({
+        toolName: 'edit',
+        toolArgs: JSON.stringify({
+          path: '/workspaces/conduct/src/UpperCase.ts',
+          new_str: 'x',
+        }),
+      }),
+    ).toThrow()
   })
 
   it('passes through view as a no-op so reads are not blocked by an unknown-tool error', () => {

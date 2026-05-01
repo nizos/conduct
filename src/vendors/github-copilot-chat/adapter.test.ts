@@ -88,16 +88,28 @@ describe('github-copilot-chat adapter', () => {
     expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
-  it('falls back to process.cwd() when the create_file payload omits cwd', () => {
-    const action = actionSchema.parse({
-      tool_name: 'create_file',
-      tool_input: {
-        filePath: `${process.cwd()}/src/UpperCase.ts`,
-        content: 'x',
-      },
-    })
+  it('fails closed when a create_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
+    expect(() =>
+      actionSchema.parse({
+        tool_name: 'create_file',
+        tool_input: {
+          filePath: '/workspaces/conduct/src/UpperCase.ts',
+          content: 'x',
+        },
+      }),
+    ).toThrow()
+  })
 
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  it('fails closed when a replace_string_in_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
+    expect(() =>
+      actionSchema.parse({
+        tool_name: 'replace_string_in_file',
+        tool_input: {
+          filePath: '/workspaces/conduct/src/UpperCase.ts',
+          newString: 'x',
+        },
+      }),
+    ).toThrow()
   })
 
   it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', () => {

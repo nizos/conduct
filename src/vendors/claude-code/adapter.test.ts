@@ -60,16 +60,16 @@ describe('claude-code adapter', () => {
     expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
-  it('falls back to process.cwd() when the payload omits cwd', () => {
-    const action = actionSchema.parse({
-      tool_name: 'Write',
-      tool_input: {
-        file_path: `${process.cwd()}/src/UpperCase.ts`,
-        content: 'x',
-      },
-    })
-
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  it('fails closed when a Write payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
+    expect(() =>
+      actionSchema.parse({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: '/workspaces/conduct/src/UpperCase.ts',
+          content: 'x',
+        },
+      }),
+    ).toThrow()
   })
 
   it('returns ../-prefixed form for an absolute file_path that sits outside cwd', () => {

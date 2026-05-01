@@ -77,15 +77,16 @@ describe('codex adapter', () => {
     expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
-  it('falls back to process.cwd() when the apply_patch payload omits cwd', () => {
-    const action = actionSchema.parse({
-      tool_name: 'apply_patch',
-      tool_input: {
-        command: `*** Begin Patch\n*** Add File: ${process.cwd()}/src/UpperCase.ts\n+x\n*** End Patch\n`,
-      },
-    })
-
-    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  it('fails closed when an apply_patch payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
+    expect(() =>
+      actionSchema.parse({
+        tool_name: 'apply_patch',
+        tool_input: {
+          command:
+            '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+        },
+      }),
+    ).toThrow()
   })
 
   it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {

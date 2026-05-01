@@ -29,7 +29,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .object({
       tool_name: z.literal('create_file'),
       tool_input: z.object({ filePath: z.string(), content: z.string() }),
-      cwd: z.string().optional(),
+      cwd: z.string().min(1),
     })
     .transform(
       (d): Action => ({
@@ -42,7 +42,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .object({
       tool_name: z.literal('replace_string_in_file'),
       tool_input: z.object({ filePath: z.string(), newString: z.string() }),
-      cwd: z.string().optional(),
+      cwd: z.string().min(1),
     })
     .transform(
       (d): Action => ({
@@ -53,15 +53,25 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     ),
 ])
 
+const KNOWN_TOOL_NAMES = new Set([
+  'run_in_terminal',
+  'create_file',
+  'replace_string_in_file',
+])
+
 /**
  * Anything we don't explicitly recognise (read_file, list_dir,
  * grep_search, future tools, etc.) maps to an empty command — no rule
  * matches it, the engine returns allow, and toResponse emits ''. The
  * Chat extension fires the hook for every tool call, so silently
  * passing through unknown tools is what keeps the surface usable.
+ * Known tool names are excluded so a malformed run_in_terminal /
+ * create_file / replace_string_in_file payload throws rather than
+ * silently passing through.
  */
 const passthroughSchema = z
   .object({ tool_name: z.string() })
+  .refine((d) => !KNOWN_TOOL_NAMES.has(d.tool_name))
   .transform((): Action => ({ type: 'command', command: '' }))
 
 export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
