@@ -102,6 +102,61 @@ describe('conduct cli (integration)', () => {
     expect(stdout).toBe('')
   })
 
+  // Vendor payloads carry absolute paths; each adapter must relativize
+  // against the payload cwd before the matcher so non-anchored globs
+  // like `files: ['src/**']` reach the rule.
+  it.each([
+    {
+      vendor: 'claude-code',
+      fixture: 'test/fixtures/claude-code/write-new-file.json',
+      readDeny: (out: string) =>
+        JSON.parse(out).hookSpecificOutput.permissionDecision,
+      expected: 'deny',
+    },
+    {
+      vendor: 'codex',
+      fixture: 'test/fixtures/codex/pre-apply-patch.json',
+      readDeny: (out: string) => JSON.parse(out).decision,
+      expected: 'block',
+    },
+    {
+      vendor: 'github-copilot',
+      fixture: 'test/fixtures/github-copilot/pre-create-new-test.json',
+      readDeny: (out: string) => JSON.parse(out).permissionDecision,
+      expected: 'deny',
+    },
+    {
+      vendor: 'github-copilot-chat',
+      fixture: 'test/fixtures/github-copilot-chat/pre-create-file.json',
+      readDeny: (out: string) =>
+        JSON.parse(out).hookSpecificOutput.permissionDecision,
+      expected: 'deny',
+    },
+  ])(
+    'relativizes absolute paths so files: ["src/**"] reaches the rule on $vendor',
+    async ({ vendor, fixture, readDeny, expected }) => {
+      const payload = readFileSync(fixture, 'utf8')
+
+      const { stdout, stderr } = await runCliAt(
+        'dist/bin.js',
+        [
+          '--agent',
+          vendor,
+          '--config',
+          'test/fixtures/configs/relative-glob.config.ts',
+        ],
+        payload,
+      )
+      if (!stdout) {
+        throw new Error(
+          `expected ${vendor} matcher to engage and produce a deny; stdout was empty. stderr: ${stderr}`,
+        )
+      }
+
+      expect(readDeny(stdout)).toBe(expected)
+    },
+  )
+
   it('runs main() when invoked via a symlink (the npx case)', async () => {
     const dir = await new Promise<string>((resolve, reject) => {
       mkdtemp(path.join(tmpdir(), 'conduct-bin-link-'), (err, d) =>
