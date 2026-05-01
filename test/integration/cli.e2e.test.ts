@@ -15,12 +15,12 @@ describe('conduct cli (integration)', () => {
       'utf8',
     )
 
-    const { stdout, stderr } = await runCliAt(
+    const result = await runCliAt(
       'dist/bin.js',
       ['--agent', 'claude-code', '--config', CONFIG_FIXTURE],
       payload,
     )
-    if (!stdout) throw new Error(`cli produced no stdout. stderr: ${stderr}`)
+    const stdout = requireStdout(result, 'expected cli to emit a response')
     const response = JSON.parse(stdout)
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -137,7 +137,7 @@ describe('conduct cli (integration)', () => {
     async ({ vendor, fixture, readDeny, expected }) => {
       const payload = readFileSync(fixture, 'utf8')
 
-      const { stdout, stderr } = await runCliAt(
+      const result = await runCliAt(
         'dist/bin.js',
         [
           '--agent',
@@ -147,11 +147,10 @@ describe('conduct cli (integration)', () => {
         ],
         payload,
       )
-      if (!stdout) {
-        throw new Error(
-          `expected ${vendor} matcher to engage and produce a deny; stdout was empty. stderr: ${stderr}`,
-        )
-      }
+      const stdout = requireStdout(
+        result,
+        `expected ${vendor} matcher to engage and produce a deny`,
+      )
 
       expect(readDeny(stdout)).toBe(expected)
     },
@@ -174,6 +173,16 @@ describe('conduct cli (integration)', () => {
     expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+/)
   })
 })
+
+function requireStdout(
+  result: { stdout: string; stderr: string },
+  context: string,
+): string {
+  if (!result.stdout) {
+    throw new Error(`${context}; stdout was empty. stderr: ${result.stderr}`)
+  }
+  return result.stdout
+}
 
 function runCliAt(
   binPath: string,
