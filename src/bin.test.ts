@@ -137,6 +137,6 @@ async function setup(
   return main({
     argv: opts.argv ?? ['node', 'bin.js', '--agent', 'claude-code'],
     stdin: opts.stdin ?? '',
-    loadConfig: opts.loadConfig,
+    ...(opts.loadConfig && { loadConfig: opts.loadConfig }),
   })
 }

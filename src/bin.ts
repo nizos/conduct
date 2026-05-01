@@ -71,7 +71,7 @@ export async function main(args: {
       args.loadConfig ?? loaderFromPath(parsed.configPath)
     const response = await run(stdin, {
       vendor: parsed.vendor,
-      loadConfig: loadConfigOverride,
+      ...(loadConfigOverride && { loadConfig: loadConfigOverride }),
     })
     return { stdout: response, exitCode: 0 }
   } catch (error) {

@@ -37,7 +37,7 @@ export async function dispatch(
       ? parsed.decision
       : await evaluateSafely(parsed.action, rules, {
           agent,
-          history: parsed.history,
+          ...(parsed.history && { history: parsed.history }),
         })
   return entry.adapter.toResponse(decision)
 }

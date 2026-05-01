@@ -5,6 +5,7 @@ import path from 'node:path'
 import { describe, it, expect, onTestFinished } from 'vitest'
 
 import type { Action, SessionEvent, Verdict } from '../types.js'
+import type { RuleContext } from './contract.js'
 import { enforceTdd } from './enforce-tdd.js'
 
 describe('enforce-tdd', () => {
@@ -222,7 +223,8 @@ function setup(
 ) {
   const verdict = options.verdict ?? { verdict: 'pass' as const, reason: '' }
   const state = { agentCalled: false, capturedPrompt: '' }
-  const ctx = {
+  const events = options.history
+  const ctx: RuleContext = {
     agent: {
       reason: async (prompt: string) => {
         state.agentCalled = true
@@ -230,12 +232,16 @@ function setup(
         return verdict
       },
     },
-    history: options.history ? async () => options.history! : undefined,
+    ...(events && { history: async () => events }),
   }
   const rule = enforceTdd({
-    instructions: options.instructions,
-    maxEvents: options.maxEvents,
-    maxContentChars: options.maxContentChars,
+    ...(options.instructions !== undefined && {
+      instructions: options.instructions,
+    }),
+    ...(options.maxEvents !== undefined && { maxEvents: options.maxEvents }),
+    ...(options.maxContentChars !== undefined && {
+      maxContentChars: options.maxContentChars,
+    }),
   })
   return {
     rule,

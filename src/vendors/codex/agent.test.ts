@@ -100,8 +100,8 @@ describe('codex', () => {
 
 function captureCodex() {
   const state: {
-    lastThreadOptions?: ThreadOptions
-    lastRunInput?: string
+    lastThreadOptions?: ThreadOptions | undefined
+    lastRunInput?: string | undefined
   } = {}
   const codex = {
     startThread(opts?: ThreadOptions) {
