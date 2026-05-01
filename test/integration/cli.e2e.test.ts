@@ -104,21 +104,31 @@ describe('conduct cli (integration)', () => {
     const link = path.join(dir, 'conduct')
     symlinkSync(path.resolve('dist/bin.js'), link)
 
-    const { stdout } = await runCliAt(link, ['--version'], '')
+    const { getRawStdout } = await setup({
+      binPath: link,
+      args: ['--version'],
+    })
 
-    expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+/)
+    expect(getRawStdout().trim()).toMatch(/^\d+\.\d+\.\d+/)
   })
 
   it('matches a config rule scoped at the config root when the session opens in a subdirectory', async () => {
-    const { configPath, example } = await setupParentConfigProject()
+    const projectRoot = await createScratchDir()
+    const example = path.join(projectRoot, 'example')
     const filePath = path.join(example, 'src', 'foo.ts')
-    const payload = makeClaudeCodeWritePayload({
-      cwd: example,
-      filePath,
-    })
+    await mkdir(path.dirname(filePath), { recursive: true })
+
+    const configPath = path.join(projectRoot, 'conduct.config.ts')
+    await writeFile(
+      configPath,
+      buildConductConfig(`[{
+        files: ['example/src/**'],
+        rules: [forbidContentPattern({ match: /./, reason: 'edge-case rule fired' })],
+      }]`),
+    )
 
     const { getResponse } = await setup({
-      payload,
+      payload: buildClaudeCodeWritePayload({ cwd: example, filePath }),
       config: configPath,
     })
 
@@ -126,39 +136,79 @@ describe('conduct cli (integration)', () => {
   })
 })
 
-async function setupParentConfigProject(): Promise<{
-  projectRoot: string
-  configPath: string
-  example: string
-  deepCwd: string
-}> {
-  const projectRoot = await mkdtemp(path.join(tmpdir(), 'conduct-e2e-cwd-'))
-  onTestFinished(async () => {
-    await rm(projectRoot, { recursive: true, force: true })
-  })
-  const example = path.join(projectRoot, 'example')
-  const deepCwd = path.join(example, 'src')
-  await mkdir(deepCwd, { recursive: true })
-
-  const distEntry = path.resolve('dist/index.js')
-  const configPath = path.join(projectRoot, 'conduct.config.ts')
-  await writeFile(
-    configPath,
-    [
-      `import { defineConfig, forbidContentPattern } from '${distEntry}'`,
-      `export default defineConfig({`,
-      `  rules: [{`,
-      `    files: ['example/src/**'],`,
-      `    rules: [forbidContentPattern({ match: /./, reason: 'edge-case rule fired' })],`,
-      `  }],`,
-      `})`,
-      ``,
-    ].join('\n'),
-  )
-  return { projectRoot, configPath, example, deepCwd }
+type SetupOptions = {
+  binPath?: string
+  args?: readonly string[]
+  payloadFixture?: string
+  payload?: string
+  config?: string
+  vendor?: Vendor
 }
 
-function makeClaudeCodeWritePayload(opts: {
+async function setup(options: SetupOptions = {}) {
+  const binPath = options.binPath ?? 'dist/bin.js'
+
+  const args = options.args ?? buildAgentArgs(options)
+
+  const stdin = resolvePayload(options)
+
+  const result = await new Promise<{ stdout: string; stderr: string }>(
+    (resolve, reject) => {
+      const child = spawn(process.execPath, [binPath, ...args], {
+        cwd: path.resolve(),
+        stdio: ['pipe', 'pipe', 'pipe'],
+      })
+      let stdout = ''
+      let stderr = ''
+      child.stdout.on('data', (chunk: Buffer) => (stdout += chunk.toString()))
+      child.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()))
+      child.on('close', () => resolve({ stdout, stderr }))
+      child.on('error', reject)
+      child.stdin.end(stdin)
+    },
+  )
+
+  const getStdout = () => {
+    if (!result.stdout) {
+      throw new Error(
+        `expected cli to emit a response; stdout was empty. stderr: ${result.stderr}`,
+      )
+    }
+    return result.stdout
+  }
+
+  const getRawStdout = () => result.stdout
+
+  const getResponse = () => JSON.parse(getStdout())
+
+  return { getStdout, getRawStdout, getResponse }
+}
+
+function buildAgentArgs(options: SetupOptions): string[] {
+  const args = ['--agent', options.vendor ?? 'claude-code']
+  if (options.config) args.push('--config', options.config)
+  return args
+}
+
+function resolvePayload(options: SetupOptions): string {
+  if (options.payload !== undefined) return options.payload
+  if (options.payloadFixture)
+    return readFileSync(options.payloadFixture, 'utf8')
+  return ''
+}
+
+// Wraps a `defineConfig({...})` body in the boilerplate every test
+// config needs (the import line + the default export). The argument is
+// the rule entries — usually a `RuleEntry[]` literal as text.
+function buildConductConfig(rules: string): string {
+  const dist = path.resolve('dist/index.js')
+  return `import { defineConfig, enforceFilenameCasing, enforceTdd, forbidCommandPattern, forbidContentPattern } from '${dist}'
+
+export default defineConfig({ rules: ${rules} })
+`
+}
+
+function buildClaudeCodeWritePayload(opts: {
   cwd: string
   filePath: string
 }): string {
@@ -173,56 +223,10 @@ function makeClaudeCodeWritePayload(opts: {
   })
 }
 
-async function setup(options: {
-  payloadFixture?: string
-  payload?: string
-  config?: string
-  vendor?: Vendor
-}) {
-  const payload =
-    options.payload ?? readFileSync(options.payloadFixture!, 'utf8')
-
-  const args = ['--agent', options.vendor ?? 'claude-code']
-  if (options.config) args.push('--config', options.config)
-
-  const result = await runCliAt('dist/bin.js', args, payload)
-
-  const getStdout = () =>
-    requireStdout(result, 'expected cli to emit a response')
-
-  const getRawStdout = () => result.stdout
-
-  const getResponse = () => JSON.parse(getStdout())
-
-  return { getStdout, getRawStdout, getResponse }
-}
-
-function requireStdout(
-  result: { stdout: string; stderr: string },
-  context: string,
-): string {
-  if (!result.stdout) {
-    throw new Error(`${context}; stdout was empty. stderr: ${result.stderr}`)
-  }
-  return result.stdout
-}
-
-function runCliAt(
-  binPath: string,
-  args: readonly string[],
-  stdin: string,
-): Promise<{ stdout: string; stderr: string }> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [binPath, ...args], {
-      cwd: path.resolve(),
-      stdio: ['pipe', 'pipe', 'pipe'],
-    })
-    let stdout = ''
-    let stderr = ''
-    child.stdout.on('data', (chunk: Buffer) => (stdout += chunk.toString()))
-    child.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()))
-    child.on('close', () => resolve({ stdout, stderr }))
-    child.on('error', reject)
-    child.stdin.end(stdin)
+async function createScratchDir(): Promise<string> {
+  const root = await mkdtemp(path.join(tmpdir(), 'conduct-e2e-'))
+  onTestFinished(async () => {
+    await rm(root, { recursive: true, force: true })
   })
+  return root
 }
