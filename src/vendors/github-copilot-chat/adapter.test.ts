@@ -2,9 +2,34 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { actionSchema, sessionPath, toResponse } from './adapter.js'
+import {
+  actionSchema,
+  parseAction,
+  sessionPath,
+  toResponse,
+} from './adapter.js'
 
 describe('github-copilot-chat adapter', () => {
+  it('parseAction returns an ok result with the typed action for a valid payload', () => {
+    const result = parseAction({
+      cwd: '/workspaces/conduct',
+      tool_name: 'create_file',
+      tool_input: {
+        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        type: 'write',
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+  })
+
   it('returns the transcript_path from the payload as the session path', () => {
     expect(
       sessionPath({ transcript_path: '/some/chat-transcript.jsonl' }),

@@ -5,9 +5,8 @@ import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 import { JsonString } from '../../utils/json-string.js'
+import { fromSchema, passthroughFor } from '../adapter.js'
 import { posixAbsolute } from '../posix-absolute.js'
-
-const KNOWN_TOOL_NAMES = new Set(['bash', 'create', 'edit'])
 
 const writeToolsSchema = z.discriminatedUnion('toolName', [
   z
@@ -50,20 +49,16 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
     ),
 ])
 
-/**
- * Anything Copilot fires the hook for that we don't explicitly model
- * (view, report_intent, future tools, etc.) maps to an empty command —
- * no rule matches it, the engine returns allow, toResponse emits ''.
- * The refinement excludes known tool names so a malformed `bash` /
- * `create` / `edit` payload still falls through to the "invalid hook
- * payload" error rather than silently passing through.
- */
-const passthroughSchema = z
-  .object({ toolName: z.string() })
-  .refine((d) => !KNOWN_TOOL_NAMES.has(d.toolName))
-  .transform((): Action => ({ type: 'command', command: '' }))
+// Anything Copilot fires the hook for that we don't explicitly model
+// (view, report_intent, future tools, etc.) becomes a no-op command.
+// `passthroughFor` excludes the known tool names so a malformed
+// `bash` / `create` / `edit` payload still surfaces as a parse error
+// rather than silently passing through.
+const passthroughSchema = passthroughFor('toolName', ['bash', 'create', 'edit'])
 
 export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
+
+export const parseAction = fromSchema(actionSchema)
 
 const ContextPayloadSchema = z.object({
   sessionId: z.string().regex(/^[A-Za-z0-9_-]+$/, {

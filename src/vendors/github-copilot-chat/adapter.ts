@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
+import { fromSchema, passthroughFor } from '../adapter.js'
 import { posixAbsolute } from '../posix-absolute.js'
 
 export function toResponse(decision: Decision): string {
@@ -53,28 +54,22 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     ),
 ])
 
-const KNOWN_TOOL_NAMES = new Set([
+// Anything we don't explicitly recognise (read_file, list_dir,
+// grep_search, future tools, etc.) becomes a no-op command — no rule
+// matches it, the engine returns allow. The Chat extension fires the
+// hook for every tool call, so silently passing through unknown tools
+// is what keeps the surface usable. `passthroughFor` excludes the
+// known tool names so a malformed run_in_terminal / create_file /
+// replace_string_in_file payload still surfaces as a parse error.
+const passthroughSchema = passthroughFor('tool_name', [
   'run_in_terminal',
   'create_file',
   'replace_string_in_file',
 ])
 
-/**
- * Anything we don't explicitly recognise (read_file, list_dir,
- * grep_search, future tools, etc.) maps to an empty command — no rule
- * matches it, the engine returns allow, and toResponse emits ''. The
- * Chat extension fires the hook for every tool call, so silently
- * passing through unknown tools is what keeps the surface usable.
- * Known tool names are excluded so a malformed run_in_terminal /
- * create_file / replace_string_in_file payload throws rather than
- * silently passing through.
- */
-const passthroughSchema = z
-  .object({ tool_name: z.string() })
-  .refine((d) => !KNOWN_TOOL_NAMES.has(d.tool_name))
-  .transform((): Action => ({ type: 'command', command: '' }))
-
 export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
+
+export const parseAction = fromSchema(actionSchema)
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
 

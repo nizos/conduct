@@ -2,9 +2,34 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { actionSchema, sessionPath, toResponse } from './adapter.js'
+import {
+  actionSchema,
+  parseAction,
+  sessionPath,
+  toResponse,
+} from './adapter.js'
 
 describe('claude-code adapter', () => {
+  it('parseAction returns an ok result with the typed action for a valid payload', () => {
+    const result = parseAction({
+      cwd: '/workspaces/conduct',
+      tool_name: 'Write',
+      tool_input: {
+        file_path: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        type: 'write',
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+  })
+
   it('extracts the file path from a Write payload as an absolute POSIX path', () => {
     const { action } = setup('write-new-file.json')
 

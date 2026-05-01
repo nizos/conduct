@@ -2,9 +2,34 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { actionSchema, sessionPath, toResponse } from './adapter.js'
+import {
+  actionSchema,
+  parseAction,
+  sessionPath,
+  toResponse,
+} from './adapter.js'
 
 describe('github-copilot adapter', () => {
+  it('parseAction returns an ok result with the typed action for a valid payload', () => {
+    const result = parseAction({
+      cwd: '/workspaces/conduct',
+      toolName: 'create',
+      toolArgs: JSON.stringify({
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        file_text: 'x',
+      }),
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        type: 'write',
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+  })
+
   it('tags the action type as command for a bash payload', () => {
     const { action } = setup('pre-bash-npm-test.json')
 

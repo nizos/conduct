@@ -1,12 +1,11 @@
 import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
-import { z } from 'zod'
 
 import { dispatch, run } from './cli.js'
 import type { Config } from './config.js'
 import { vendors, type VendorEntry } from './registry.js'
-import type { Action, Agent } from './types.js'
+import type { Agent } from './types.js'
 import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
 
 const claudeCodeEntry = vendors['claude-code']
@@ -95,16 +94,12 @@ describe('cli', () => {
     expect(raw).toBe('')
   })
 
-  it('returns a deny response when the adapter actionSchema rejects the payload', async () => {
-    const rejectingSchema = z.unknown().transform((_, ctx) => {
-      ctx.addIssue({ code: 'custom', message: 'unsupported tool shape' })
-      return z.NEVER
-    }) as unknown as z.ZodType<Action>
+  it('returns a deny response when the adapter rejects the payload', async () => {
     const rejectingEntry: VendorEntry = {
       ...claudeCodeEntry,
       adapter: {
         ...claudeCodeEntry.adapter,
-        actionSchema: rejectingSchema,
+        parseAction: () => ({ ok: false, reason: 'unsupported tool shape' }),
       },
     }
     const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })

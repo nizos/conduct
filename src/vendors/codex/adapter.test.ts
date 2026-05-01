@@ -2,9 +2,35 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { actionSchema, sessionPath, toResponse } from './adapter.js'
+import {
+  actionSchema,
+  parseAction,
+  sessionPath,
+  toResponse,
+} from './adapter.js'
 
 describe('codex adapter', () => {
+  it('parseAction returns an ok result with the typed action for a valid payload', () => {
+    const result = parseAction({
+      cwd: '/workspaces/conduct',
+      tool_name: 'apply_patch',
+      tool_input: {
+        command:
+          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+      },
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        type: 'write',
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        content:
+          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+      },
+    })
+  })
+
   it('tags the action type as command for a Bash payload', () => {
     const { action } = setup('pre-bash-pwd.json')
 

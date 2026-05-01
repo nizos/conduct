@@ -1,6 +1,55 @@
-import type { z } from 'zod'
+import { z } from 'zod'
 
 import type { Action, Decision } from '../types.js'
+
+/**
+ * Result of parsing a vendor payload into a canonical `Action`. Either
+ * the payload was understood (`ok: true`) and yielded an action, or it
+ * was malformed (`ok: false`) and the adapter explains why.
+ */
+export type ParseActionResult =
+  | { ok: true; action: Action }
+  | { ok: false; reason: string }
+
+/**
+ * Wraps a Zod schema as the `parseAction` function the contract
+ * requires. Adapters keep their schemas internal and expose
+ * `parseAction` via this helper, so consumers don't see Zod's API.
+ */
+export function fromSchema(
+  schema: z.ZodType<Action>,
+): (payload: unknown) => ParseActionResult {
+  return (payload) => {
+    const parsed = schema.safeParse(payload)
+    if (parsed.success) return { ok: true, action: parsed.data }
+    return {
+      ok: false,
+      reason: parsed.error.issues.map((i) => i.message).join('; '),
+    }
+  }
+}
+
+/**
+ * Schema fragment for the "unknown tool name passes through as a
+ * no-op command" behavior every adapter needs. The tool-name field
+ * varies per vendor (`tool_name` for most, `toolName` for
+ * github-copilot), so callers pass it explicitly along with the set
+ * of names the adapter recognizes (which the refinement excludes —
+ * recognized tools must validate via the discriminated union, not
+ * pass through).
+ */
+export function passthroughFor(
+  toolNameField: string,
+  knownTools: readonly string[],
+): z.ZodType<Action> {
+  const known = new Set(knownTools)
+  return z
+    .object({ [toolNameField]: z.string() })
+    .refine((d) => !known.has((d as Record<string, string>)[toolNameField]!))
+    .transform(
+      (): Action => ({ type: 'command', command: '' }),
+    ) as unknown as z.ZodType<Action>
+}
 
 /**
  * The contract every adapter implements. Adapters translate
@@ -14,7 +63,7 @@ import type { Action, Decision } from '../types.js'
  * `ctx.history` to rules.
  */
 export type Adapter = {
-  actionSchema: z.ZodType<Action>
+  parseAction: (payload: unknown) => ParseActionResult
   toResponse: (decision: Decision) => string
   sessionPath?: (payload: unknown) => string | undefined
 }

@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 import type { Action, Agent, Decision, SessionEvent } from './types.js'
 import {
   findConfig,
@@ -9,7 +7,6 @@ import {
 } from './config.js'
 import { evaluateSafely } from './engine.js'
 import { vendors, type Vendor, type VendorEntry } from './registry.js'
-import { JsonString } from './utils/json-string.js'
 
 export type { Vendor } from './registry.js'
 
@@ -54,16 +51,20 @@ type ParseResult =
   | { kind: 'invalid'; decision: Decision }
 
 function parsePayload(entry: VendorEntry, rawPayload: string): ParseResult {
-  const json = JsonString.safeParse(rawPayload)
-  if (!json.success) return invalid(formatZodError(json.error))
+  let json: unknown
+  try {
+    json = JSON.parse(rawPayload)
+  } catch (error) {
+    return invalid(error instanceof Error ? error.message : String(error))
+  }
 
-  const action = entry.adapter.actionSchema.safeParse(json.data)
-  if (!action.success) return invalid(formatZodError(action.error))
+  const action = entry.adapter.parseAction(json)
+  if (!action.ok) return invalid(action.reason)
 
-  const sessionPath = entry.adapter.sessionPath?.(json.data)
+  const sessionPath = entry.adapter.sessionPath?.(json)
   return {
     kind: 'ok',
-    action: action.data,
+    action: action.action,
     history: sessionPath ? () => entry.readTranscript(sessionPath) : undefined,
   }
 }
@@ -73,8 +74,4 @@ function invalid(reason: string): ParseResult {
     kind: 'invalid',
     decision: { kind: 'block', reason: `invalid hook payload: ${reason}` },
   }
-}
-
-function formatZodError(error: z.ZodError): string {
-  return error.issues.map((i) => i.message).join('; ')
 }

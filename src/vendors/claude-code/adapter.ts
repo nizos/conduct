@@ -1,9 +1,8 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
+import { fromSchema, passthroughFor } from '../adapter.js'
 import { posixAbsolute } from '../posix-absolute.js'
-
-const KNOWN_TOOL_NAMES = new Set(['Bash', 'Edit', 'Write'])
 
 const writeToolsSchema = z.discriminatedUnion('tool_name', [
   z
@@ -48,20 +47,17 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     ),
 ])
 
-/**
- * Anything Claude Code fires the hook for that we don't explicitly
- * model (Read, Grep, MultiEdit, NotebookEdit, future tools) maps to an
- * empty command — no rule matches it, the engine returns allow,
- * toResponse emits ''. The refinement excludes known tool names so a
- * malformed Bash / Edit / Write payload still throws rather than
- * silently passing through.
- */
-const passthroughSchema = z
-  .object({ tool_name: z.string() })
-  .refine((d) => !KNOWN_TOOL_NAMES.has(d.tool_name))
-  .transform((): Action => ({ type: 'command', command: '' }))
+// Anything Claude Code fires the hook for that we don't explicitly
+// model (Read, Grep, MultiEdit, NotebookEdit, future tools) becomes a
+// no-op command — no rule matches it, the engine returns allow.
+// `passthroughFor` excludes the known tool names so a malformed
+// Bash / Edit / Write payload still surfaces as a parse error rather
+// than silently passing through.
+const passthroughSchema = passthroughFor('tool_name', ['Bash', 'Edit', 'Write'])
 
 export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
+
+export const parseAction = fromSchema(actionSchema)
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
 
