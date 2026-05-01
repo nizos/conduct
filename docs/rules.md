@@ -14,8 +14,8 @@ Blocks a write unless the session's recent history shows a failing test that the
 | Option            | Type     | Default                      | Description                                                                                                                               |
 | ----------------- | -------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `instructions`    | `string` | built-in three-rule TDD spec | Overrides the default TDD rules text. The generic process instructions (what inputs the validator sees and how to read them) stay.        |
-| `maxEvents`       | `number` | `10`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.        |
-| `maxContentChars` | `number` | `1000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges. |
+| `maxEvents`       | `number` | `20`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.        |
+| `maxContentChars` | `number` | `4000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges. |
 
 ### Examples
 

@@ -5,8 +5,8 @@ import type { Action, SessionEvent } from '../types.js'
 import type { RuleContext } from './contract.js'
 import { trimHistory } from './utils/trim-history.js'
 
-const DEFAULT_MAX_EVENTS = 10
-const DEFAULT_MAX_CONTENT_CHARS = 1000
+const DEFAULT_MAX_EVENTS = 20
+const DEFAULT_MAX_CONTENT_CHARS = 4000
 const MAX_BEFORE_CONTENT_BYTES = 1024 * 1024
 
 const PROCESS_INSTRUCTIONS = `## Role
