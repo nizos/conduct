@@ -66,12 +66,26 @@ const CONFIG_FILENAME = 'conduct.config.ts'
 /**
  * Load a Conduct config file (TypeScript or JavaScript) from an absolute
  * path. Returns the default export. Backed by jiti so `.ts` configs run
- * without a build step.
+ * without a build step. Block-level `files` globs are anchored against
+ * the config's directory so they match `Action.path` (absolute POSIX)
+ * regardless of where the agent's session is rooted.
  */
 export async function loadConfig(filepath: string): Promise<Config> {
   const jiti = createJiti(import.meta.url)
   const module = (await jiti.import(filepath)) as { default: Config }
-  return module.default
+  const root = path.dirname(filepath)
+  return {
+    ...module.default,
+    rules: module.default.rules.map((entry) => {
+      if (typeof entry === 'function' || !entry.files) return entry
+      return {
+        ...entry,
+        files: entry.files.map((glob) =>
+          glob.startsWith('**') ? glob : path.posix.join(root, glob),
+        ),
+      }
+    }),
+  }
 }
 
 export function findConfig(startDir: string): string {

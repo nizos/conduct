@@ -20,6 +20,16 @@ describe('loadConfig', () => {
 
     expect(config).toEqual({ rules: [] })
   })
+
+  it('leaves a `**`-prefixed glob unanchored (its intent is match-anywhere, not scope-to-config-dir)', async () => {
+    const fixture = path.resolve('test/fixtures/configs/blocks.config.ts')
+
+    const config = await loadConfig(fixture)
+
+    expect(config.rules[0]).toMatchObject({
+      files: ['**/src/**'],
+    })
+  })
 })
 
 describe('findConfig', () => {
