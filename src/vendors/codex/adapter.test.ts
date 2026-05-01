@@ -2,12 +2,9 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import {
-  actionSchema,
-  parseAction,
-  sessionPath,
-  toResponse,
-} from './adapter.js'
+import type { Action } from '../../types.js'
+import type { ParseActionResult } from '../adapter.js'
+import { parseAction, sessionPath, toResponse } from './adapter.js'
 
 describe('codex adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -58,22 +55,22 @@ describe('codex adapter', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
-  it('throws for a malformed apply_patch payload (missing command field)', () => {
-    expect(() =>
-      actionSchema.parse({
-        tool_name: 'apply_patch',
-        tool_input: { patch: 'diff' },
-      }),
-    ).toThrow()
+  it('rejects a malformed apply_patch payload (missing command field)', () => {
+    const result = parseAction({
+      tool_name: 'apply_patch',
+      tool_input: { patch: 'diff' },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
-  it('throws when apply_patch command lacks an Add/Update/Delete File header', () => {
-    expect(() =>
-      actionSchema.parse({
-        tool_name: 'apply_patch',
-        tool_input: { command: 'just a string with no header' },
-      }),
-    ).toThrow()
+  it('rejects an apply_patch command without an Add/Update/Delete File header', () => {
+    const result = parseAction({
+      tool_name: 'apply_patch',
+      tool_input: { command: 'just a string with no header' },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('maps an apply_patch payload to a write action with absolute POSIX path + patch content', () => {
@@ -81,7 +78,7 @@ describe('codex adapter', () => {
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
     )
 
-    const action = actionSchema.parse(payload)
+    const action = ok(parseAction(payload))
 
     expect(action.type).toBe('write')
     if (action.type !== 'write') throw new Error('expected write')
@@ -91,14 +88,16 @@ describe('codex adapter', () => {
   })
 
   it('preserves an absolute apply_patch header path emitted by the agent', () => {
-    const action = actionSchema.parse({
-      cwd: '/workspaces/conduct',
-      tool_name: 'apply_patch',
-      tool_input: {
-        command:
-          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
-      },
-    })
+    const action = ok(
+      parseAction({
+        cwd: '/workspaces/conduct',
+        tool_name: 'apply_patch',
+        tool_input: {
+          command:
+            '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+        },
+      }),
+    )
 
     expect(action).toMatchObject({
       type: 'write',
@@ -107,24 +106,26 @@ describe('codex adapter', () => {
   })
 
   it('fails closed when an apply_patch payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    expect(() =>
-      actionSchema.parse({
-        tool_name: 'apply_patch',
-        tool_input: {
-          command:
-            '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
-        },
-      }),
-    ).toThrow()
+    const result = parseAction({
+      tool_name: 'apply_patch',
+      tool_input: {
+        command:
+          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+      },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
-    expect(
-      actionSchema.parse({
+    const action = ok(
+      parseAction({
         tool_name: 'some_future_tool',
         tool_input: { whatever: true },
       }),
-    ).toEqual({ type: 'command', command: '' })
+    )
+
+    expect(action).toEqual({ type: 'command', command: '' })
   })
 
   it('returns the transcript_path from the payload as the session path', () => {
@@ -132,22 +133,17 @@ describe('codex adapter', () => {
       sessionPath({ transcript_path: '/some/codex-transcript.jsonl' }),
     ).toBe('/some/codex-transcript.jsonl')
   })
-
-  it('exposes actionSchema that parses a payload to a typed Action', () => {
-    const payload = JSON.parse(
-      readFileSync('test/fixtures/codex/pre-bash-pwd.json', 'utf8'),
-    )
-
-    const action = actionSchema.parse(payload)
-
-    expect(action.type).toBe('command')
-  })
 })
 
 function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/codex/${fixtureName}`, 'utf8'),
   )
-  const action = actionSchema.parse(payload)
+  const action = ok(parseAction(payload))
   return { action, payload }
+}
+
+function ok(result: ParseActionResult): Action {
+  if (!result.ok) throw new Error(`expected ok, got: ${result.reason}`)
+  return result.action
 }

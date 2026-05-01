@@ -2,12 +2,9 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import {
-  actionSchema,
-  parseAction,
-  sessionPath,
-  toResponse,
-} from './adapter.js'
+import type { Action } from '../../types.js'
+import type { ParseActionResult } from '../adapter.js'
+import { parseAction, sessionPath, toResponse } from './adapter.js'
 
 describe('claude-code adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -75,14 +72,16 @@ describe('claude-code adapter', () => {
   })
 
   it('preserves an absolute file_path emitted by the agent', () => {
-    const action = actionSchema.parse({
-      cwd: '/workspaces/conduct',
-      tool_name: 'Write',
-      tool_input: {
-        file_path: '/workspaces/conduct/src/UpperCase.ts',
-        content: 'x',
-      },
-    })
+    const action = ok(
+      parseAction({
+        cwd: '/workspaces/conduct',
+        tool_name: 'Write',
+        tool_input: {
+          file_path: '/workspaces/conduct/src/UpperCase.ts',
+          content: 'x',
+        },
+      }),
+    )
 
     expect(action).toMatchObject({
       type: 'write',
@@ -91,23 +90,25 @@ describe('claude-code adapter', () => {
   })
 
   it('fails closed when a Write payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    expect(() =>
-      actionSchema.parse({
-        tool_name: 'Write',
-        tool_input: {
-          file_path: '/workspaces/conduct/src/UpperCase.ts',
-          content: 'x',
-        },
-      }),
-    ).toThrow()
+    const result = parseAction({
+      tool_name: 'Write',
+      tool_input: {
+        file_path: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('preserves an absolute file_path even when it sits outside cwd', () => {
-    const action = actionSchema.parse({
-      cwd: '/workspaces/conduct',
-      tool_name: 'Write',
-      tool_input: { file_path: '/etc/passwd', content: 'x' },
-    })
+    const action = ok(
+      parseAction({
+        cwd: '/workspaces/conduct',
+        tool_name: 'Write',
+        tool_input: { file_path: '/etc/passwd', content: 'x' },
+      }),
+    )
 
     expect(action).toMatchObject({ type: 'write', path: '/etc/passwd' })
   })
@@ -134,19 +135,21 @@ describe('claude-code adapter', () => {
     )
   })
 
-  it('throws when a Bash payload is missing the command field', () => {
-    expect(() =>
-      actionSchema.parse({ tool_name: 'Bash', tool_input: {} }),
-    ).toThrow()
+  it('rejects a Bash payload missing the command field', () => {
+    const result = parseAction({ tool_name: 'Bash', tool_input: {} })
+
+    expect(result.ok).toBe(false)
   })
 
   it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
-    expect(
-      actionSchema.parse({
+    const action = ok(
+      parseAction({
         tool_name: 'MultiEdit',
         tool_input: { file_path: 'x', edits: [] },
       }),
-    ).toEqual({ type: 'command', command: '' })
+    )
+
+    expect(action).toEqual({ type: 'command', command: '' })
   })
 
   it('returns the transcript_path from the payload as the session path', () => {
@@ -154,22 +157,17 @@ describe('claude-code adapter', () => {
       '/some/transcript.jsonl',
     )
   })
-
-  it('exposes actionSchema that parses a payload to a typed Action', () => {
-    const payload = JSON.parse(
-      readFileSync('test/fixtures/claude-code/bash-npm-install.json', 'utf8'),
-    )
-
-    const action = actionSchema.parse(payload)
-
-    expect(action.type).toBe('command')
-  })
 })
 
 function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/claude-code/${fixtureName}`, 'utf8'),
   )
-  const action = actionSchema.parse(payload)
+  const action = ok(parseAction(payload))
   return { action, payload }
+}
+
+function ok(result: ParseActionResult): Action {
+  if (!result.ok) throw new Error(`expected ok, got: ${result.reason}`)
+  return result.action
 }

@@ -2,12 +2,9 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import {
-  actionSchema,
-  parseAction,
-  sessionPath,
-  toResponse,
-} from './adapter.js'
+import type { Action } from '../../types.js'
+import type { ParseActionResult } from '../adapter.js'
+import { parseAction, sessionPath, toResponse } from './adapter.js'
 
 describe('github-copilot adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -58,10 +55,13 @@ describe('github-copilot adapter', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
-  it('throws when toolArgs is missing or not a JSON-encoded string', () => {
-    expect(() =>
-      actionSchema.parse({ toolName: 'bash', toolArgs: 'not-valid-json' }),
-    ).toThrow()
+  it('rejects a payload whose toolArgs is not a JSON-encoded string', () => {
+    const result = parseAction({
+      toolName: 'bash',
+      toolArgs: 'not-valid-json',
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('tags a create payload as a write action', () => {
@@ -97,14 +97,16 @@ describe('github-copilot adapter', () => {
   })
 
   it('preserves an absolute create path emitted by the agent', () => {
-    const action = actionSchema.parse({
-      cwd: '/workspaces/conduct',
-      toolName: 'create',
-      toolArgs: JSON.stringify({
-        path: '/workspaces/conduct/src/UpperCase.ts',
-        file_text: 'x',
+    const action = ok(
+      parseAction({
+        cwd: '/workspaces/conduct',
+        toolName: 'create',
+        toolArgs: JSON.stringify({
+          path: '/workspaces/conduct/src/UpperCase.ts',
+          file_text: 'x',
+        }),
       }),
-    })
+    )
 
     expect(action).toMatchObject({
       type: 'write',
@@ -113,27 +115,27 @@ describe('github-copilot adapter', () => {
   })
 
   it('fails closed when a create payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    expect(() =>
-      actionSchema.parse({
-        toolName: 'create',
-        toolArgs: JSON.stringify({
-          path: '/workspaces/conduct/src/UpperCase.ts',
-          file_text: 'x',
-        }),
+    const result = parseAction({
+      toolName: 'create',
+      toolArgs: JSON.stringify({
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        file_text: 'x',
       }),
-    ).toThrow()
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('fails closed when an edit payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    expect(() =>
-      actionSchema.parse({
-        toolName: 'edit',
-        toolArgs: JSON.stringify({
-          path: '/workspaces/conduct/src/UpperCase.ts',
-          new_str: 'x',
-        }),
+    const result = parseAction({
+      toolName: 'edit',
+      toolArgs: JSON.stringify({
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        new_str: 'x',
       }),
-    ).toThrow()
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('passes through view as a no-op so reads are not blocked by an unknown-tool error', () => {
@@ -144,7 +146,7 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(actionSchema.parse(payload)).toEqual({
+    expect(ok(parseAction(payload))).toEqual({
       type: 'command',
       command: '',
     })
@@ -158,7 +160,7 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(actionSchema.parse(payload)).toEqual({
+    expect(ok(parseAction(payload))).toEqual({
       type: 'command',
       command: '',
     })
@@ -182,25 +184,14 @@ describe('github-copilot adapter', () => {
   })
 
   it('passes through any unknown toolName (catchall, not a hardcoded list of read tools)', () => {
-    expect(
-      actionSchema.parse({
+    const action = ok(
+      parseAction({
         toolName: 'some_future_tool',
         toolArgs: JSON.stringify({ whatever: true }),
       }),
-    ).toEqual({ type: 'command', command: '' })
-  })
-
-  it('exposes actionSchema that parses a payload to a typed Action', () => {
-    const payload = JSON.parse(
-      readFileSync(
-        'test/fixtures/github-copilot/pre-bash-npm-test.json',
-        'utf8',
-      ),
     )
 
-    const action = actionSchema.parse(payload)
-
-    expect(action.type).toBe('command')
+    expect(action).toEqual({ type: 'command', command: '' })
   })
 })
 
@@ -208,6 +199,11 @@ function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/github-copilot/${fixtureName}`, 'utf8'),
   )
-  const action = actionSchema.parse(payload)
+  const action = ok(parseAction(payload))
   return { action, payload }
+}
+
+function ok(result: ParseActionResult): Action {
+  if (!result.ok) throw new Error(`expected ok, got: ${result.reason}`)
+  return result.action
 }

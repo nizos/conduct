@@ -55,9 +55,9 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
 // than silently passing through.
 const passthroughSchema = passthroughFor('tool_name', ['Bash', 'Edit', 'Write'])
 
-export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
-
-export const parseAction = fromSchema(actionSchema)
+export const parseAction = fromSchema(
+  z.union([writeToolsSchema, passthroughSchema]),
+)
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
 

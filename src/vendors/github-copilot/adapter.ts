@@ -56,9 +56,9 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
 // rather than silently passing through.
 const passthroughSchema = passthroughFor('toolName', ['bash', 'create', 'edit'])
 
-export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
-
-export const parseAction = fromSchema(actionSchema)
+export const parseAction = fromSchema(
+  z.union([writeToolsSchema, passthroughSchema]),
+)
 
 const ContextPayloadSchema = z.object({
   sessionId: z.string().regex(/^[A-Za-z0-9_-]+$/, {

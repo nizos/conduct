@@ -2,12 +2,9 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import {
-  actionSchema,
-  parseAction,
-  sessionPath,
-  toResponse,
-} from './adapter.js'
+import type { Action } from '../../types.js'
+import type { ParseActionResult } from '../adapter.js'
+import { parseAction, sessionPath, toResponse } from './adapter.js'
 
 describe('github-copilot-chat adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -101,14 +98,16 @@ describe('github-copilot-chat adapter', () => {
   })
 
   it('preserves an absolute create_file filePath emitted by the agent', () => {
-    const action = actionSchema.parse({
-      cwd: '/workspaces/conduct',
-      tool_name: 'create_file',
-      tool_input: {
-        filePath: '/workspaces/conduct/src/UpperCase.ts',
-        content: 'x',
-      },
-    })
+    const action = ok(
+      parseAction({
+        cwd: '/workspaces/conduct',
+        tool_name: 'create_file',
+        tool_input: {
+          filePath: '/workspaces/conduct/src/UpperCase.ts',
+          content: 'x',
+        },
+      }),
+    )
 
     expect(action).toMatchObject({
       type: 'write',
@@ -117,27 +116,27 @@ describe('github-copilot-chat adapter', () => {
   })
 
   it('fails closed when a create_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    expect(() =>
-      actionSchema.parse({
-        tool_name: 'create_file',
-        tool_input: {
-          filePath: '/workspaces/conduct/src/UpperCase.ts',
-          content: 'x',
-        },
-      }),
-    ).toThrow()
+    const result = parseAction({
+      tool_name: 'create_file',
+      tool_input: {
+        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('fails closed when a replace_string_in_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    expect(() =>
-      actionSchema.parse({
-        tool_name: 'replace_string_in_file',
-        tool_input: {
-          filePath: '/workspaces/conduct/src/UpperCase.ts',
-          newString: 'x',
-        },
-      }),
-    ).toThrow()
+    const result = parseAction({
+      tool_name: 'replace_string_in_file',
+      tool_input: {
+        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        newString: 'x',
+      },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', () => {
@@ -148,7 +147,7 @@ describe('github-copilot-chat adapter', () => {
       ),
     )
 
-    expect(actionSchema.parse(payload)).toEqual({
+    expect(ok(parseAction(payload))).toEqual({
       type: 'command',
       command: '',
     })
@@ -162,19 +161,21 @@ describe('github-copilot-chat adapter', () => {
       ),
     )
 
-    expect(actionSchema.parse(payload)).toEqual({
+    expect(ok(parseAction(payload))).toEqual({
       type: 'command',
       command: '',
     })
   })
 
   it('passes through any unknown tool_name (catchall, not a hardcoded list of read tools)', () => {
-    expect(
-      actionSchema.parse({
+    const action = ok(
+      parseAction({
         tool_name: 'some_future_tool',
         tool_input: { whatever: true },
       }),
-    ).toEqual({ type: 'command', command: '' })
+    )
+
+    expect(action).toEqual({ type: 'command', command: '' })
   })
 })
 
@@ -182,6 +183,11 @@ function setup(fixtureName: string) {
   const payload = JSON.parse(
     readFileSync(`test/fixtures/github-copilot-chat/${fixtureName}`, 'utf8'),
   )
-  const action = actionSchema.parse(payload)
+  const action = ok(parseAction(payload))
   return { action, payload }
+}
+
+function ok(result: ParseActionResult): Action {
+  if (!result.ok) throw new Error(`expected ok, got: ${result.reason}`)
+  return result.action
 }

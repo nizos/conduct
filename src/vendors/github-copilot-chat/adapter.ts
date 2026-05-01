@@ -67,9 +67,9 @@ const passthroughSchema = passthroughFor('tool_name', [
   'replace_string_in_file',
 ])
 
-export const actionSchema = z.union([writeToolsSchema, passthroughSchema])
-
-export const parseAction = fromSchema(actionSchema)
+export const parseAction = fromSchema(
+  z.union([writeToolsSchema, passthroughSchema]),
+)
 
 const ContextPayloadSchema = z.object({ transcript_path: z.string() })
 
