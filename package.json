@@ -26,10 +26,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./engine": {
-      "types": "./dist/engine.d.ts",
-      "default": "./dist/engine.js"
-    },
     "./types": {
       "types": "./dist/types.d.ts",
       "default": "./dist/types.js"
@@ -37,10 +33,6 @@
     "./rules": {
       "types": "./dist/rules/index.d.ts",
       "default": "./dist/rules/index.js"
-    },
-    "./rules/*": {
-      "types": "./dist/rules/*.d.ts",
-      "default": "./dist/rules/*.js"
     }
   },
   "files": [
