@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { evaluate, evaluateSafely } from './engine.js'
+import { evaluate } from './engine.js'
 import type { Rule } from './rules/contract.js'
 
 describe('engine', () => {
@@ -113,12 +113,12 @@ describe('engine', () => {
     expect(decision).toEqual({ kind: 'allow' })
   })
 
-  it('evaluateSafely turns a rule crash into a block decision', async () => {
+  it('turns a rule crash into a block decision (fail-closed)', async () => {
     const crashing: Rule = () => {
       throw new Error('kaboom')
     }
 
-    const decision = await evaluateSafely({ type: 'command', command: 'x' }, [
+    const decision = await evaluate({ type: 'command', command: 'x' }, [
       crashing,
     ])
 

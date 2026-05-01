@@ -5,7 +5,7 @@ import {
   type Config,
   type RuleEntry,
 } from './config.js'
-import { evaluateSafely } from './engine.js'
+import { evaluate } from './engine.js'
 import { vendors, type Vendor, type VendorEntry } from './registry.js'
 
 export type { Vendor } from './registry.js'
@@ -35,7 +35,7 @@ async function dispatch(
   const decision =
     parsed.kind === 'invalid'
       ? parsed.decision
-      : await evaluateSafely(parsed.action, rules, {
+      : await evaluate(parsed.action, rules, {
           agent,
           ...(parsed.history && { history: parsed.history }),
         })
