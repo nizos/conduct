@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 import { JsonString } from '../../utils/json-string.js'
+import { relativizePath } from '../relativize-path.js'
 
 const KNOWN_TOOL_NAMES = new Set(['bash', 'create', 'edit'])
 
@@ -23,11 +24,12 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
       toolArgs: JsonString.pipe(
         z.object({ path: z.string(), file_text: z.string() }),
       ),
+      cwd: z.string().optional(),
     })
     .transform(
       (d): Action => ({
         type: 'write',
-        path: d.toolArgs.path,
+        path: relativizePath(d.cwd, d.toolArgs.path),
         content: d.toolArgs.file_text,
       }),
     ),
@@ -37,11 +39,12 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
       toolArgs: JsonString.pipe(
         z.object({ path: z.string(), new_str: z.string() }),
       ),
+      cwd: z.string().optional(),
     })
     .transform(
       (d): Action => ({
         type: 'write',
-        path: d.toolArgs.path,
+        path: relativizePath(d.cwd, d.toolArgs.path),
         content: d.toolArgs.new_str,
       }),
     ),

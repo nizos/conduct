@@ -45,24 +45,55 @@ describe('github-copilot adapter', () => {
     expect(action.type).toBe('write')
   })
 
-  it('maps create payload path + file_text onto the write action', () => {
+  it('maps create payload path (relative to cwd) + file_text onto the write action', () => {
     const { action, payload } = setup('pre-create-new-test.json')
     const args = JSON.parse(payload.toolArgs) as {
       path: string
       file_text: string
     }
 
-    expect(action).toMatchObject({ path: args.path, content: args.file_text })
+    expect(action).toMatchObject({
+      path: 'test/calculator.test.ts',
+      content: args.file_text,
+    })
   })
 
-  it('maps an edit payload path + new_str onto the write action', () => {
+  it('maps an edit payload path (relative to cwd) + new_str onto the write action', () => {
     const { action, payload } = setup('pre-edit-add-subtract.json')
     const args = JSON.parse(payload.toolArgs) as {
       path: string
       new_str: string
     }
 
-    expect(action).toMatchObject({ path: args.path, content: args.new_str })
+    expect(action).toMatchObject({
+      path: 'test/calculator.test.ts',
+      content: args.new_str,
+    })
+  })
+
+  it('relativizes an absolute create path against the payload cwd', () => {
+    const action = actionSchema.parse({
+      cwd: '/workspaces/conduct',
+      toolName: 'create',
+      toolArgs: JSON.stringify({
+        path: '/workspaces/conduct/src/UpperCase.ts',
+        file_text: 'x',
+      }),
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  })
+
+  it('falls back to process.cwd() when the create payload omits cwd', () => {
+    const action = actionSchema.parse({
+      toolName: 'create',
+      toolArgs: JSON.stringify({
+        path: `${process.cwd()}/src/UpperCase.ts`,
+        file_text: 'x',
+      }),
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
   it('passes through view as a no-op so reads are not blocked by an unknown-tool error', () => {
