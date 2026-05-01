@@ -72,6 +72,15 @@ describe('claudeCode', () => {
     expect(capture.last?.options?.settingSources).toEqual([])
   })
 
+  it('does not persist sessions to disk so validator runs do not pollute project history', async () => {
+    const capture = captureQuery()
+    const client = claudeCode({ queryFn: capture.fn })
+
+    await client.reason('prompt')
+
+    expect(capture.last?.options?.persistSession).toBe(false)
+  })
+
   it('parses a verdict from a fenced code block', async () => {
     const client = claudeCode({
       queryFn: fakeQuery('```json\n{"verdict":"pass","reason":"fine"}\n```'),

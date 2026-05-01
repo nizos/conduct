@@ -39,6 +39,7 @@ async function getResultText(
       permissionMode: 'dontAsk',
       allowedTools: [],
       settingSources: [],
+      persistSession: false,
       // Defense in depth: `allowedTools: []` + `permissionMode: 'dontAsk'`
       // already blocks tool use, but explicitly naming every known tool
       // guarantees the validator can't act even if the SDK defaults drift.
