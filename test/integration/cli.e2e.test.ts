@@ -6,124 +6,78 @@ import path from 'node:path'
 
 import { describe, it, expect, onTestFinished } from 'vitest'
 
+import type { Vendor } from '../../src/cli.js'
+
 const CONFIG_FIXTURE = 'test/fixtures/configs/kebab-only.config.ts'
 
 describe('conduct cli (integration)', () => {
   it('blocks a write that violates the configured rules', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-new-file.json',
-      'utf8',
-    )
+    const { getResponse } = await setup({
+      payloadFixture: 'test/fixtures/claude-code/write-new-file.json',
+      config: CONFIG_FIXTURE,
+    })
 
-    const result = await runCliAt(
-      'dist/bin.js',
-      ['--agent', 'claude-code', '--config', CONFIG_FIXTURE],
-      payload,
-    )
-    const stdout = requireStdout(result, 'expected cli to emit a response')
-    const response = JSON.parse(stdout)
-
-    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(getResponse().hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
   it('emits no opinion (empty stdout) for a Bash payload that no rule blocks', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/bash-npm-install.json',
-      'utf8',
-    )
+    const { getRawStdout } = await setup({
+      payloadFixture: 'test/fixtures/claude-code/bash-npm-install.json',
+      config: CONFIG_FIXTURE,
+    })
 
-    const { stdout } = await runCliAt(
-      'dist/bin.js',
-      ['--agent', 'claude-code', '--config', CONFIG_FIXTURE],
-      payload,
-    )
-
-    expect(stdout).toBe('')
+    expect(getRawStdout()).toBe('')
   })
 
   it('loads the config from --config <path> instead of discovering one', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-kebab-case.json',
-      'utf8',
-    )
+    const { getRawStdout } = await setup({
+      payloadFixture: 'test/fixtures/claude-code/write-kebab-case.json',
+      config: 'test/fixtures/configs/kebab-only.config.ts',
+    })
 
-    const { stdout } = await runCliAt(
-      'dist/bin.js',
-      [
-        '--agent',
-        'claude-code',
-        '--config',
-        'test/fixtures/configs/kebab-only.config.ts',
-      ],
-      payload,
-    )
-
-    expect(stdout).toBe('')
+    expect(getRawStdout()).toBe('')
   })
 
   it('blocks a write whose path matches a { files, rules } block scope', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-new-file.json',
-      'utf8',
-    )
+    const { getResponse } = await setup({
+      payloadFixture: 'test/fixtures/claude-code/write-new-file.json',
+      config: 'test/fixtures/configs/blocks.config.ts',
+    })
 
-    const { stdout } = await runCliAt(
-      'dist/bin.js',
-      [
-        '--agent',
-        'claude-code',
-        '--config',
-        'test/fixtures/configs/blocks.config.ts',
-      ],
-      payload,
-    )
-    const response = JSON.parse(stdout)
-
-    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(getResponse().hookSpecificOutput.permissionDecision).toBe('deny')
   })
 
   it('skips a { files, rules } block when the write path is outside its files glob', async () => {
-    const payload = readFileSync(
-      'test/fixtures/claude-code/write-outside-src.json',
-      'utf8',
-    )
+    const { getRawStdout } = await setup({
+      payloadFixture: 'test/fixtures/claude-code/write-outside-src.json',
+      config: 'test/fixtures/configs/blocks.config.ts',
+    })
 
-    const { stdout } = await runCliAt(
-      'dist/bin.js',
-      [
-        '--agent',
-        'claude-code',
-        '--config',
-        'test/fixtures/configs/blocks.config.ts',
-      ],
-      payload,
-    )
-
-    expect(stdout).toBe('')
+    expect(getRawStdout()).toBe('')
   })
 
   it.each([
     {
-      vendor: 'claude-code',
+      vendor: 'claude-code' as const,
       fixture: 'test/fixtures/claude-code/write-new-file.json',
       readDeny: (out: string) =>
         JSON.parse(out).hookSpecificOutput.permissionDecision,
       expected: 'deny',
     },
     {
-      vendor: 'codex',
+      vendor: 'codex' as const,
       fixture: 'test/fixtures/codex/pre-apply-patch.json',
       readDeny: (out: string) => JSON.parse(out).decision,
       expected: 'block',
     },
     {
-      vendor: 'github-copilot',
+      vendor: 'github-copilot' as const,
       fixture: 'test/fixtures/github-copilot/pre-create-new-test.json',
       readDeny: (out: string) => JSON.parse(out).permissionDecision,
       expected: 'deny',
     },
     {
-      vendor: 'github-copilot-chat',
+      vendor: 'github-copilot-chat' as const,
       fixture: 'test/fixtures/github-copilot-chat/pre-create-file.json',
       readDeny: (out: string) =>
         JSON.parse(out).hookSpecificOutput.permissionDecision,
@@ -132,24 +86,13 @@ describe('conduct cli (integration)', () => {
   ])(
     'matches absolute paths from $vendor against `**/src/**` globs',
     async ({ vendor, fixture, readDeny, expected }) => {
-      const payload = readFileSync(fixture, 'utf8')
+      const { getStdout } = await setup({
+        vendor,
+        payloadFixture: fixture,
+        config: 'test/fixtures/configs/relative-glob.config.ts',
+      })
 
-      const result = await runCliAt(
-        'dist/bin.js',
-        [
-          '--agent',
-          vendor,
-          '--config',
-          'test/fixtures/configs/relative-glob.config.ts',
-        ],
-        payload,
-      )
-      const stdout = requireStdout(
-        result,
-        `expected ${vendor} matcher to engage and produce a deny`,
-      )
-
-      expect(readDeny(stdout)).toBe(expected)
+      expect(readDeny(getStdout())).toBe(expected)
     },
   )
 
@@ -174,19 +117,12 @@ describe('conduct cli (integration)', () => {
       filePath,
     })
 
-    const result = await runCliAt(
-      'dist/bin.js',
-      ['--agent', 'claude-code', '--config', configPath],
+    const { getResponse } = await setup({
       payload,
-    )
-    const stdout = requireStdout(
-      result,
-      `expected deny with config at ${configPath} and session in ${example}`,
-    )
+      config: configPath,
+    })
 
-    expect(JSON.parse(stdout).hookSpecificOutput.permissionDecision).toBe(
-      'deny',
-    )
+    expect(getResponse().hookSpecificOutput.permissionDecision).toBe('deny')
   })
 })
 
@@ -235,6 +171,30 @@ function makeClaudeCodeWritePayload(opts: {
     tool_input: { file_path: opts.filePath, content: 'x' },
     tool_use_id: 'tu_edge_case',
   })
+}
+
+async function setup(options: {
+  payloadFixture?: string
+  payload?: string
+  config?: string
+  vendor?: Vendor
+}) {
+  const payload =
+    options.payload ?? readFileSync(options.payloadFixture!, 'utf8')
+
+  const args = ['--agent', options.vendor ?? 'claude-code']
+  if (options.config) args.push('--config', options.config)
+
+  const result = await runCliAt('dist/bin.js', args, payload)
+
+  const getStdout = () =>
+    requireStdout(result, 'expected cli to emit a response')
+
+  const getRawStdout = () => result.stdout
+
+  const getResponse = () => JSON.parse(getStdout())
+
+  return { getStdout, getRawStdout, getResponse }
 }
 
 function requireStdout(
