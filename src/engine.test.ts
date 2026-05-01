@@ -28,7 +28,7 @@ describe('engine', () => {
   })
 
   it('awaits async rules and returns an allow decision when they pass', async () => {
-    const asyncPass: Rule = async () => ({ kind: 'pass' as const })
+    const asyncPass: Rule = () => Promise.resolve({ kind: 'pass' as const })
 
     const decision = await evaluate({ type: 'command', command: 'x' }, [
       asyncPass,

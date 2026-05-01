@@ -4,6 +4,13 @@ import type { Action, Decision } from '../../types.js'
 import { fromSchema, passthroughFor } from '../adapter.js'
 import { posixAbsolute } from '../posix-absolute.js'
 
+/**
+ * The JSON shape `toResponse` emits on a block decision. Codex's hook
+ * format is documented but not shipped as a type by `@openai/codex-sdk`,
+ * so we declare it alongside the function that produces it.
+ */
+export type ResponseShape = { decision: string; reason: string }
+
 const PATCH_HEADER = /^\*\*\* (?:Add|Update|Delete) File: (.+)$/m
 
 const writeToolsSchema = z.discriminatedUnion('tool_name', [

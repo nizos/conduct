@@ -45,10 +45,8 @@ export function passthroughFor(
   const known = new Set(knownTools)
   return z
     .object({ [toolNameField]: z.string() })
-    .refine((d) => !known.has((d as Record<string, string>)[toolNameField]!))
-    .transform(
-      (): Action => ({ type: 'command', command: '' }),
-    ) as unknown as z.ZodType<Action>
+    .refine((d) => !known.has(d[toolNameField]!))
+    .transform((): Action => ({ type: 'command', command: '' }))
 }
 
 /**

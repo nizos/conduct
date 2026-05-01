@@ -83,9 +83,7 @@ describe('codex', () => {
       codex: {
         startThread() {
           return {
-            async run() {
-              throw new Error('codex CLI not found')
-            },
+            run: () => Promise.reject(new Error('codex CLI not found')),
           }
         },
       },
@@ -107,9 +105,11 @@ function captureCodex() {
     startThread(opts?: ThreadOptions) {
       state.lastThreadOptions = opts
       return {
-        async run(input?: string) {
+        run: (input?: string) => {
           state.lastRunInput = input
-          return { finalResponse: '{"verdict":"pass","reason":""}' }
+          return Promise.resolve({
+            finalResponse: '{"verdict":"pass","reason":""}',
+          })
         },
       }
     },
@@ -129,9 +129,7 @@ function fakeCodex(finalResponse: string) {
   return {
     startThread() {
       return {
-        async run() {
-          return { finalResponse }
-        },
+        run: () => Promise.resolve({ finalResponse }),
       }
     },
   }

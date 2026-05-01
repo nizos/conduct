@@ -115,16 +115,14 @@ describe('claudeCode', () => {
 
   it('fails closed when the result message has a non-string result', async () => {
     const client = claudeCode({
-      queryFn: () => {
-        async function* gen() {
-          yield {
+      queryFn: () =>
+        asyncStream([
+          {
             type: 'result' as const,
             subtype: 'success' as const,
             result: { oops: 'this should be a string' },
-          }
-        }
-        return gen()
-      },
+          },
+        ]),
     })
 
     const verdict = await client.reason('prompt')
@@ -152,14 +150,13 @@ function captureQuery() {
   const state: { last?: CapturedArgs } = {}
   const fn = (args: CapturedArgs) => {
     state.last = args
-    async function* gen() {
-      yield {
+    return asyncStream([
+      {
         type: 'result' as const,
         subtype: 'success' as const,
         result: '{"verdict":"pass","reason":""}',
-      }
-    }
-    return gen()
+      },
+    ])
   }
   return {
     fn,
@@ -170,14 +167,21 @@ function captureQuery() {
 }
 
 function fakeQuery(resultText: string) {
-  return () => {
-    async function* gen() {
-      yield {
+  return () =>
+    asyncStream([
+      {
         type: 'result' as const,
         subtype: 'success' as const,
         result: resultText,
-      }
-    }
-    return gen()
+      },
+    ])
+}
+
+function asyncStream<T>(items: readonly T[]): AsyncIterable<T> {
+  return {
+    [Symbol.asyncIterator]: () => {
+      const iter = items[Symbol.iterator]()
+      return { next: () => Promise.resolve(iter.next()) }
+    },
   }
 }

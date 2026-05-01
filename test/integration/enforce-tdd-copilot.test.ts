@@ -2,11 +2,13 @@ import { mkdtemp, mkdir, cp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import type { PreToolUseHookOutput } from '@github/copilot/sdk'
 import { describe, it, onTestFinished } from 'vitest'
 
 import { vendors } from '../../src/registry.js'
 import { dispatch } from '../../src/cli.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
+import { parseAs } from '../../src/utils/parse-as.js'
 import { expectDecision } from './expect-decision.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
@@ -113,10 +115,12 @@ async function setup(opts: {
   const agent = entry.agent()
   const response = await dispatch(entry, payload, [enforceTdd()], agent)
   if (response === '') return { decision: 'allow' }
-  const parsed = JSON.parse(response)
+  const parsed = parseAs<PreToolUseHookOutput>(response)
   return {
-    decision: parsed.permissionDecision,
-    reason: parsed.permissionDecisionReason,
+    decision: parsed.permissionDecision ?? 'allow',
+    ...(parsed.permissionDecisionReason !== undefined && {
+      reason: parsed.permissionDecisionReason,
+    }),
   }
 }
 

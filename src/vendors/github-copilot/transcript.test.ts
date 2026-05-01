@@ -8,10 +8,8 @@ describe('github-copilot transcript', () => {
       'test/fixtures/transcripts/copilot-basic.jsonl',
     )
 
-    expect(events).toContainEqual({
-      kind: 'prompt',
-      text: expect.stringMatching(/failing test for an addition/i),
-    })
+    const prompt = events.find((e) => e.kind === 'prompt')
+    expect(prompt?.text).toMatch(/failing test for an addition/i)
   })
 
   it('pairs tool.execution_start with tool.execution_complete into one action event', async () => {
@@ -22,15 +20,11 @@ describe('github-copilot transcript', () => {
     const bashAction = events.find(
       (e) => e.kind === 'action' && e.tool === 'bash',
     )
-    expect(bashAction).toMatchObject({
-      kind: 'action',
-      tool: 'bash',
-      output: expect.any(String),
-    })
-    if (bashAction?.kind === 'action') {
-      expect(bashAction.output.length).toBeGreaterThan(0)
-      expect(bashAction.toolUseId).toMatch(/^call_/)
-    }
+    expect(bashAction?.kind).toBe('action')
+    if (bashAction?.kind !== 'action') return
+    expect(bashAction.tool).toBe('bash')
+    expect(bashAction.output.length).toBeGreaterThan(0)
+    expect(bashAction.toolUseId).toMatch(/^call_/)
   })
 
   it('returns events in the order they appear in the transcript', async () => {

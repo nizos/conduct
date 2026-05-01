@@ -262,7 +262,9 @@ function appendAtPath(
   value: unknown,
 ): void {
   const target = getAtPath(state, segments)
-  if (Array.isArray(target) && Array.isArray(value)) target.push(...value)
+  if (Array.isArray(target) && Array.isArray(value)) {
+    target.push(...(value as unknown[]))
+  }
 }
 
 function stripVscodeToolIdSuffix(fullId: string): string {

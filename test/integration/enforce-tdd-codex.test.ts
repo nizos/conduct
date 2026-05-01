@@ -7,7 +7,11 @@ import { describe, it, onTestFinished } from 'vitest'
 import { vendors } from '../../src/registry.js'
 import { dispatch } from '../../src/cli.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
+import { parseAs } from '../../src/utils/parse-as.js'
+import type { ResponseShape } from '../../src/vendors/codex/adapter.js'
 import { expectDecision } from './expect-decision.js'
+
+type CodexResponse = Partial<ResponseShape>
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
 const entry = vendors['codex']
@@ -96,8 +100,11 @@ async function setup(opts: {
   })
   const agent = entry.agent()
   const response = await dispatch(entry, payload, [enforceTdd()], agent)
-  const parsed = response ? JSON.parse(response) : {}
-  return { decision: parsed.decision ?? 'allow', reason: parsed.reason }
+  const parsed: CodexResponse = response ? parseAs<CodexResponse>(response) : {}
+  return {
+    decision: parsed.decision ?? 'allow',
+    ...(parsed.reason !== undefined && { reason: parsed.reason }),
+  }
 }
 
 function makeAddFilePatch(filePath: string, content: string): string {

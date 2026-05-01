@@ -77,7 +77,7 @@ describe('bin main', () => {
   it('forwards an injected config loader through to run()', async () => {
     const result = await setup({
       stdin: KEBAB_PAYLOAD,
-      loadConfig: async () => testConfig,
+      loadConfig: () => Promise.resolve(testConfig),
     })
 
     expect(result.exitCode).toBe(0)
@@ -87,9 +87,7 @@ describe('bin main', () => {
   it('returns exit 1 with a stderr message when the config loader throws', async () => {
     const result = await setup({
       stdin: KEBAB_PAYLOAD,
-      loadConfig: async () => {
-        throw new Error('config blew up')
-      },
+      loadConfig: () => Promise.reject(new Error('config blew up')),
     })
 
     expect(result.exitCode).toBe(1)
@@ -99,7 +97,7 @@ describe('bin main', () => {
   it('writes the run() response to stdout and exits 0 on success', async () => {
     const result = await setup({
       stdin: KEBAB_PAYLOAD,
-      loadConfig: async () => testConfig,
+      loadConfig: () => Promise.resolve(testConfig),
     })
 
     expect(result.exitCode).toBe(0)
@@ -109,7 +107,7 @@ describe('bin main', () => {
 })
 
 const stubAgent: Agent = {
-  reason: async () => ({ verdict: 'pass', reason: '' }),
+  reason: () => Promise.resolve({ verdict: 'pass', reason: '' }),
 }
 
 const testConfig: Config = {

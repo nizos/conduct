@@ -8,10 +8,8 @@ describe('codex transcript', () => {
       'test/fixtures/transcripts/codex-basic.jsonl',
     )
 
-    expect(events).toContainEqual({
-      kind: 'prompt',
-      text: expect.stringMatching(/failing test for an addition/i),
-    })
+    const prompt = events.find((e) => e.kind === 'prompt')
+    expect(prompt?.text).toMatch(/failing test for an addition/i)
   })
 
   it('pairs function_call with function_call_output into one action event', async () => {

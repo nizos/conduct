@@ -1,10 +1,18 @@
 import { readFileSync } from 'node:fs'
 
+import type { PreToolUseHookOutput } from '@github/copilot/sdk'
 import { describe, it, expect } from 'vitest'
 
 import type { Action } from '../../types.js'
+import { parseAs } from '../../utils/parse-as.js'
 import type { ParseActionResult } from '../adapter.js'
 import { parseAction, sessionPath, toResponse } from './adapter.js'
+
+type Payload = {
+  cwd?: string
+  toolName: string
+  toolArgs: string
+}
 
 describe('github-copilot adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -35,13 +43,13 @@ describe('github-copilot adapter', () => {
 
   it('extracts the command text from a bash payload', () => {
     const { action, payload } = setup('pre-bash-npm-test.json')
-    const toolArgs = JSON.parse(payload.toolArgs) as { command: string }
+    const toolArgs = parseAs<{ command: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({ command: toolArgs.command })
   })
 
   it('builds a deny response with permissionDecision and reason', () => {
-    const response = JSON.parse(
+    const response = parseAs<PreToolUseHookOutput>(
       toResponse({ kind: 'block', reason: 'no failing test' }),
     )
 
@@ -72,10 +80,7 @@ describe('github-copilot adapter', () => {
 
   it('maps create payload path (absolute POSIX) + file_text onto the write action', () => {
     const { action, payload } = setup('pre-create-new-test.json')
-    const args = JSON.parse(payload.toolArgs) as {
-      path: string
-      file_text: string
-    }
+    const args = parseAs<{ path: string; file_text: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({
       path: '/workspaces/conduct/test/calculator.test.ts',
@@ -85,10 +90,7 @@ describe('github-copilot adapter', () => {
 
   it('maps an edit payload path (absolute POSIX) + new_str onto the write action', () => {
     const { action, payload } = setup('pre-edit-add-subtract.json')
-    const args = JSON.parse(payload.toolArgs) as {
-      path: string
-      new_str: string
-    }
+    const args = parseAs<{ path: string; new_str: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({
       path: '/workspaces/conduct/test/calculator.test.ts',
@@ -139,7 +141,7 @@ describe('github-copilot adapter', () => {
   })
 
   it('passes through view as a no-op so reads are not blocked by an unknown-tool error', () => {
-    const payload = JSON.parse(
+    const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot/pre-view-calculator.json',
         'utf8',
@@ -153,7 +155,7 @@ describe('github-copilot adapter', () => {
   })
 
   it('passes through report_intent as a no-op so metadata tools are not blocked', () => {
-    const payload = JSON.parse(
+    const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot/pre-report-intent.json',
         'utf8',
@@ -196,7 +198,7 @@ describe('github-copilot adapter', () => {
 })
 
 function setup(fixtureName: string) {
-  const payload = JSON.parse(
+  const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/github-copilot/${fixtureName}`, 'utf8'),
   )
   const action = ok(parseAction(payload))

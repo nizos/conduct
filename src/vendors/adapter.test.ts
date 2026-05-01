@@ -10,7 +10,7 @@ describe('fromSchema', () => {
       .object({ kind: z.literal('command'), command: z.string() })
       .transform((d): Action => ({ type: 'command', command: d.command }))
 
-    const parse = fromSchema(schema as unknown as z.ZodType<Action>)
+    const parse = fromSchema(schema)
 
     expect(parse({ kind: 'command', command: 'echo hi' })).toEqual({
       ok: true,
@@ -23,7 +23,7 @@ describe('fromSchema', () => {
       .object({ kind: z.literal('command'), command: z.string() })
       .transform((d): Action => ({ type: 'command', command: d.command }))
 
-    const parse = fromSchema(schema as unknown as z.ZodType<Action>)
+    const parse = fromSchema(schema)
     const result = parse({ kind: 'wrong' })
 
     expect(result.ok).toBe(false)

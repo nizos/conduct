@@ -3,8 +3,20 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import type { Action } from '../../types.js'
+import { parseAs } from '../../utils/parse-as.js'
 import type { ParseActionResult } from '../adapter.js'
-import { parseAction, sessionPath, toResponse } from './adapter.js'
+import {
+  parseAction,
+  sessionPath,
+  toResponse,
+  type ResponseShape,
+} from './adapter.js'
+
+type Payload = {
+  cwd?: string
+  tool_name: string
+  tool_input: { command?: string }
+}
 
 describe('codex adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -41,7 +53,7 @@ describe('codex adapter', () => {
   })
 
   it('builds a block response as {"decision":"block","reason":...}', () => {
-    const response = JSON.parse(
+    const response = parseAs<ResponseShape>(
       toResponse({ kind: 'block', reason: 'no failing test' }),
     )
 
@@ -74,7 +86,7 @@ describe('codex adapter', () => {
   })
 
   it('maps an apply_patch payload to a write action with absolute POSIX path + patch content', () => {
-    const payload = JSON.parse(
+    const payload = parseAs<Payload>(
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
     )
 
@@ -136,7 +148,7 @@ describe('codex adapter', () => {
 })
 
 function setup(fixtureName: string) {
-  const payload = JSON.parse(
+  const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/codex/${fixtureName}`, 'utf8'),
   )
   const action = ok(parseAction(payload))

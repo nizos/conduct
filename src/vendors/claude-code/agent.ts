@@ -22,9 +22,7 @@ export function claudeCode(deps: { queryFn?: QueryFn } = {}): Agent {
 
 async function loadDefaultQueryFn(): Promise<QueryFn> {
   const mod = await import('@anthropic-ai/claude-agent-sdk')
-  // SDK's `query` returns `Query` (an AsyncGenerator of SDKMessage);
-  // QueryFn is structurally a subset, so a narrow cast suffices.
-  return mod.query as unknown as QueryFn
+  return mod.query
 }
 
 async function getResultText(

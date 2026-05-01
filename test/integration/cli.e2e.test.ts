@@ -4,9 +4,13 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import type { PreToolUseHookOutput } from '@github/copilot/sdk'
 import { describe, it, expect, onTestFinished } from 'vitest'
 
 import type { Vendor } from '../../src/cli.js'
+import { parseAs } from '../../src/utils/parse-as.js'
+import type { ResponseShape as ClaudeCodeResponse } from '../../src/vendors/claude-code/adapter.js'
+import type { ResponseShape as CodexResponse } from '../../src/vendors/codex/adapter.js'
 
 const CONFIG_FIXTURE = 'test/fixtures/configs/kebab-only.config.ts'
 
@@ -17,7 +21,9 @@ describe('conduct cli (integration)', () => {
       config: CONFIG_FIXTURE,
     })
 
-    expect(getResponse().hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(
+      getResponse<ClaudeCodeResponse>().hookSpecificOutput.permissionDecision,
+    ).toBe('deny')
   })
 
   it('emits no opinion (empty stdout) for a Bash payload that no rule blocks', async () => {
@@ -44,7 +50,9 @@ describe('conduct cli (integration)', () => {
       config: 'test/fixtures/configs/blocks.config.ts',
     })
 
-    expect(getResponse().hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(
+      getResponse<ClaudeCodeResponse>().hookSpecificOutput.permissionDecision,
+    ).toBe('deny')
   })
 
   it('skips a { files, rules } block when the write path is outside its files glob', async () => {
@@ -61,26 +69,27 @@ describe('conduct cli (integration)', () => {
       vendor: 'claude-code' as const,
       fixture: 'test/fixtures/claude-code/write-new-file.json',
       readDeny: (out: string) =>
-        JSON.parse(out).hookSpecificOutput.permissionDecision,
+        parseAs<ClaudeCodeResponse>(out).hookSpecificOutput.permissionDecision,
       expected: 'deny',
     },
     {
       vendor: 'codex' as const,
       fixture: 'test/fixtures/codex/pre-apply-patch.json',
-      readDeny: (out: string) => JSON.parse(out).decision,
+      readDeny: (out: string) => parseAs<CodexResponse>(out).decision,
       expected: 'block',
     },
     {
       vendor: 'github-copilot' as const,
       fixture: 'test/fixtures/github-copilot/pre-create-new-test.json',
-      readDeny: (out: string) => JSON.parse(out).permissionDecision,
+      readDeny: (out: string) =>
+        parseAs<PreToolUseHookOutput>(out).permissionDecision,
       expected: 'deny',
     },
     {
       vendor: 'github-copilot-chat' as const,
       fixture: 'test/fixtures/github-copilot-chat/pre-create-file.json',
       readDeny: (out: string) =>
-        JSON.parse(out).hookSpecificOutput.permissionDecision,
+        parseAs<ClaudeCodeResponse>(out).hookSpecificOutput.permissionDecision,
       expected: 'deny',
     },
   ])(
@@ -132,7 +141,9 @@ describe('conduct cli (integration)', () => {
       config: configPath,
     })
 
-    expect(getResponse().hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(
+      getResponse<ClaudeCodeResponse>().hookSpecificOutput.permissionDecision,
+    ).toBe('deny')
   })
 })
 
@@ -179,7 +190,7 @@ async function setup(options: SetupOptions = {}) {
 
   const getRawStdout = () => result.stdout
 
-  const getResponse = () => JSON.parse(getStdout())
+  const getResponse = <T>() => parseAs<T>(getStdout())
 
   return { getStdout, getRawStdout, getResponse }
 }

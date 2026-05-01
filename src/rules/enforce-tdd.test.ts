@@ -19,10 +19,9 @@ describe('enforce-tdd', () => {
 
     const result = await rule(writeAction(), ctx)
 
-    expect(result).toMatchObject({
-      kind: 'violation',
-      reason: expect.stringContaining('failing test'),
-    })
+    expect(result.kind).toBe('violation')
+    if (result.kind !== 'violation') return
+    expect(result.reason).toContain('failing test')
   })
 
   it('allows a write when the AI judges it passes TDD', async () => {
@@ -226,13 +225,13 @@ function setup(
   const events = options.history
   const ctx: RuleContext = {
     agent: {
-      reason: async (prompt: string) => {
+      reason: (prompt: string) => {
         state.agentCalled = true
         state.capturedPrompt = prompt
-        return verdict
+        return Promise.resolve(verdict)
       },
     },
-    ...(events && { history: async () => events }),
+    ...(events && { history: () => Promise.resolve(events) }),
   }
   const rule = enforceTdd({
     ...(options.instructions !== undefined && {

@@ -1,10 +1,27 @@
 import { readFileSync } from 'node:fs'
 
+import type { PreToolUseHookSpecificOutput } from '@anthropic-ai/claude-agent-sdk'
 import { describe, it, expect } from 'vitest'
 
 import type { Action } from '../../types.js'
+import { parseAs } from '../../utils/parse-as.js'
 import type { ParseActionResult } from '../adapter.js'
 import { parseAction, sessionPath, toResponse } from './adapter.js'
+
+type Payload = {
+  cwd?: string
+  tool_name: string
+  tool_input: {
+    command?: string
+    content?: string
+    newString?: string
+    filePath?: string
+  }
+}
+
+type DenyResponse = {
+  hookSpecificOutput: PreToolUseHookSpecificOutput
+}
 
 describe('github-copilot-chat adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -38,7 +55,7 @@ describe('github-copilot-chat adapter', () => {
   })
 
   it('wraps the deny response in hookSpecificOutput so Chat honors it (flat shape is silently ignored)', () => {
-    const response = JSON.parse(
+    const response = parseAs<DenyResponse>(
       toResponse({ kind: 'block', reason: 'no failing test' }),
     )
 
@@ -140,7 +157,7 @@ describe('github-copilot-chat adapter', () => {
   })
 
   it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', () => {
-    const payload = JSON.parse(
+    const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot-chat/pre-read-file.json',
         'utf8',
@@ -154,7 +171,7 @@ describe('github-copilot-chat adapter', () => {
   })
 
   it('passes through list_dir as a no-op so listings are not blocked by an unknown-tool error', () => {
-    const payload = JSON.parse(
+    const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot-chat/pre-list-dir.json',
         'utf8',
@@ -180,7 +197,7 @@ describe('github-copilot-chat adapter', () => {
 })
 
 function setup(fixtureName: string) {
-  const payload = JSON.parse(
+  const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/github-copilot-chat/${fixtureName}`, 'utf8'),
   )
   const action = ok(parseAction(payload))

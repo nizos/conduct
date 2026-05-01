@@ -1,8 +1,18 @@
+import type { PreToolUseHookSpecificOutput } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 import { fromSchema, passthroughFor } from '../adapter.js'
 import { posixAbsolute } from '../posix-absolute.js'
+
+/**
+ * The JSON shape `toResponse` emits on a block decision. Tests parsing
+ * the response stream against this canonical shape catch drift if the
+ * adapter ever changes its output.
+ */
+export type ResponseShape = {
+  hookSpecificOutput: PreToolUseHookSpecificOutput
+}
 
 const writeToolsSchema = z.discriminatedUnion('tool_name', [
   z

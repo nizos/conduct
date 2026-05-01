@@ -84,16 +84,16 @@ describe('enforce-filename-casing', () => {
     })
   })
 
-  it('includes the path in the violation reason', () => {
+  it('includes the path in the violation reason', async () => {
     const { result } = setup({
       path: 'src/userProfile.ts',
       style: 'kebab-case',
     })
+    const awaited = await result
 
-    expect(result).toMatchObject({
-      kind: 'violation',
-      reason: expect.stringContaining('src/userProfile.ts'),
-    })
+    expect(awaited.kind).toBe('violation')
+    if (awaited.kind !== 'violation') return
+    expect(awaited.reason).toContain('src/userProfile.ts')
   })
 
   it('passes a non-write action without inspecting path', () => {

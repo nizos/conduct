@@ -5,8 +5,19 @@ export default [
   {
     ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
   },
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
   {
+    languageOptions: {
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: [
+            'conduct.config.ts',
+            'eslint.config.js',
+            'vitest.config.ts',
+          ],
+        },
+      },
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',

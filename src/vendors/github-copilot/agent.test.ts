@@ -75,17 +75,12 @@ describe('githubCopilot', () => {
   it('returns a fail-closed violation when sendAndWait returns undefined', async () => {
     const client = githubCopilot({
       client: {
-        async start() {},
-        async createSession() {
-          return {
-            async sendAndWait() {
-              return undefined
-            },
-          }
-        },
-        async stop() {
-          return []
-        },
+        start: () => Promise.resolve(),
+        createSession: () =>
+          Promise.resolve({
+            sendAndWait: () => Promise.resolve(undefined),
+          }),
+        stop: () => Promise.resolve([]),
       },
     })
 
@@ -98,17 +93,13 @@ describe('githubCopilot', () => {
   it('returns a fail-closed violation when the SDK call throws', async () => {
     const client = githubCopilot({
       client: {
-        async start() {},
-        async createSession() {
-          return {
-            async sendAndWait() {
-              throw new Error('copilot CLI not authenticated')
-            },
-          }
-        },
-        async stop() {
-          return []
-        },
+        start: () => Promise.resolve(),
+        createSession: () =>
+          Promise.resolve({
+            sendAndWait: () =>
+              Promise.reject(new Error('copilot CLI not authenticated')),
+          }),
+        stop: () => Promise.resolve([]),
       },
     })
 
@@ -132,21 +123,24 @@ function captureCopilotClient() {
     stopCalled: boolean
   } = { startCalled: false, stopCalled: false }
   const client = {
-    async start() {
+    start: () => {
       state.startCalled = true
+      return Promise.resolve()
     },
-    async createSession(config: SessionConfig) {
+    createSession: (config: SessionConfig) => {
       state.lastSessionConfig = config
-      return {
-        async sendAndWait(options: { prompt: string }) {
+      return Promise.resolve({
+        sendAndWait: (options: { prompt: string }) => {
           state.lastSendAndWaitOptions = options
-          return { data: { content: '{"verdict":"pass","reason":""}' } }
+          return Promise.resolve({
+            data: { content: '{"verdict":"pass","reason":""}' },
+          })
         },
-      }
+      })
     },
-    async stop() {
+    stop: () => {
       state.stopCalled = true
-      return []
+      return Promise.resolve([])
     },
   }
   return {
@@ -168,16 +162,12 @@ function captureCopilotClient() {
 
 function fakeClient(assistantContent: string) {
   return {
-    async start() {},
-    async createSession() {
-      return {
-        async sendAndWait() {
-          return { data: { content: assistantContent } }
-        },
-      }
-    },
-    async stop() {
-      return []
-    },
+    start: () => Promise.resolve(),
+    createSession: () =>
+      Promise.resolve({
+        sendAndWait: () =>
+          Promise.resolve({ data: { content: assistantContent } }),
+      }),
+    stop: () => Promise.resolve([]),
   }
 }

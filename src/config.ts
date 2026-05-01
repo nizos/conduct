@@ -72,7 +72,7 @@ const CONFIG_FILENAME = 'conduct.config.ts'
  */
 export async function loadConfig(filepath: string): Promise<Config> {
   const jiti = createJiti(import.meta.url)
-  const module = (await jiti.import(filepath)) as { default: Config }
+  const module = await jiti.import<{ default: Config }>(filepath)
   const root = path.dirname(filepath)
   return {
     ...module.default,

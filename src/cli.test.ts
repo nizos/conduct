@@ -7,17 +7,19 @@ import type { Config } from './config.js'
 import { vendors, type VendorEntry } from './registry.js'
 import type { Agent } from './types.js'
 import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
+import { parseAs } from './utils/parse-as.js'
+import type { ResponseShape as ClaudeCodeResponse } from './vendors/claude-code/adapter.js'
 
 const claudeCodeEntry = vendors['claude-code']
 
 const stubAgent: Agent = {
-  reason: async () => ({ verdict: 'pass', reason: '' }),
+  reason: () => Promise.resolve({ verdict: 'pass', reason: '' }),
 }
 
 describe('cli', () => {
   it('denies a write whose filename violates kebab-case', async () => {
     const { raw } = await setup('write-new-file.json')
-    const response = JSON.parse(raw)
+    const response = parseAs<ClaudeCodeResponse>(raw)
 
     expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
   })
@@ -36,7 +38,7 @@ describe('cli', () => {
 
     const response = await run(payload, {
       vendor: 'codex',
-      loadConfig: async () => defaultTestConfig,
+      loadConfig: () => Promise.resolve(defaultTestConfig),
     })
 
     expect(response).toBe('')
@@ -50,7 +52,7 @@ describe('cli', () => {
 
     const response = await run(payload, {
       vendor: 'github-copilot',
-      loadConfig: async () => defaultTestConfig,
+      loadConfig: () => Promise.resolve(defaultTestConfig),
     })
 
     expect(response).toBe('')
@@ -63,7 +65,7 @@ describe('cli', () => {
       [],
       stubAgent,
     )
-    const parsed = JSON.parse(response)
+    const parsed = parseAs<ClaudeCodeResponse>(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(parsed.hookSpecificOutput.permissionDecisionReason).toMatch(
@@ -88,7 +90,7 @@ describe('cli', () => {
 
     const raw = await run(payload, {
       vendor: 'claude-code',
-      loadConfig: async () => injectedConfig,
+      loadConfig: () => Promise.resolve(injectedConfig),
     })
 
     expect(raw).toBe('')
@@ -105,7 +107,7 @@ describe('cli', () => {
     const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })
 
     const response = await dispatch(rejectingEntry, payload, [], stubAgent)
-    const parsed = JSON.parse(response)
+    const parsed = parseAs<ClaudeCodeResponse>(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(parsed.hookSpecificOutput.permissionDecisionReason).toMatch(
@@ -131,7 +133,7 @@ async function setup(fixtureName: string, config: Config = defaultTestConfig) {
   )
   const raw = await run(payload, {
     vendor: 'claude-code',
-    loadConfig: async () => config,
+    loadConfig: () => Promise.resolve(config),
   })
   return { raw }
 }

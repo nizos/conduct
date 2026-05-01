@@ -3,8 +3,25 @@ import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 
 import type { Action } from '../../types.js'
+import { parseAs } from '../../utils/parse-as.js'
 import type { ParseActionResult } from '../adapter.js'
-import { parseAction, sessionPath, toResponse } from './adapter.js'
+import {
+  parseAction,
+  sessionPath,
+  toResponse,
+  type ResponseShape,
+} from './adapter.js'
+
+type Payload = {
+  cwd?: string
+  tool_name: string
+  tool_input: {
+    file_path?: string
+    content?: string
+    command?: string
+    new_string?: string
+  }
+}
 
 describe('claude-code adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
@@ -118,7 +135,7 @@ describe('claude-code adapter', () => {
   })
 
   it('builds a deny response from a block decision', () => {
-    const response = JSON.parse(
+    const response = parseAs<ResponseShape>(
       toResponse({ kind: 'block', reason: 'out of scope' }),
     )
 
@@ -126,7 +143,7 @@ describe('claude-code adapter', () => {
   })
 
   it('preserves the decision reason in a block response', () => {
-    const response = JSON.parse(
+    const response = parseAs<ResponseShape>(
       toResponse({ kind: 'block', reason: 'out of scope' }),
     )
 
@@ -160,7 +177,7 @@ describe('claude-code adapter', () => {
 })
 
 function setup(fixtureName: string) {
-  const payload = JSON.parse(
+  const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/claude-code/${fixtureName}`, 'utf8'),
   )
   const action = ok(parseAction(payload))
