@@ -5,14 +5,12 @@ import path from 'node:path'
 import type { PreToolUseHookOutput } from '@github/copilot/sdk'
 import { describe, it, onTestFinished } from 'vitest'
 
-import { vendors } from '../../src/registry.js'
-import { dispatch } from '../../src/cli.js'
+import { run } from '../../src/cli.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 import { parseAs } from '../../src/utils/parse-as.js'
 import { expectDecision } from './expect-decision.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
-const entry = vendors['github-copilot']
 
 const CLEAN_SESSION = 'integration-copilot-tdd-clean'
 const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
@@ -112,8 +110,10 @@ async function setup(opts: {
       file_text: opts.pendingContent,
     }),
   })
-  const agent = entry.agent()
-  const response = await dispatch(entry, payload, [enforceTdd()], agent)
+  const response = await run(payload, {
+    vendor: 'github-copilot',
+    loadConfig: () => Promise.resolve({ rules: [enforceTdd()] }),
+  })
   if (response === '') return { decision: 'allow' }
   const parsed = parseAs<PreToolUseHookOutput>(response)
   return {

@@ -4,15 +4,13 @@ import path from 'node:path'
 
 import { describe, it, onTestFinished } from 'vitest'
 
-import { vendors } from '../../src/registry.js'
-import { dispatch } from '../../src/cli.js'
+import { run } from '../../src/cli.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 import { parseAs } from '../../src/utils/parse-as.js'
 import type { ResponseShape as ClaudeCodeResponse } from '../../src/vendors/claude-code/adapter.js'
 import { expectDecision } from './expect-decision.js'
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
-const entry = vendors['claude-code']
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
   it('allows clean TDD with minimal implementation', async () => {
@@ -91,8 +89,10 @@ async function setup(opts: {
     tool_input: { file_path: filePath, content: opts.pendingContent },
     tool_use_id: 'toolu_integration',
   })
-  const agent = entry.agent()
-  const response = await dispatch(entry, payload, [enforceTdd()], agent)
+  const response = await run(payload, {
+    vendor: 'claude-code',
+    loadConfig: () => Promise.resolve({ rules: [enforceTdd()] }),
+  })
   if (response === '') return { decision: 'allow' }
   const parsed = parseAs<ClaudeCodeResponse>(response)
   return {

@@ -2,15 +2,12 @@ import { readFileSync } from 'node:fs'
 
 import { describe, it, expect } from 'vitest'
 
-import { dispatch, run } from './cli.js'
+import { run } from './cli.js'
 import type { Config } from './config.js'
-import { vendors, type VendorEntry } from './registry.js'
 import type { Agent } from './types.js'
 import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
 import { parseAs } from './utils/parse-as.js'
 import type { ResponseShape as ClaudeCodeResponse } from './vendors/claude-code/adapter.js'
-
-const claudeCodeEntry = vendors['claude-code']
 
 const stubAgent: Agent = {
   reason: () => Promise.resolve({ verdict: 'pass', reason: '' }),
@@ -59,12 +56,10 @@ describe('cli', () => {
   })
 
   it('returns a deny response when the payload is not valid JSON', async () => {
-    const response = await dispatch(
-      claudeCodeEntry,
-      'not json at all',
-      [],
-      stubAgent,
-    )
+    const response = await run('not json at all', {
+      vendor: 'claude-code',
+      loadConfig: () => Promise.resolve({ rules: [], agent: stubAgent }),
+    })
     const parsed = parseAs<ClaudeCodeResponse>(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
@@ -97,21 +92,17 @@ describe('cli', () => {
   })
 
   it('returns a deny response when the adapter rejects the payload', async () => {
-    const rejectingEntry: VendorEntry = {
-      ...claudeCodeEntry,
-      adapter: {
-        ...claudeCodeEntry.adapter,
-        parseAction: () => ({ ok: false, reason: 'unsupported tool shape' }),
-      },
-    }
     const payload = JSON.stringify({ tool_name: 'Bash', tool_input: {} })
 
-    const response = await dispatch(rejectingEntry, payload, [], stubAgent)
+    const response = await run(payload, {
+      vendor: 'claude-code',
+      loadConfig: () => Promise.resolve({ rules: [], agent: stubAgent }),
+    })
     const parsed = parseAs<ClaudeCodeResponse>(response)
 
     expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(parsed.hookSpecificOutput.permissionDecisionReason).toMatch(
-      /payload|unsupported tool shape/i,
+      /invalid hook payload/i,
     )
   })
 })

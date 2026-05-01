@@ -25,7 +25,7 @@ export async function run(
   return dispatch(entry, rawPayload, config.rules, agent)
 }
 
-export async function dispatch(
+async function dispatch(
   entry: VendorEntry,
   rawPayload: string,
   rules: readonly RuleEntry[],

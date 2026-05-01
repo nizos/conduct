@@ -4,8 +4,7 @@ import path from 'node:path'
 
 import { describe, it, onTestFinished } from 'vitest'
 
-import { vendors } from '../../src/registry.js'
-import { dispatch } from '../../src/cli.js'
+import { run } from '../../src/cli.js'
 import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 import { parseAs } from '../../src/utils/parse-as.js'
 import type { ResponseShape } from '../../src/vendors/codex/adapter.js'
@@ -14,7 +13,6 @@ import { expectDecision } from './expect-decision.js'
 type CodexResponse = Partial<ResponseShape>
 
 const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
-const entry = vendors['codex']
 
 describe.skipIf(!runAi)(
   'enforce-tdd + codex (integration with real AI)',
@@ -98,8 +96,10 @@ async function setup(opts: {
     tool_input: { command: patch },
     tool_use_id: 'call_integration_codex',
   })
-  const agent = entry.agent()
-  const response = await dispatch(entry, payload, [enforceTdd()], agent)
+  const response = await run(payload, {
+    vendor: 'codex',
+    loadConfig: () => Promise.resolve({ rules: [enforceTdd()] }),
+  })
   const parsed: CodexResponse = response ? parseAs<CodexResponse>(response) : {}
   return {
     decision: parsed.decision ?? 'allow',
