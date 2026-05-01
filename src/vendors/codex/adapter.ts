@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
+import { relativizePath } from '../relativize-path.js'
 
 const PATCH_HEADER = /^\*\*\* (?:Add|Update|Delete) File: (.+)$/m
 
@@ -19,6 +20,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     .object({
       tool_name: z.literal('apply_patch'),
       tool_input: z.object({ command: z.string() }),
+      cwd: z.string().optional(),
     })
     .transform((d, ctx): Action => {
       const path = PATCH_HEADER.exec(d.tool_input.command)?.[1]
@@ -29,7 +31,11 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         })
         return z.NEVER
       }
-      return { type: 'write', path, content: d.tool_input.command }
+      return {
+        type: 'write',
+        path: relativizePath(d.cwd, path),
+        content: d.tool_input.command,
+      }
     }),
 ])
 
