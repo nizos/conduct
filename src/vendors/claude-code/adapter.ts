@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
+import { relativizePath } from '../relativize-path.js'
 
 const KNOWN_TOOL_NAMES = new Set(['Bash', 'Edit', 'Write'])
 
@@ -20,11 +21,12 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         file_path: z.string(),
         new_string: z.string(),
       }),
+      cwd: z.string().optional(),
     })
     .transform(
       (d): Action => ({
         type: 'write',
-        path: d.tool_input.file_path,
+        path: relativizePath(d.cwd, d.tool_input.file_path),
         content: d.tool_input.new_string,
       }),
     ),
@@ -35,11 +37,12 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         file_path: z.string(),
         content: z.string(),
       }),
+      cwd: z.string().optional(),
     })
     .transform(
       (d): Action => ({
         type: 'write',
-        path: d.tool_input.file_path,
+        path: relativizePath(d.cwd, d.tool_input.file_path),
         content: d.tool_input.content,
       }),
     ),

@@ -5,10 +5,10 @@ import { describe, it, expect } from 'vitest'
 import { actionSchema, sessionPath, toResponse } from './adapter.js'
 
 describe('claude-code adapter', () => {
-  it('extracts the file path from a Write payload', () => {
-    const { action, payload } = setup('write-new-file.json')
+  it('extracts the file path from a Write payload, relative to cwd', () => {
+    const { action } = setup('write-new-file.json')
 
-    expect(action).toMatchObject({ path: payload.tool_input.file_path })
+    expect(action).toMatchObject({ path: 'src/userProfile.ts' })
   })
 
   it('tags the action type as write for a Write payload', () => {
@@ -41,10 +41,45 @@ describe('claude-code adapter', () => {
     expect(action).toMatchObject({ content: payload.tool_input.new_string })
   })
 
-  it('extracts the file path from an Edit payload', () => {
-    const { action, payload } = setup('edit-file.json')
+  it('extracts the file path from an Edit payload, relative to cwd', () => {
+    const { action } = setup('edit-file.json')
 
-    expect(action).toMatchObject({ path: payload.tool_input.file_path })
+    expect(action).toMatchObject({ path: 'README.md' })
+  })
+
+  it('relativizes an absolute file_path against the payload cwd', () => {
+    const action = actionSchema.parse({
+      cwd: '/workspaces/conduct',
+      tool_name: 'Write',
+      tool_input: {
+        file_path: '/workspaces/conduct/src/UpperCase.ts',
+        content: 'x',
+      },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  })
+
+  it('falls back to process.cwd() when the payload omits cwd', () => {
+    const action = actionSchema.parse({
+      tool_name: 'Write',
+      tool_input: {
+        file_path: `${process.cwd()}/src/UpperCase.ts`,
+        content: 'x',
+      },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  })
+
+  it('returns ../-prefixed form for an absolute file_path that sits outside cwd', () => {
+    const action = actionSchema.parse({
+      cwd: '/workspaces/conduct',
+      tool_name: 'Write',
+      tool_input: { file_path: '/etc/passwd', content: 'x' },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: '../../etc/passwd' })
   })
 
   it('returns no opinion (empty stdout) on an allow decision so normal permission flow takes over', () => {
