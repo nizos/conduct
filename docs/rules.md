@@ -46,19 +46,20 @@ Blocks a write whose filename doesn't match the configured casing style. Passes 
 
 ### Options
 
-| Option  | Type                                          | Default   | Description                                                                  |
-| ------- | --------------------------------------------- | --------- | ---------------------------------------------------------------------------- |
-| `style` | `'kebab-case' \| 'camelCase' \| 'snake_case'` | required  | Casing style the filename must match.                                        |
-| `paths` | `string[]`                                    | match all | Gitignore-style globs scoping which writes are checked. Leading `!` negates. |
+| Option  | Type                                          | Default  | Description                           |
+| ------- | --------------------------------------------- | -------- | ------------------------------------- |
+| `style` | `'kebab-case' \| 'camelCase' \| 'snake_case'` | required | Casing style the filename must match. |
 
 ### Examples
 
 ```ts
 enforceFilenameCasing({ style: 'kebab-case' })
-enforceFilenameCasing({
-  style: 'kebab-case',
-  paths: ['**/src/**', '**/test/**'],
-})
+
+// To scope to specific paths, wrap in a `{ files, rules }` block:
+{
+  files: ['**/src/**', '**/test/**'],
+  rules: [enforceFilenameCasing({ style: 'kebab-case' })],
+}
 ```
 
 ---

@@ -1,7 +1,6 @@
 import { basename } from 'node:path'
 
 import type { Rule, RuleResult } from './contract.js'
-import { buildMatcher } from './utils/match-paths.js'
 
 /**
  * Supported filename casing styles.
@@ -10,10 +9,9 @@ export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
 
 /**
  * Blocks a write whose filename doesn't match the configured casing
- * style. When `paths` is set, only writes to matching paths are
- * checked. Path patterns follow gitignore-style semantics: globs
- * include, and a leading `!` negates (excludes) matching paths.
- * Passes non-write actions through.
+ * style. Passes non-write actions through. To scope to specific paths,
+ * wrap in a `{ files, rules }` block — block-level `files` is the one
+ * path-filtering mechanism, anchored against the config directory.
  *
  * Applies to: write actions.
  * Supported agents: Claude Code, Codex, GitHub Copilot.
@@ -22,18 +20,13 @@ export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
  * enforceFilenameCasing({ style: 'kebab-case' })
  *
  * @example
- * enforceFilenameCasing({ style: 'kebab-case', paths: ['src/**', 'test/**'] })
+ * { files: ['src/**', 'test/**'], rules: [enforceFilenameCasing({ style: 'kebab-case' })] }
  */
-export function enforceFilenameCasing(options: {
-  style: Style
-  paths?: string[]
-}): Rule {
-  const { style, paths } = options
-  const matchesPaths = paths ? buildMatcher(paths) : () => true
+export function enforceFilenameCasing(options: { style: Style }): Rule {
+  const { style } = options
   return (action) => {
     if (action.type !== 'write') return pass
     const { path } = action
-    if (!matchesPaths(path)) return pass
     if (violations[style](basename(path))) {
       return { kind: 'violation', reason: `${path} does not match ${style}` }
     }

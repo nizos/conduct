@@ -79,10 +79,10 @@ describe('cli', () => {
     )
     const injectedConfig: Config = {
       rules: [
-        enforceFilenameCasing({
-          style: 'kebab-case',
-          paths: ['**/src/**', '**/test/**'],
-        }),
+        {
+          files: ['**/src/**', '**/test/**'],
+          rules: [enforceFilenameCasing({ style: 'kebab-case' })],
+        },
       ],
       agent: stubAgent,
     }
@@ -121,10 +121,10 @@ describe('cli', () => {
 
 const defaultTestConfig: Config = {
   rules: [
-    enforceFilenameCasing({
-      style: 'kebab-case',
-      paths: ['**/src/**', '**/test/**'],
-    }),
+    {
+      files: ['**/src/**', '**/test/**'],
+      rules: [enforceFilenameCasing({ style: 'kebab-case' })],
+    },
   ],
   agent: stubAgent,
 }

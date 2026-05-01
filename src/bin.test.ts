@@ -114,10 +114,10 @@ const stubAgent: Agent = {
 
 const testConfig: Config = {
   rules: [
-    enforceFilenameCasing({
-      style: 'kebab-case',
-      paths: ['**/src/**', '**/test/**'],
-    }),
+    {
+      files: ['**/src/**', '**/test/**'],
+      rules: [enforceFilenameCasing({ style: 'kebab-case' })],
+    },
   ],
   agent: stubAgent,
 }
