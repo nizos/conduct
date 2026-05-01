@@ -50,7 +50,7 @@ describe('codex adapter', () => {
     ).toThrow()
   })
 
-  it('maps an apply_patch payload to a write action with path + patch content', () => {
+  it('maps an apply_patch payload to a write action with path (relative to cwd) + patch content', () => {
     const payload = JSON.parse(
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
     )
@@ -59,9 +59,33 @@ describe('codex adapter', () => {
 
     expect(action.type).toBe('write')
     if (action.type !== 'write') throw new Error('expected write')
-    expect(action.path).toBe('/workspaces/conduct/src/calculator.ts')
+    expect(action.path).toBe('src/calculator.ts')
     expect(action.content).toContain('*** Begin Patch')
     expect(action.content).toContain('*** Add File:')
+  })
+
+  it('relativizes an absolute apply_patch header path against the payload cwd', () => {
+    const action = actionSchema.parse({
+      cwd: '/workspaces/conduct',
+      tool_name: 'apply_patch',
+      tool_input: {
+        command:
+          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+      },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
+  })
+
+  it('falls back to process.cwd() when the apply_patch payload omits cwd', () => {
+    const action = actionSchema.parse({
+      tool_name: 'apply_patch',
+      tool_input: {
+        command: `*** Begin Patch\n*** Add File: ${process.cwd()}/src/UpperCase.ts\n+x\n*** End Patch\n`,
+      },
+    })
+
+    expect(action).toMatchObject({ type: 'write', path: 'src/UpperCase.ts' })
   })
 
   it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
