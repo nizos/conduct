@@ -63,7 +63,8 @@ export function defineConfig(config: Config): Config {
   return config
 }
 
-const CONFIG_FILENAME = 'conduct.config.ts'
+const CONFIG_BASENAME = 'conduct.config'
+const CONFIG_EXTENSIONS = ['ts', 'mts', 'js', 'mjs'] as const
 
 /**
  * Load a Conduct config file (TypeScript or JavaScript) from an absolute
@@ -98,15 +99,24 @@ function anchorGlob(glob: string, root: string): string {
   return path.posix.join(root, glob)
 }
 
+/**
+ * Walks up from `startDir` until it finds a `conduct.config.{ts,mts,js,mjs}`.
+ * Throws with an error that lists the tried extensions if none is found —
+ * the bin layer turns that throw into a fail-closed block so missing
+ * configs don't silently allow.
+ */
 export function findConfig(startDir: string): string {
   let dir = startDir
   while (true) {
-    const candidate = path.join(dir, CONFIG_FILENAME)
-    if (existsSync(candidate)) return candidate
+    for (const ext of CONFIG_EXTENSIONS) {
+      const candidate = path.join(dir, `${CONFIG_BASENAME}.${ext}`)
+      if (existsSync(candidate)) return candidate
+    }
     const parent = path.dirname(dir)
     if (parent === dir) {
       throw new Error(
-        `${CONFIG_FILENAME} not found (searched from ${startDir} up to /)`,
+        `${CONFIG_BASENAME}.{${CONFIG_EXTENSIONS.join(',')}} not found ` +
+          `(searched from ${startDir} up to /)`,
       )
     }
     dir = parent

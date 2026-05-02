@@ -65,7 +65,19 @@ describe('findConfig', () => {
     )
   })
 
-  it('throws when no config is found up to the filesystem root', () => {
-    expect(() => findConfig('/tmp')).toThrow(/conduct\.config\.ts/)
+  it('finds a .js config when no .ts variant exists alongside it', () => {
+    const startDir = path.resolve('test/fixtures/config/discovery-js')
+
+    const result = findConfig(startDir)
+
+    expect(result).toBe(
+      path.resolve('test/fixtures/config/discovery-js/conduct.config.js'),
+    )
+  })
+
+  it('throws with all tried extensions listed when no config is found', () => {
+    expect(() => findConfig('/tmp')).toThrow(
+      /conduct\.config\.\{ts,mts,js,mjs\}/,
+    )
   })
 })
