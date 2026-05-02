@@ -27,6 +27,16 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     }
   }
   const configIdx = argv.indexOf('--config')
-  const configPath = configIdx !== -1 ? argv[configIdx + 1] : undefined
-  return { kind: 'run', vendor: agentArg, configPath }
+  if (configIdx !== -1) {
+    const next = argv[configIdx + 1]
+    if (next === undefined || next.startsWith('--')) {
+      return {
+        kind: 'error',
+        stderr: 'conduct: --config is missing its path\n',
+        exitCode: 2,
+      }
+    }
+    return { kind: 'run', vendor: agentArg, configPath: next }
+  }
+  return { kind: 'run', vendor: agentArg, configPath: undefined }
 }

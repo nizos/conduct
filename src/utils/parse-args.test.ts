@@ -43,6 +43,23 @@ describe('parseArgs', () => {
     })
   })
 
+  it('errors when --config is followed by another flag instead of a path', () => {
+    const result = parseArgs([
+      'node',
+      'bin.js',
+      '--config',
+      '--agent',
+      'claude-code',
+    ])
+
+    expect(result.kind).toBe('error')
+    if (result.kind === 'error') {
+      expect(result.stderr).toMatch(/--config/)
+      expect(result.stderr).toMatch(/path|missing/i)
+      expect(result.exitCode).toBe(2)
+    }
+  })
+
   it('captures --config <path> in the run result', () => {
     expect(
       parseArgs([

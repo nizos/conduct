@@ -118,7 +118,11 @@ if (isInvokedAsScript()) {
 }
 
 // Resolve symlinks on argv[1] so the script-entry check works under npx /
-// node_modules/.bin shims (which always invoke through a symlink).
+// node_modules/.bin shims (which always invoke through a symlink). Do
+// NOT simplify to the standard `import.meta.url === pathToFileURL(argv[1])`
+// idiom — under npm/npx, argv[1] is the shim path while import.meta.url
+// is the real `dist/bin.js`, so the comparison fails and `main()` never
+// runs. Node 22 hasn't fixed this.
 function isInvokedAsScript(): boolean {
   const argv1 = process.argv[1]
   if (!argv1) return false
