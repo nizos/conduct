@@ -36,7 +36,7 @@ function resolveRules(entry: RuleEntry, action: Action): readonly Rule[] {
   if (typeof entry === 'function') return [entry]
   if (entry.files) {
     if (
-      action.type === 'write' &&
+      action.kind === 'write' &&
       !buildMatcher([...entry.files])(action.path)
     ) {
       return []

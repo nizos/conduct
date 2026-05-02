@@ -8,7 +8,7 @@ describe('forbid-command-pattern', () => {
       match: 'npm install',
       reason: 'Use pnpm install',
     })
-    const result = rule({ type: 'command', command: 'npm install' })
+    const result = rule({ kind: 'command', command: 'npm install' })
 
     expect(result).toMatchObject({ kind: 'violation' })
   })
@@ -18,7 +18,7 @@ describe('forbid-command-pattern', () => {
       match: 'npm install',
       reason: 'Use pnpm install',
     })
-    const result = rule({ type: 'command', command: 'echo foo' })
+    const result = rule({ kind: 'command', command: 'echo foo' })
 
     expect(result).toEqual({ kind: 'pass' })
   })
@@ -28,7 +28,7 @@ describe('forbid-command-pattern', () => {
       match: /rm\s+-rf/,
       reason: 'Avoid destructive rm',
     })
-    const result = rule({ type: 'command', command: 'rm -rf dist' })
+    const result = rule({ kind: 'command', command: 'rm -rf dist' })
 
     expect(result).toMatchObject({ kind: 'violation' })
   })
@@ -38,7 +38,7 @@ describe('forbid-command-pattern', () => {
       match: 'npm install',
       reason: 'Use pnpm install',
     })
-    const result = rule({ type: 'command', command: 'npm install' })
+    const result = rule({ kind: 'command', command: 'npm install' })
 
     expect(result).toMatchObject({
       kind: 'violation',

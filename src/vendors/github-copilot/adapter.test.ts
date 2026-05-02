@@ -28,7 +28,7 @@ describe('github-copilot adapter', () => {
     expect(result).toEqual({
       ok: true,
       action: {
-        type: 'write',
+        kind: 'write',
         path: '/workspaces/conduct/src/UpperCase.ts',
         content: 'x',
       },
@@ -38,7 +38,7 @@ describe('github-copilot adapter', () => {
   it('tags the action type as command for a bash payload', () => {
     const { action } = setup('pre-bash-npm-test.json')
 
-    expect(action.type).toBe('command')
+    expect(action.kind).toBe('command')
   })
 
   it('extracts the command text from a bash payload', () => {
@@ -75,7 +75,7 @@ describe('github-copilot adapter', () => {
   it('tags a create payload as a write action', () => {
     const { action } = setup('pre-create-new-test.json')
 
-    expect(action.type).toBe('write')
+    expect(action.kind).toBe('write')
   })
 
   it('maps create payload path (absolute POSIX) + file_text onto the write action', () => {
@@ -111,7 +111,7 @@ describe('github-copilot adapter', () => {
     )
 
     expect(action).toMatchObject({
-      type: 'write',
+      kind: 'write',
       path: '/workspaces/conduct/src/UpperCase.ts',
     })
   })
@@ -149,7 +149,7 @@ describe('github-copilot adapter', () => {
     )
 
     expect(ok(parseAction(payload))).toEqual({
-      type: 'command',
+      kind: 'command',
       command: '',
     })
   })
@@ -163,7 +163,7 @@ describe('github-copilot adapter', () => {
     )
 
     expect(ok(parseAction(payload))).toEqual({
-      type: 'command',
+      kind: 'command',
       command: '',
     })
   })
@@ -193,7 +193,7 @@ describe('github-copilot adapter', () => {
       }),
     )
 
-    expect(action).toEqual({ type: 'command', command: '' })
+    expect(action).toEqual({ kind: 'command', command: '' })
   })
 })
 

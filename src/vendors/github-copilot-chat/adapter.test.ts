@@ -37,7 +37,7 @@ describe('github-copilot-chat adapter', () => {
     expect(result).toEqual({
       ok: true,
       action: {
-        type: 'write',
+        kind: 'write',
         path: '/workspaces/conduct/src/UpperCase.ts',
         content: 'x',
       },
@@ -75,7 +75,7 @@ describe('github-copilot-chat adapter', () => {
   it('tags the action type as command for a run_in_terminal payload', () => {
     const { action } = setup('pre-run-in-terminal.json')
 
-    expect(action.type).toBe('command')
+    expect(action.kind).toBe('command')
   })
 
   it('extracts the command text from a run_in_terminal payload', () => {
@@ -87,7 +87,7 @@ describe('github-copilot-chat adapter', () => {
   it('tags a create_file payload as a write action', () => {
     const { action } = setup('pre-create-file.json')
 
-    expect(action.type).toBe('write')
+    expect(action.kind).toBe('write')
   })
 
   it('maps create_file payload filePath (absolute POSIX) + content onto the write action', () => {
@@ -102,7 +102,7 @@ describe('github-copilot-chat adapter', () => {
   it('tags a replace_string_in_file payload as a write action', () => {
     const { action } = setup('pre-replace-string-in-file.json')
 
-    expect(action.type).toBe('write')
+    expect(action.kind).toBe('write')
   })
 
   it('maps replace_string_in_file payload filePath (absolute POSIX) + newString onto the write action', () => {
@@ -127,7 +127,7 @@ describe('github-copilot-chat adapter', () => {
     )
 
     expect(action).toMatchObject({
-      type: 'write',
+      kind: 'write',
       path: '/workspaces/conduct/src/UpperCase.ts',
     })
   })
@@ -165,7 +165,7 @@ describe('github-copilot-chat adapter', () => {
     )
 
     expect(ok(parseAction(payload))).toEqual({
-      type: 'command',
+      kind: 'command',
       command: '',
     })
   })
@@ -179,7 +179,7 @@ describe('github-copilot-chat adapter', () => {
     )
 
     expect(ok(parseAction(payload))).toEqual({
-      type: 'command',
+      kind: 'command',
       command: '',
     })
   })
@@ -192,7 +192,7 @@ describe('github-copilot-chat adapter', () => {
       }),
     )
 
-    expect(action).toEqual({ type: 'command', command: '' })
+    expect(action).toEqual({ kind: 'command', command: '' })
   })
 })
 

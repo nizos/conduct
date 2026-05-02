@@ -201,7 +201,7 @@ export function enforceTdd(
     maxContentChars: options.maxContentChars ?? DEFAULT_MAX_CONTENT_CHARS,
   }
   return async (action: Action, ctx?: RuleContext) => {
-    if (action.type !== 'write') return { kind: 'pass' as const }
+    if (action.kind !== 'write') return { kind: 'pass' as const }
     if (!ctx?.agent) return { kind: 'pass' as const }
     const events = (await ctx.history?.()) ?? []
     const windowed = trimHistory(events, window)

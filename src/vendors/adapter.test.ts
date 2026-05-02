@@ -8,20 +8,20 @@ describe('fromSchema', () => {
   it('wraps a Zod schema into a parseAction returning {ok: true, action} for valid input', () => {
     const schema = z
       .object({ kind: z.literal('command'), command: z.string() })
-      .transform((d): Action => ({ type: 'command', command: d.command }))
+      .transform((d): Action => ({ kind: 'command', command: d.command }))
 
     const parse = fromSchema(schema)
 
     expect(parse({ kind: 'command', command: 'echo hi' })).toEqual({
       ok: true,
-      action: { type: 'command', command: 'echo hi' },
+      action: { kind: 'command', command: 'echo hi' },
     })
   })
 
   it('returns {ok: false, reason} formed from the joined Zod issue messages on invalid input', () => {
     const schema = z
       .object({ kind: z.literal('command'), command: z.string() })
-      .transform((d): Action => ({ type: 'command', command: d.command }))
+      .transform((d): Action => ({ kind: 'command', command: d.command }))
 
     const parse = fromSchema(schema)
     const result = parse({ kind: 'wrong' })
@@ -38,6 +38,6 @@ describe('passthroughFor', () => {
 
     const action = schema.parse({ tool_name: 'MultiEdit' })
 
-    expect(action).toEqual({ type: 'command', command: '' })
+    expect(action).toEqual({ kind: 'command', command: '' })
   })
 })

@@ -9,7 +9,7 @@ describe('forbid-content-pattern', () => {
       reason: 'Use TestService instead',
     })
     const result = rule({
-      type: 'write',
+      kind: 'write',
       path: 'src/user-profile.ts',
       content: 'import MockedService from "./mocks"',
     })
@@ -23,7 +23,7 @@ describe('forbid-content-pattern', () => {
       reason: 'Use TestService instead',
     })
     const result = rule({
-      type: 'write',
+      kind: 'write',
       path: 'src/user-profile.ts',
       content: 'import TestService from "./test-service"',
     })
@@ -37,7 +37,7 @@ describe('forbid-content-pattern', () => {
       reason: 'Use TestService instead',
     })
     const result = rule({
-      type: 'write',
+      kind: 'write',
       path: 'src/user-profile.ts',
       content: 'import MockedService from "./mocks"',
     })
@@ -54,7 +54,7 @@ describe('forbid-content-pattern', () => {
       reason: 'Use TestService instead',
     })
     const result = rule({
-      type: 'write',
+      kind: 'write',
       path: 'src/user-profile.ts',
       content: 'import MockedService from "./mocks"',
     })
@@ -68,7 +68,7 @@ describe('forbid-content-pattern', () => {
       reason: 'Use TestService instead',
     })
     const action = {
-      type: 'write' as const,
+      kind: 'write' as const,
       path: 'src/user-profile.ts',
       content: 'MockedService',
     }

@@ -7,7 +7,7 @@ describe('engine', () => {
   it('returns allow when every rule passes', async () => {
     const alwaysPass: Rule = () => ({ kind: 'pass' as const })
 
-    const decision = await evaluate({ type: 'command', command: 'x' }, [
+    const decision = await evaluate({ kind: 'command', command: 'x' }, [
       alwaysPass,
     ])
 
@@ -20,7 +20,7 @@ describe('engine', () => {
       reason: 'nope',
     })
 
-    const decision = await evaluate({ type: 'command', command: 'x' }, [
+    const decision = await evaluate({ kind: 'command', command: 'x' }, [
       alwaysViolate,
     ])
 
@@ -30,7 +30,7 @@ describe('engine', () => {
   it('awaits async rules and returns an allow decision when they pass', async () => {
     const asyncPass: Rule = () => Promise.resolve({ kind: 'pass' as const })
 
-    const decision = await evaluate({ type: 'command', command: 'x' }, [
+    const decision = await evaluate({ kind: 'command', command: 'x' }, [
       asyncPass,
     ])
 
@@ -45,7 +45,7 @@ describe('engine', () => {
     }
     const ctx = {}
 
-    await evaluate({ type: 'command', command: 'x' }, [capturing], ctx)
+    await evaluate({ kind: 'command', command: 'x' }, [capturing], ctx)
 
     expect(received).toBe(ctx)
   })
@@ -53,7 +53,7 @@ describe('engine', () => {
   it('applies the rules in a rule block', async () => {
     const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
 
-    const decision = await evaluate({ type: 'command', command: 'x' }, [
+    const decision = await evaluate({ kind: 'command', command: 'x' }, [
       { rules: [violate] },
     ])
 
@@ -64,7 +64,7 @@ describe('engine', () => {
     const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
 
     const decision = await evaluate(
-      { type: 'write', path: 'README.md', content: '' },
+      { kind: 'write', path: 'README.md', content: '' },
       [{ files: ['src/**'], rules: [violate] }],
     )
 
@@ -74,7 +74,7 @@ describe('engine', () => {
   it('applies a rule block with files to a command action (files only filters writes)', async () => {
     const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
 
-    const decision = await evaluate({ type: 'command', command: 'rm -rf /' }, [
+    const decision = await evaluate({ kind: 'command', command: 'rm -rf /' }, [
       { files: ['src/**'], rules: [violate] },
     ])
 
@@ -91,7 +91,7 @@ describe('engine', () => {
     }
 
     const decision = await evaluate(
-      { type: 'write', path: 'src/foo.ts', content: '' },
+      { kind: 'write', path: 'src/foo.ts', content: '' },
       [
         { files: ['lib/**'], rules: [unreached] },
         { files: ['src/**'], rules: [fail] },
@@ -106,7 +106,7 @@ describe('engine', () => {
     const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
 
     const decision = await evaluate(
-      { type: 'write', path: 'src/foo.ts', content: '' },
+      { kind: 'write', path: 'src/foo.ts', content: '' },
       [{ files: [] as unknown as readonly [string], rules: [violate] }],
     )
 
@@ -118,7 +118,7 @@ describe('engine', () => {
       throw new Error('kaboom')
     }
 
-    const decision = await evaluate({ type: 'command', command: 'x' }, [
+    const decision = await evaluate({ kind: 'command', command: 'x' }, [
       crashing,
     ])
 

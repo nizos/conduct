@@ -38,7 +38,7 @@ describe('enforce-tdd', () => {
     })
 
     const result = await s.rule(
-      { type: 'command', command: 'npm install' },
+      { kind: 'command', command: 'npm install' },
       s.ctx,
     )
 
@@ -133,7 +133,7 @@ describe('enforce-tdd', () => {
     const s = setup()
 
     await s.rule(
-      { type: 'write', path: filePath, content: 'new content' },
+      { kind: 'write', path: filePath, content: 'new content' },
       s.ctx,
     )
 
@@ -258,5 +258,5 @@ function writeAction(
   path = 'src/calc.ts',
   content = 'export const add = (a, b) => a + b',
 ): Action {
-  return { type: 'write', path, content }
+  return { kind: 'write', path, content }
 }

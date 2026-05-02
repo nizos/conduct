@@ -46,7 +46,7 @@ export function passthroughFor(
   return z
     .object({ [toolNameField]: z.string() })
     .refine((d) => !known.has(d[toolNameField]!))
-    .transform((): Action => ({ type: 'command', command: '' }))
+    .transform((): Action => ({ kind: 'command', command: '' }))
 }
 
 /**

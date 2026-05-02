@@ -26,7 +26,7 @@ export function forbidCommandPattern(options: {
   reason: string
 }): Rule {
   return (action) => {
-    if (action.type !== 'command') return { kind: 'pass' }
+    if (action.kind !== 'command') return { kind: 'pass' }
     if (!stringOrRegexMatches(action.command, options.match)) {
       return { kind: 'pass' }
     }

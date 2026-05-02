@@ -24,7 +24,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
       tool_input: z.object({ command: z.string() }),
     })
     .transform(
-      (d): Action => ({ type: 'command', command: d.tool_input.command }),
+      (d): Action => ({ kind: 'command', command: d.tool_input.command }),
     ),
   z
     .object({
@@ -34,7 +34,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     })
     .transform(
       (d): Action => ({
-        type: 'write',
+        kind: 'write',
         path: posixAbsolute(d.cwd, d.tool_input.filePath),
         content: d.tool_input.content,
       }),
@@ -47,7 +47,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
     })
     .transform(
       (d): Action => ({
-        type: 'write',
+        kind: 'write',
         path: posixAbsolute(d.cwd, d.tool_input.filePath),
         content: d.tool_input.newString,
       }),

@@ -32,7 +32,7 @@ describe('codex adapter', () => {
     expect(result).toEqual({
       ok: true,
       action: {
-        type: 'write',
+        kind: 'write',
         path: '/workspaces/conduct/src/UpperCase.ts',
         content:
           '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
@@ -43,7 +43,7 @@ describe('codex adapter', () => {
   it('tags the action type as command for a Bash payload', () => {
     const { action } = setup('pre-bash-pwd.json')
 
-    expect(action.type).toBe('command')
+    expect(action.kind).toBe('command')
   })
 
   it('extracts the command text from a Bash payload', () => {
@@ -92,8 +92,8 @@ describe('codex adapter', () => {
 
     const action = ok(parseAction(payload))
 
-    expect(action.type).toBe('write')
-    if (action.type !== 'write') throw new Error('expected write')
+    expect(action.kind).toBe('write')
+    if (action.kind !== 'write') throw new Error('expected write')
     expect(action.path).toBe('/workspaces/conduct/src/calculator.ts')
     expect(action.content).toContain('*** Begin Patch')
     expect(action.content).toContain('*** Add File:')
@@ -112,7 +112,7 @@ describe('codex adapter', () => {
     )
 
     expect(action).toMatchObject({
-      type: 'write',
+      kind: 'write',
       path: '/workspaces/conduct/src/UpperCase.ts',
     })
   })
@@ -137,7 +137,7 @@ describe('codex adapter', () => {
       }),
     )
 
-    expect(action).toEqual({ type: 'command', command: '' })
+    expect(action).toEqual({ kind: 'command', command: '' })
   })
 
   it('returns the transcript_path from the payload as the session path', () => {

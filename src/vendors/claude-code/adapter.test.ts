@@ -37,7 +37,7 @@ describe('claude-code adapter', () => {
     expect(result).toEqual({
       ok: true,
       action: {
-        type: 'write',
+        kind: 'write',
         path: '/workspaces/conduct/src/UpperCase.ts',
         content: 'x',
       },
@@ -55,7 +55,7 @@ describe('claude-code adapter', () => {
   it('tags the action type as write for a Write payload', () => {
     const { action } = setup('write-new-file.json')
 
-    expect(action.type).toBe('write')
+    expect(action.kind).toBe('write')
   })
 
   it('extracts the content from a Write payload', () => {
@@ -67,7 +67,7 @@ describe('claude-code adapter', () => {
   it('tags the action type as command for a Bash payload', () => {
     const { action } = setup('bash-npm-install.json')
 
-    expect(action.type).toBe('command')
+    expect(action.kind).toBe('command')
   })
 
   it('extracts the command text from a Bash payload', () => {
@@ -101,7 +101,7 @@ describe('claude-code adapter', () => {
     )
 
     expect(action).toMatchObject({
-      type: 'write',
+      kind: 'write',
       path: '/workspaces/conduct/src/UpperCase.ts',
     })
   })
@@ -127,7 +127,7 @@ describe('claude-code adapter', () => {
       }),
     )
 
-    expect(action).toMatchObject({ type: 'write', path: '/etc/passwd' })
+    expect(action).toMatchObject({ kind: 'write', path: '/etc/passwd' })
   })
 
   it('returns no opinion (empty stdout) on an allow decision so normal permission flow takes over', () => {
@@ -166,7 +166,7 @@ describe('claude-code adapter', () => {
       }),
     )
 
-    expect(action).toEqual({ type: 'command', command: '' })
+    expect(action).toEqual({ kind: 'command', command: '' })
   })
 
   it('returns the transcript_path from the payload as the session path', () => {

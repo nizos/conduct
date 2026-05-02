@@ -98,7 +98,7 @@ describe('enforce-filename-casing', () => {
 
   it('passes a non-write action without inspecting path', () => {
     const rule = enforceFilenameCasing({ style: 'camelCase' })
-    const result = rule({ type: 'command', command: 'npm install' })
+    const result = rule({ kind: 'command', command: 'npm install' })
 
     expect(result).toEqual({ kind: 'pass' })
   })
@@ -106,6 +106,6 @@ describe('enforce-filename-casing', () => {
 
 function setup({ path, style }: { path: string; style: Style }) {
   const rule = enforceFilenameCasing({ style })
-  const result = rule({ type: 'write', path, content: '' })
+  const result = rule({ kind: 'write', path, content: '' })
   return { result }
 }

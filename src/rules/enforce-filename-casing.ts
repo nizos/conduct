@@ -25,7 +25,7 @@ export type Style = 'kebab-case' | 'camelCase' | 'snake_case'
 export function enforceFilenameCasing(options: { style: Style }): Rule {
   const { style } = options
   return (action) => {
-    if (action.type !== 'write') return pass
+    if (action.kind !== 'write') return pass
     const { path } = action
     if (violations[style](basename(path))) {
       return { kind: 'violation', reason: `${path} does not match ${style}` }

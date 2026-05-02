@@ -10,8 +10,8 @@
  * - `command` — a shell command invocation; carries the command text.
  */
 export type Action =
-  | { type: 'write'; path: string; content: string }
-  | { type: 'command'; command: string }
+  | { kind: 'write'; path: string; content: string }
+  | { kind: 'command'; command: string }
 
 /**
  * The engine's decision after evaluating rules against an action.

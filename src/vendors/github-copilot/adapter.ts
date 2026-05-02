@@ -15,7 +15,7 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
       toolArgs: JsonString.pipe(z.object({ command: z.string() })),
     })
     .transform(
-      (d): Action => ({ type: 'command', command: d.toolArgs.command }),
+      (d): Action => ({ kind: 'command', command: d.toolArgs.command }),
     ),
   z
     .object({
@@ -27,7 +27,7 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
     })
     .transform(
       (d): Action => ({
-        type: 'write',
+        kind: 'write',
         path: posixAbsolute(d.cwd, d.toolArgs.path),
         content: d.toolArgs.file_text,
       }),
@@ -42,7 +42,7 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
     })
     .transform(
       (d): Action => ({
-        type: 'write',
+        kind: 'write',
         path: posixAbsolute(d.cwd, d.toolArgs.path),
         content: d.toolArgs.new_str,
       }),
