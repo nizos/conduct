@@ -8,25 +8,33 @@
 
 Process discipline for AI coding agents.
 
-## Overview
-
-Conduct is a policy engine that sits between coding agents and your codebase, evaluating each attempted action against configurable rules. It generalizes [tdd-guard](https://github.com/nizos/tdd-guard) beyond TDD and across coding agents.
-
 <p align="center">
-  <a href="https://nizar.se/uploads/videos/conduct-demo.mp4">
-    <img src="docs/assets/conduct-demo-screenshot.gif" alt="Conduct demo showing TDD enforcement" width="600">
-  </a>
-  <br>
-  <em>Click to watch Conduct enforce TDD</em>
+  <img src="docs/assets/conduct-tdd-demo.gif" alt="Conduct blocking an over-implementation attempt" width="600">
 </p>
+
+Conduct catches what coding agents do wrong (over-implementing past the failing test, disabling tests instead of fixing them, reaching for `rm -rf`) using the hook system your agent already exposes.
+
+## How it works
+
+Each agent action (file write, shell command) fires a hook. Conduct evaluates the action against your configured rules and decides whether it goes through. When it blocks, the agent gets a reason and a path forward:
+
+```
+conduct: production code is being added before any failing test was
+written or observed.
+
+The next TDD-legal step is to add one focused test in src/cart.test.ts
+and run it to a clean assertion failure before implementing only the
+minimum code to pass it.
+```
+
+Conduct grew out of [tdd-guard](https://github.com/nizos/tdd-guard). It's what tdd-guard would have been if it could start over.
 
 ## Features
 
-- **Multi-Agent Support** - Works with Claude Code, OpenAI Codex, and GitHub Copilot
-- **TDD Enforcement** - Blocks code without a failing test, works with any test runner
-- **Pattern Rules** - Block command or content patterns by string or regex
-- **Deterministic and AI Rules** - Deterministic checks when possible, model validation when needed
-- **Custom Rules** - Define your own rules alongside the built-in ones
+- Catches over-implementation and missing tests by reading your agent's session history (works with any test runner, in any language)
+- Same config across Claude Code, Codex, GitHub Copilot Chat, and Copilot CLI: one rule set, every agent
+- Pattern blocks for commands and content (string or regex) for the deterministic checks
+- Custom rules in a few lines of TypeScript
 
 ## Getting started
 
@@ -36,11 +44,9 @@ Install Conduct as a dev dependency, then [wire it into your agent](docs/setup.m
 npm install -D @nizos/conduct
 ```
 
-Create a `conduct.config.ts` config file at the root of your project.
+Create a `conduct.config.ts` at your project root.
 
-### Example Configuration
-
-A few rules in action. See the [rules reference](docs/rules.md) for the full list.
+Here's a starter that enforces TDD on `src/` and `test/`, and blocks `eslint-disable` comments:
 
 ```ts
 import { defineConfig, enforceTdd, forbidContentPattern } from '@nizos/conduct'
@@ -63,9 +69,9 @@ export default defineConfig({
 
 ## Documentation
 
-- [Setup](docs/setup.md) — wire conduct into your agent
-- [Configuration](docs/configuration.md) — config file shape, path scoping, and custom rules
-- [Rules](docs/rules.md) — built-in rules and their options
+- [Setup](docs/setup.md): wire conduct into your agent
+- [Configuration](docs/configuration.md): config file shape, path scoping, and custom rules
+- [Rules](docs/rules.md): built-in rules and their options
 
 ## Contributing
 
