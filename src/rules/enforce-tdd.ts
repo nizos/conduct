@@ -166,21 +166,24 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * Applies to: write actions.
  * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
- * Cost note: every matching write triggers an AI call, which is the
- * most expensive rule in the library. Scope with a `{ files, rules }`
- * block so the rule only fires on the code you care about.
+ * Cost note: every matching write triggers an AI call. Scope with a
+ * `{ files, rules }` block so the rule only fires on the code you
+ * care about.
  *
- * @param options.instructions — overrides the default TDD rules text
- *   the validator is given. The role, inputs, and response format stay
- *   regardless; only the rules text is replaced. Defaults to a
- *   Red-Green-Refactor spec covering test-first, one-new-test-per-write,
- *   minimum implementation, clean-red recovery, and refactors under green.
+ * @param options.instructions — overrides or extends the default TDD
+ *   rules text the validator is given. The role, inputs, and response
+ *   format stay regardless; only the rules text changes. Pass a string
+ *   to replace the defaults outright, or a function `(defaults) => ...`
+ *   to extend them (e.g. append a project-specific addendum without
+ *   forking the whole TDD spec). Defaults to a Red-Green-Refactor spec
+ *   covering test-first, one-new-test-per-write, minimum implementation,
+ *   clean-red recovery, and refactors under green.
  * @param options.maxEvents — keep at most this many of the most
- *   recent session events when building the prompt (default 10).
+ *   recent session events when building the prompt (default 20).
  *   Caps token usage when transcripts get long.
  * @param options.maxContentChars — truncate any single event's
  *   text/output longer than this, with a head + tail + marker
- *   replacement (default 1000).
+ *   replacement (default 4000).
  *
  * @example
  * enforceTdd()
@@ -190,12 +193,15 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  */
 export function enforceTdd(
   options: {
-    instructions?: string
+    instructions?: string | ((defaults: string) => string)
     maxEvents?: number
     maxContentChars?: number
   } = {},
 ) {
-  const rules = options.instructions ?? DEFAULT_TDD_RULES
+  const rules =
+    typeof options.instructions === 'function'
+      ? options.instructions(DEFAULT_TDD_RULES)
+      : (options.instructions ?? DEFAULT_TDD_RULES)
   const window = {
     maxEvents: options.maxEvents ?? DEFAULT_MAX_EVENTS,
     maxContentChars: options.maxContentChars ?? DEFAULT_MAX_CONTENT_CHARS,

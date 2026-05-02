@@ -126,6 +126,27 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('CUSTOM: only dog-driven development')
   })
 
+  it('accepts a function form for instructions that extends the defaults instead of replacing them', async () => {
+    const rule = enforceTdd({
+      instructions: (defaults) =>
+        defaults + '\n\n### Project rule\nPROJECT-EXTRA: no skipping the kata',
+    })
+    let capturedPrompt = ''
+    const ctx: RuleContext = {
+      agent: {
+        reason: (prompt: string) => {
+          capturedPrompt = prompt
+          return Promise.resolve({ kind: 'pass' as const, reason: '' })
+        },
+      },
+    }
+
+    await rule({ kind: 'write', path: 'src/foo.ts', content: 'x' }, ctx)
+
+    expect(capturedPrompt).toContain('PROJECT-EXTRA: no skipping the kata')
+    expect(capturedPrompt).toMatch(/red.*green.*refactor/i)
+  })
+
   it('keeps the process instructions even when custom rules are provided', async () => {
     const s = setup({
       instructions: 'CUSTOM: only dog-driven development allowed',
