@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { buildMatcher } from './match-paths.js'
+import { buildMatcher, actionMatchesFilesScope } from './match-paths.js'
 
 describe('buildMatcher', () => {
   it('matches a path against an include glob', () => {
@@ -25,5 +25,49 @@ describe('buildMatcher', () => {
     const matches = buildMatcher([])
     expect(matches('src/foo.ts')).toBe(false)
     expect(matches('anything')).toBe(false)
+  })
+})
+
+describe('actionMatchesFilesScope', () => {
+  it('returns false when files is empty, regardless of action kind', () => {
+    expect(
+      actionMatchesFilesScope([], {
+        kind: 'write',
+        path: 'src/foo.ts',
+        content: '',
+      }),
+    ).toBe(false)
+    expect(
+      actionMatchesFilesScope([], { kind: 'command', command: 'git commit' }),
+    ).toBe(false)
+  })
+
+  it('returns true for command actions regardless of glob (commands bypass path filter)', () => {
+    expect(
+      actionMatchesFilesScope(['src/**'], {
+        kind: 'command',
+        command: 'git commit',
+      }),
+    ).toBe(true)
+  })
+
+  it('returns true for a write whose path matches the glob', () => {
+    expect(
+      actionMatchesFilesScope(['src/**'], {
+        kind: 'write',
+        path: 'src/foo.ts',
+        content: '',
+      }),
+    ).toBe(true)
+  })
+
+  it('returns false for a write whose path does not match the glob', () => {
+    expect(
+      actionMatchesFilesScope(['src/**'], {
+        kind: 'write',
+        path: 'README.md',
+        content: '',
+      }),
+    ).toBe(false)
   })
 })
