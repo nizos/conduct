@@ -135,6 +135,6 @@ The bin reads a hook payload from stdin (capped at 10 MiB) and writes the vendor
 ### Options
 
 - `--agent <vendor>` — Required. One of `claude-code`, `codex`, `github-copilot`, or `github-copilot-chat`.
-- `--config <path>` — Load rules from `<path>` instead of auto-discovering `conduct.config.ts`. Use for gitignored configs, CI overrides, or A/B comparisons.
+- `--config <path>` — Override the auto-discovered config file. See [Configuration](configuration.md#overriding-the-file-location).
 - `--version` — Print the package version.
 - `--help` — Print usage and exit.

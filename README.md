@@ -61,6 +61,12 @@ export default defineConfig({
 })
 ```
 
+## Documentation
+
+- [Setup](docs/setup.md) — wire conduct into your agent
+- [Configuration](docs/configuration.md) — config file shape, path scoping, and custom rules
+- [Rules](docs/rules.md) — built-in rules and their options
+
 ## Contributing
 
 Contributions are welcome! See the [contributing guidelines](CONTRIBUTING.md) to get started.
