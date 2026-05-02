@@ -34,6 +34,16 @@ describe('toVerdict', () => {
     expect(verdict).toEqual({ kind: 'pass', reason: 'fine' })
   })
 
+  it('includes the zod issue path and message in the violation reason for shape mismatches', async () => {
+    const verdict = await toVerdict(() =>
+      Promise.resolve('{"kind":"pass","reason":42}'),
+    )
+
+    expect(verdict.kind).toBe('violation')
+    expect(verdict.reason).toContain('reason')
+    expect(verdict.reason).toMatch(/string/i)
+  })
+
   it('returns a fail-closed violation when the text source throws', async () => {
     const verdict = await toVerdict(() =>
       Promise.reject(new Error('SDK transport failure')),

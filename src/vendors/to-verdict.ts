@@ -38,9 +38,13 @@ function parseVerdict(text: string): Verdict {
   }
   const result = VerdictSchema.safeParse(parsed)
   if (!result.success) {
+    const issue = result.error.issues[0]
+    const where =
+      issue && issue.path.length > 0 ? issue.path.join('.') : '<root>'
+    const what = issue?.message ?? 'unknown shape error'
     return {
       kind: 'violation',
-      reason: `validator returned unexpected shape: ${text.slice(0, 200)}`,
+      reason: `validator returned unexpected shape at ${where}: ${what}`,
     }
   }
   return result.data
