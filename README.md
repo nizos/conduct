@@ -19,9 +19,12 @@ Conduct catches what coding agents do wrong (over-implementing past the failing 
 Each agent action (file write, shell command) fires a hook. Conduct evaluates the action against your configured rules and decides whether it goes through. When it blocks, the agent gets a reason and a path forward:
 
 ```
-conduct: production code is being added before any failing test was written or observed.
+conduct: production code is being added before any failing test was written
+or observed.
 
-The next TDD-legal step is to add one focused test in src/cart.test.ts and run it to a clean assertion failure before implementing only the minimum code to pass it.
+The next TDD-legal step is to add one focused test in src/cart.test.ts and
+run it to a clean assertion failure before implementing only the minimum code
+to pass it.
 ```
 
 Conduct grew out of [tdd-guard](https://github.com/nizos/tdd-guard), built to be the better foundation for the work ahead: rules beyond TDD, agents beyond Claude Code.
