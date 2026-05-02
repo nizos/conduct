@@ -1,7 +1,7 @@
 import type { RuleEntry } from './config.js'
 import type { Action, Decision } from './types.js'
 import type { Rule, RuleContext } from './rules/contract.js'
-import { buildMatcher } from './rules/utils/match-paths.js'
+import { actionMatchesFilesScope } from './rules/utils/match-paths.js'
 
 /**
  * Run rules against an action, returning the first violation as a block
@@ -34,13 +34,6 @@ export async function evaluate(
 
 function resolveRules(entry: RuleEntry, action: Action): readonly Rule[] {
   if (typeof entry === 'function') return [entry]
-  if (entry.files) {
-    if (
-      action.kind === 'write' &&
-      !buildMatcher([...entry.files])(action.path)
-    ) {
-      return []
-    }
-  }
+  if (entry.files && !actionMatchesFilesScope(entry.files, action)) return []
   return entry.rules
 }

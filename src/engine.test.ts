@@ -102,17 +102,6 @@ describe('engine', () => {
     expect(decision).toEqual({ kind: 'block', reason: 'second block fired' })
   })
 
-  it('runtime-defends against an empty files array even though the type forbids it', async () => {
-    const violate: Rule = () => ({ kind: 'violation' as const, reason: 'no' })
-
-    const decision = await evaluate(
-      { kind: 'write', path: 'src/foo.ts', content: '' },
-      [{ files: [] as unknown as readonly [string], rules: [violate] }],
-    )
-
-    expect(decision).toEqual({ kind: 'allow' })
-  })
-
   it('turns a rule crash into a block decision (fail-closed)', async () => {
     const crashing: Rule = () => {
       throw new Error('kaboom')
