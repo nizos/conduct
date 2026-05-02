@@ -4,7 +4,10 @@
   "description": "Process discipline for AI coding agents.",
   "license": "MIT",
   "author": "Nizar Selander",
-  "repository": "github:nizos/probity",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nizos/probity.git"
+  },
   "bugs": "https://github.com/nizos/probity/issues",
   "homepage": "https://github.com/nizos/probity#readme",
   "keywords": [
