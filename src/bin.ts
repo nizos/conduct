@@ -65,6 +65,13 @@ export async function main(args: {
     return { stderr: parsed.stderr, exitCode: parsed.exitCode }
   }
 
+  // Fail-closed: any failure in the run path (stdin read, config load,
+  // dispatch) becomes a vendor-shaped block response on stdout. A
+  // non-zero exit gets treated as advisory by most coding agents and
+  // would silently let the action through; emitting a real block is
+  // what the policy engine is for. The error message goes to stderr
+  // as well so it surfaces in agent logs for debugging.
+  const entry = vendors[parsed.vendor]
   try {
     const stdin = typeof args.stdin === 'function' ? args.stdin() : args.stdin
     const loadConfigOverride =
@@ -76,7 +83,15 @@ export async function main(args: {
     return { stdout: response, exitCode: 0 }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    return { stderr: `conduct: ${reason}\n`, exitCode: 1 }
+    const block = entry.adapter.toResponse({
+      kind: 'block',
+      reason: `conduct: ${reason}`,
+    })
+    return {
+      stdout: block,
+      stderr: `conduct: ${reason}\n`,
+      exitCode: 0,
+    }
   }
 }
 

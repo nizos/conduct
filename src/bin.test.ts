@@ -7,6 +7,8 @@ import type { ConfigLoader } from './cli.js'
 import type { Config } from './config.js'
 import type { Agent } from './types.js'
 import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
+import { parseAs } from './utils/parse-as.js'
+import type { ResponseShape as ClaudeCodeResponse } from './vendors/claude-code/adapter.js'
 
 describe('bin main', () => {
   it('returns exit code 2 and a helpful stderr when --agent is missing', async () => {
@@ -25,15 +27,20 @@ describe('bin main', () => {
     expect(result.stderr).toMatch(/claude-code/)
   })
 
-  it('returns exit 1 with a cap message when stdin reading throws', async () => {
+  it('fails closed: stdin read failures emit a vendor block response on stdout', async () => {
     const result = await setup({
       stdin: () => {
         throw new Error('input exceeds 10 bytes')
       },
     })
 
-    expect(result.exitCode).toBe(1)
+    expect(result.exitCode).toBe(0)
     expect(result.stderr).toMatch(/exceeds|cap|bytes/i)
+    const response = parseAs<ClaudeCodeResponse>(result.stdout ?? '')
+    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(response.hookSpecificOutput.permissionDecisionReason).toMatch(
+      /exceeds|cap|bytes/i,
+    )
   })
 
   it('prints usage with --help including the repo URL and exits 0', async () => {
@@ -84,14 +91,19 @@ describe('bin main', () => {
     expect(result.stdout).toBe('')
   })
 
-  it('returns exit 1 with a stderr message when the config loader throws', async () => {
+  it('fails closed when the config loader throws (a syntax error or a missing file becomes a vendor-shaped block)', async () => {
     const result = await setup({
       stdin: KEBAB_PAYLOAD,
       loadConfig: () => Promise.reject(new Error('config blew up')),
     })
 
-    expect(result.exitCode).toBe(1)
+    expect(result.exitCode).toBe(0)
     expect(result.stderr).toMatch(/config blew up/)
+    const response = parseAs<ClaudeCodeResponse>(result.stdout ?? '')
+    expect(response.hookSpecificOutput.permissionDecision).toBe('deny')
+    expect(response.hookSpecificOutput.permissionDecisionReason).toMatch(
+      /config blew up/,
+    )
   })
 
   it('writes the run() response to stdout and exits 0 on success', async () => {
