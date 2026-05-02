@@ -202,7 +202,13 @@ export function enforceTdd(
   }
   return async (action: Action, ctx?: RuleContext) => {
     if (action.kind !== 'write') return { kind: 'pass' as const }
-    if (!ctx?.agent) return { kind: 'pass' as const }
+    if (!ctx?.agent) {
+      return {
+        kind: 'violation' as const,
+        reason:
+          'enforceTdd: no AI agent available; configure Config.ai or use a vendor that ships one.',
+      }
+    }
     const events = (await ctx.history?.()) ?? []
     const windowed = trimHistory(events, window)
     const historyBlock = windowed.map(formatEvent).join('\n')

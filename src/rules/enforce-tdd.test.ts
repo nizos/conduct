@@ -32,6 +32,19 @@ describe('enforce-tdd', () => {
     expect(result).toEqual({ kind: 'pass' })
   })
 
+  it('blocks loud when ctx.agent is missing (fail-closed: silently passing would mean the user thinks TDD is enforced and gets nothing)', async () => {
+    const rule = enforceTdd()
+
+    const result = await rule(
+      { kind: 'write', path: 'src/calc.ts', content: 'x' },
+      { history: () => Promise.resolve([]) },
+    )
+
+    expect(result.kind).toBe('violation')
+    if (result.kind !== 'violation') return
+    expect(result.reason).toMatch(/agent|ai|configure/i)
+  })
+
   it('passes through command actions without calling the AI', async () => {
     const s = setup({
       verdict: { kind: 'violation', reason: 'should not be reached' },
