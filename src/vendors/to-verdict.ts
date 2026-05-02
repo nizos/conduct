@@ -3,7 +3,7 @@ import { z } from 'zod'
 import type { Verdict } from '../types.js'
 
 const VerdictSchema = z.object({
-  verdict: z.enum(['pass', 'violation']),
+  kind: z.enum(['pass', 'violation']),
   reason: z.string(),
 })
 
@@ -24,7 +24,7 @@ export async function toVerdict(
     return parseVerdict(await getText())
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    return { verdict: 'violation', reason }
+    return { kind: 'violation', reason }
   }
 }
 
@@ -32,14 +32,14 @@ function parseVerdict(text: string): Verdict {
   const parsed = tryParseJson(text)
   if (parsed === undefined) {
     return {
-      verdict: 'violation',
+      kind: 'violation',
       reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
     }
   }
   const result = VerdictSchema.safeParse(parsed)
   if (!result.success) {
     return {
-      verdict: 'violation',
+      kind: 'violation',
       reason: `validator returned unexpected shape: ${text.slice(0, 200)}`,
     }
   }

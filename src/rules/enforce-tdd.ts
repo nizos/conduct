@@ -95,7 +95,7 @@ TDD-legal step.`
 const RESPONSE_SPEC = `## Response format
 
 Respond with a single JSON object of exactly this shape:
-{"verdict":"pass"|"violation","reason":"<short explanation>"}
+{"kind":"pass"|"violation","reason":"<short explanation>"}
 Return JSON only. No prose, no code fences.`
 
 function formatEvent(event: SessionEvent): string {
@@ -209,7 +209,7 @@ export function enforceTdd(
     const beforeContent = await readBeforeContent(action.path)
     const prompt = buildPrompt(rules, historyBlock, beforeContent, action)
     const verdict = await ctx.agent.reason(prompt)
-    if (verdict.verdict === 'violation') {
+    if (verdict.kind === 'violation') {
       return { kind: 'violation' as const, reason: verdict.reason }
     }
     return { kind: 'pass' as const }

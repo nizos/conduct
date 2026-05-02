@@ -107,7 +107,7 @@ describe('bin main', () => {
 })
 
 const stubAgent: Agent = {
-  reason: () => Promise.resolve({ verdict: 'pass', reason: '' }),
+  reason: () => Promise.resolve({ kind: 'pass', reason: '' }),
 }
 
 const testConfig: Config = {

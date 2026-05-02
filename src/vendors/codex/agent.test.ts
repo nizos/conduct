@@ -6,22 +6,22 @@ import { codex } from './agent.js'
 describe('codex', () => {
   it('returns the verdict parsed from the thread final response', async () => {
     const client = codex({
-      codex: fakeCodex('{"verdict":"violation","reason":"no test"}'),
+      codex: fakeCodex('{"kind":"violation","reason":"no test"}'),
     })
 
     const verdict = await client.reason('some prompt')
 
-    expect(verdict).toEqual({ verdict: 'violation', reason: 'no test' })
+    expect(verdict).toEqual({ kind: 'violation', reason: 'no test' })
   })
 
   it('parses a distinct verdict from a different thread response', async () => {
     const client = codex({
-      codex: fakeCodex('{"verdict":"pass","reason":"looks fine"}'),
+      codex: fakeCodex('{"kind":"pass","reason":"looks fine"}'),
     })
 
     const verdict = await client.reason('some prompt')
 
-    expect(verdict).toEqual({ verdict: 'pass', reason: 'looks fine' })
+    expect(verdict).toEqual({ kind: 'pass', reason: 'looks fine' })
   })
 
   it('starts the thread with skipGitRepoCheck so the validator runs anywhere', async () => {
@@ -91,7 +91,7 @@ describe('codex', () => {
 
     const verdict = await client.reason('prompt')
 
-    expect(verdict.verdict).toBe('violation')
+    expect(verdict.kind).toBe('violation')
     expect(verdict.reason).toMatch(/codex CLI not found/)
   })
 })
@@ -108,7 +108,7 @@ function captureCodex() {
         run: (input?: string) => {
           state.lastRunInput = input
           return Promise.resolve({
-            finalResponse: '{"verdict":"pass","reason":""}',
+            finalResponse: '{"kind":"pass","reason":""}',
           })
         },
       }

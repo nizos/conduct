@@ -10,7 +10,7 @@ import { parseAs } from './utils/parse-as.js'
 import type { ResponseShape as ClaudeCodeResponse } from './vendors/claude-code/adapter.js'
 
 const stubAgent: Agent = {
-  reason: () => Promise.resolve({ verdict: 'pass', reason: '' }),
+  reason: () => Promise.resolve({ kind: 'pass', reason: '' }),
 }
 
 describe('cli', () => {

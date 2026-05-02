@@ -5,22 +5,22 @@ import { githubCopilot } from './agent.js'
 describe('githubCopilot', () => {
   it('returns the verdict parsed from the assistant message content', async () => {
     const client = githubCopilot({
-      client: fakeClient('{"verdict":"violation","reason":"no test"}'),
+      client: fakeClient('{"kind":"violation","reason":"no test"}'),
     })
 
     const verdict = await client.reason('some prompt')
 
-    expect(verdict).toEqual({ verdict: 'violation', reason: 'no test' })
+    expect(verdict).toEqual({ kind: 'violation', reason: 'no test' })
   })
 
   it('parses a distinct verdict from a different assistant response', async () => {
     const client = githubCopilot({
-      client: fakeClient('{"verdict":"pass","reason":"looks fine"}'),
+      client: fakeClient('{"kind":"pass","reason":"looks fine"}'),
     })
 
     const verdict = await client.reason('some prompt')
 
-    expect(verdict).toEqual({ verdict: 'pass', reason: 'looks fine' })
+    expect(verdict).toEqual({ kind: 'pass', reason: 'looks fine' })
   })
 
   it('forwards the rule prompt verbatim to session.sendAndWait', async () => {
@@ -86,7 +86,7 @@ describe('githubCopilot', () => {
 
     const verdict = await client.reason('prompt')
 
-    expect(verdict.verdict).toBe('violation')
+    expect(verdict.kind).toBe('violation')
     expect(verdict.reason).toMatch(/no response from copilot/i)
   })
 
@@ -105,7 +105,7 @@ describe('githubCopilot', () => {
 
     const verdict = await client.reason('prompt')
 
-    expect(verdict.verdict).toBe('violation')
+    expect(verdict.kind).toBe('violation')
     expect(verdict.reason).toMatch(/copilot CLI not authenticated/)
   })
 })
@@ -133,7 +133,7 @@ function captureCopilotClient() {
         sendAndWait: (options: { prompt: string }) => {
           state.lastSendAndWaitOptions = options
           return Promise.resolve({
-            data: { content: '{"verdict":"pass","reason":""}' },
+            data: { content: '{"kind":"pass","reason":""}' },
           })
         },
       })

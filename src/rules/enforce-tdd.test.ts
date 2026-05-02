@@ -12,7 +12,7 @@ describe('enforce-tdd', () => {
   it('blocks a write when the AI judges it violates TDD', async () => {
     const { rule, ctx } = setup({
       verdict: {
-        verdict: 'violation',
+        kind: 'violation',
         reason: 'No failing test drives this implementation.',
       },
     })
@@ -34,7 +34,7 @@ describe('enforce-tdd', () => {
 
   it('passes through command actions without calling the AI', async () => {
     const s = setup({
-      verdict: { verdict: 'violation', reason: 'should not be reached' },
+      verdict: { kind: 'violation', reason: 'should not be reached' },
     })
 
     const result = await s.rule(
@@ -191,7 +191,7 @@ describe('enforce-tdd', () => {
     )
 
     expect(s.capturedPrompt).toMatch(/failing test/i)
-    expect(s.capturedPrompt).toMatch(/verdict/i)
+    expect(s.capturedPrompt).toMatch(/kind/i)
     expect(s.capturedPrompt).toMatch(/reason/i)
   })
 
@@ -220,7 +220,7 @@ function setup(
     maxContentChars?: number
   } = {},
 ) {
-  const verdict = options.verdict ?? { verdict: 'pass' as const, reason: '' }
+  const verdict = options.verdict ?? { kind: 'pass' as const, reason: '' }
   const state = { agentCalled: false, capturedPrompt: '' }
   const events = options.history
   const ctx: RuleContext = {

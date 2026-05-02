@@ -26,7 +26,7 @@ export type Decision = { kind: 'allow' } | { kind: 'block'; reason: string }
  * The verdict an AI validator returns — the shape `Agent.reason`
  * resolves to and the shape rules use to decide pass vs violation.
  */
-export type Verdict = { verdict: 'pass' | 'violation'; reason: string }
+export type Verdict = { kind: 'pass' | 'violation'; reason: string }
 
 /**
  * The minimal AI-validator contract. Rules that need LLM judgment reach
