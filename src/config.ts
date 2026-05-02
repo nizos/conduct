@@ -29,7 +29,7 @@ export type RuleBlock = {
 export type RuleEntry = Rule | RuleBlock
 
 /**
- * A project's Conduct configuration.
+ * A project's Probity configuration.
  *
  * - `rules` — the active rules for the session. Entries can be flat
  *   rules or `{ files, rules }` blocks; blocks scope their rules to
@@ -47,13 +47,13 @@ export type Config = {
 }
 
 /**
- * Typed identity helper for `conduct.config.ts`. Wrap your exported
+ * Typed identity helper for `probity.config.ts`. Wrap your exported
  * config in this so editors provide autocomplete and type-check the
  * rule list. Has no runtime behavior — it exists solely so the default
  * export is inferred as `Config` without the user typing it.
  *
  * @example
- * import { defineConfig, enforceFilenameCasing } from '@nizos/conduct'
+ * import { defineConfig, enforceFilenameCasing } from '@nizos/probity'
  *
  * export default defineConfig({
  *   rules: [enforceFilenameCasing({ style: 'kebab-case' })],
@@ -63,11 +63,11 @@ export function defineConfig(config: Config): Config {
   return config
 }
 
-const CONFIG_BASENAME = 'conduct.config'
+const CONFIG_BASENAME = 'probity.config'
 const CONFIG_EXTENSIONS = ['ts', 'mts', 'js', 'mjs'] as const
 
 /**
- * Load a Conduct config file (TypeScript or JavaScript) from an absolute
+ * Load a Probity config file (TypeScript or JavaScript) from an absolute
  * path. Returns the default export. Backed by jiti so `.ts` configs run
  * without a build step. Block-level `files` globs are anchored against
  * the config's directory so they match `Action.path` (absolute POSIX)
@@ -100,7 +100,7 @@ function anchorGlob(glob: string, root: string): string {
 }
 
 /**
- * Walks up from `startDir` until it finds a `conduct.config.{ts,mts,js,mjs}`.
+ * Walks up from `startDir` until it finds a `probity.config.{ts,mts,js,mjs}`.
  * Throws with an error that lists the tried extensions if none is found —
  * the bin layer turns that throw into a fail-closed block so missing
  * configs don't silently allow.

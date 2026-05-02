@@ -26,10 +26,10 @@ type DenyResponse = {
 describe('github-copilot-chat adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
     const result = parseAction({
-      cwd: '/workspaces/conduct',
+      cwd: '/workspaces/probity',
       tool_name: 'create_file',
       tool_input: {
-        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        filePath: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -38,7 +38,7 @@ describe('github-copilot-chat adapter', () => {
       ok: true,
       action: {
         kind: 'write',
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -94,7 +94,7 @@ describe('github-copilot-chat adapter', () => {
     const { action, payload } = setup('pre-create-file.json')
 
     expect(action).toMatchObject({
-      path: '/workspaces/conduct/src/shopping-cart.test.ts',
+      path: '/workspaces/probity/src/shopping-cart.test.ts',
       content: payload.tool_input.content,
     })
   })
@@ -109,7 +109,7 @@ describe('github-copilot-chat adapter', () => {
     const { action, payload } = setup('pre-replace-string-in-file.json')
 
     expect(action).toMatchObject({
-      path: '/workspaces/conduct/src/shopping-cart.test.ts',
+      path: '/workspaces/probity/src/shopping-cart.test.ts',
       content: payload.tool_input.newString,
     })
   })
@@ -117,10 +117,10 @@ describe('github-copilot-chat adapter', () => {
   it('preserves an absolute create_file filePath emitted by the agent', () => {
     const action = ok(
       parseAction({
-        cwd: '/workspaces/conduct',
+        cwd: '/workspaces/probity',
         tool_name: 'create_file',
         tool_input: {
-          filePath: '/workspaces/conduct/src/UpperCase.ts',
+          filePath: '/workspaces/probity/src/UpperCase.ts',
           content: 'x',
         },
       }),
@@ -128,7 +128,7 @@ describe('github-copilot-chat adapter', () => {
 
     expect(action).toMatchObject({
       kind: 'write',
-      path: '/workspaces/conduct/src/UpperCase.ts',
+      path: '/workspaces/probity/src/UpperCase.ts',
     })
   })
 
@@ -136,7 +136,7 @@ describe('github-copilot-chat adapter', () => {
     const result = parseAction({
       tool_name: 'create_file',
       tool_input: {
-        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        filePath: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -148,7 +148,7 @@ describe('github-copilot-chat adapter', () => {
     const result = parseAction({
       tool_name: 'replace_string_in_file',
       tool_input: {
-        filePath: '/workspaces/conduct/src/UpperCase.ts',
+        filePath: '/workspaces/probity/src/UpperCase.ts',
         newString: 'x',
       },
     })

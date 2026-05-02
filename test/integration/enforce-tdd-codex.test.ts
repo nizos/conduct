@@ -12,7 +12,7 @@ import { expectDecision } from './expect-decision.js'
 
 type CodexResponse = Partial<ResponseShape>
 
-const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
+const runAi = process.env.PROBITY_INTEGRATION_AI === '1'
 
 describe.skipIf(!runAi)(
   'enforce-tdd + codex (integration with real AI)',
@@ -88,7 +88,7 @@ async function setup(opts: {
     session_id: 'integration-codex',
     turn_id: 'integration-codex-turn',
     transcript_path: opts.transcript,
-    cwd: '/workspaces/conduct',
+    cwd: '/workspaces/probity',
     hook_event_name: 'PreToolUse',
     model: 'gpt-5.5',
     permission_mode: 'default',

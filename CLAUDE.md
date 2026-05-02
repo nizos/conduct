@@ -1,4 +1,4 @@
-# Conduct
+# Probity
 
 Process discipline for coding agents. A vendor-agnostic policy engine that sits between the agent and the codebase, evaluating each attempted action against configurable rules and blocking, modifying, or allowing it, and providing correction and guidance.
 
@@ -17,4 +17,4 @@ Process discipline for coding agents. A vendor-agnostic policy engine that sits 
 - `src/registry.ts` — vendor entries (adapter + agent + transcript per vendor)
 - `src/{cli,bin,config,engine,index}.ts` — application wiring
 - `test/fixtures/` — captured hook payloads and transcript fixtures
-- `test/integration/` — integration tests (gated on `CONDUCT_INTEGRATION_AI=1`)
+- `test/integration/` — integration tests (gated on `PROBITY_INTEGRATION_AI=1`)

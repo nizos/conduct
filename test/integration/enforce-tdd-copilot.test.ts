@@ -10,7 +10,7 @@ import { enforceTdd } from '../../src/rules/enforce-tdd.js'
 import { parseAs } from '../../src/utils/parse-as.js'
 import { expectDecision } from './expect-decision.js'
 
-const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
+const runAi = process.env.PROBITY_INTEGRATION_AI === '1'
 
 const CLEAN_SESSION = 'integration-copilot-tdd-clean'
 const NO_RUN_SESSION = 'integration-copilot-tdd-no-run'
@@ -74,7 +74,7 @@ async function setup(opts: {
   pendingContent: string
   beforeFile?: string
 }): Promise<{ decision: string; reason?: string }> {
-  const home = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-tdd-'))
+  const home = await mkdtemp(path.join(tmpdir(), 'probity-copilot-tdd-'))
   for (const [session, fixture] of [
     [CLEAN_SESSION, 'copilot-tdd-clean.jsonl'],
     [NO_RUN_SESSION, 'copilot-tdd-no-test-run.jsonl'],
@@ -89,7 +89,7 @@ async function setup(opts: {
   }
   const prevHome = process.env.COPILOT_HOME
   process.env.COPILOT_HOME = home
-  const fileDir = await mkdtemp(path.join(tmpdir(), 'conduct-copilot-file-'))
+  const fileDir = await mkdtemp(path.join(tmpdir(), 'probity-copilot-file-'))
   onTestFinished(async () => {
     if (prevHome === undefined) delete process.env.COPILOT_HOME
     else process.env.COPILOT_HOME = prevHome
@@ -103,7 +103,7 @@ async function setup(opts: {
   const payload = JSON.stringify({
     sessionId: opts.sessionId,
     timestamp: Date.now(),
-    cwd: '/workspaces/conduct',
+    cwd: '/workspaces/probity',
     toolName: 'create',
     toolArgs: JSON.stringify({
       path: filePath,

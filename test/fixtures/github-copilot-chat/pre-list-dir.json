@@ -5,8 +5,8 @@
   "transcript_path": "/tmp/copilot-chat-transcript.jsonl",
   "tool_name": "list_dir",
   "tool_input": {
-    "path": "/workspaces/conduct/src"
+    "path": "/workspaces/probity/src"
   },
   "tool_use_id": "call_tXbuwvnUavXTXCqloKhSBQ0c",
-  "cwd": "/workspaces/conduct"
+  "cwd": "/workspaces/probity"
 }

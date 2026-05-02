@@ -17,10 +17,10 @@ type Payload = {
 describe('github-copilot adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
     const result = parseAction({
-      cwd: '/workspaces/conduct',
+      cwd: '/workspaces/probity',
       toolName: 'create',
       toolArgs: JSON.stringify({
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         file_text: 'x',
       }),
     })
@@ -29,7 +29,7 @@ describe('github-copilot adapter', () => {
       ok: true,
       action: {
         kind: 'write',
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -83,7 +83,7 @@ describe('github-copilot adapter', () => {
     const args = parseAs<{ path: string; file_text: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({
-      path: '/workspaces/conduct/test/calculator.test.ts',
+      path: '/workspaces/probity/test/calculator.test.ts',
       content: args.file_text,
     })
   })
@@ -93,7 +93,7 @@ describe('github-copilot adapter', () => {
     const args = parseAs<{ path: string; new_str: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({
-      path: '/workspaces/conduct/test/calculator.test.ts',
+      path: '/workspaces/probity/test/calculator.test.ts',
       content: args.new_str,
     })
   })
@@ -101,10 +101,10 @@ describe('github-copilot adapter', () => {
   it('preserves an absolute create path emitted by the agent', () => {
     const action = ok(
       parseAction({
-        cwd: '/workspaces/conduct',
+        cwd: '/workspaces/probity',
         toolName: 'create',
         toolArgs: JSON.stringify({
-          path: '/workspaces/conduct/src/UpperCase.ts',
+          path: '/workspaces/probity/src/UpperCase.ts',
           file_text: 'x',
         }),
       }),
@@ -112,7 +112,7 @@ describe('github-copilot adapter', () => {
 
     expect(action).toMatchObject({
       kind: 'write',
-      path: '/workspaces/conduct/src/UpperCase.ts',
+      path: '/workspaces/probity/src/UpperCase.ts',
     })
   })
 
@@ -120,7 +120,7 @@ describe('github-copilot adapter', () => {
     const result = parseAction({
       toolName: 'create',
       toolArgs: JSON.stringify({
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         file_text: 'x',
       }),
     })
@@ -132,7 +132,7 @@ describe('github-copilot adapter', () => {
     const result = parseAction({
       toolName: 'edit',
       toolArgs: JSON.stringify({
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         new_str: 'x',
       }),
     })

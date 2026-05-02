@@ -55,13 +55,13 @@ describe('loadConfig', () => {
 })
 
 describe('findConfig', () => {
-  it('walks up from the start dir until it finds conduct.config.ts', () => {
+  it('walks up from the start dir until it finds probity.config.ts', () => {
     const startDir = path.resolve('test/fixtures/config/discovery/subdir')
 
     const result = findConfig(startDir)
 
     expect(result).toBe(
-      path.resolve('test/fixtures/config/discovery/conduct.config.ts'),
+      path.resolve('test/fixtures/config/discovery/probity.config.ts'),
     )
   })
 
@@ -71,13 +71,13 @@ describe('findConfig', () => {
     const result = findConfig(startDir)
 
     expect(result).toBe(
-      path.resolve('test/fixtures/config/discovery-js/conduct.config.js'),
+      path.resolve('test/fixtures/config/discovery-js/probity.config.js'),
     )
   })
 
   it('throws with all tried extensions listed when no config is found', () => {
     expect(() => findConfig('/tmp')).toThrow(
-      /conduct\.config\.\{ts,mts,js,mjs\}/,
+      /probity\.config\.\{ts,mts,js,mjs\}/,
     )
   })
 })

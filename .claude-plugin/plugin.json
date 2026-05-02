@@ -1,12 +1,12 @@
 {
-  "name": "conduct",
+  "name": "probity",
   "description": "Process discipline for AI coding agents — TDD enforcement and policies.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Nizar Selander"
   },
-  "homepage": "https://github.com/nizos/conduct",
-  "repository": "https://github.com/nizos/conduct",
+  "homepage": "https://github.com/nizos/probity",
+  "repository": "https://github.com/nizos/probity",
   "license": "MIT",
   "keywords": [
     "claude-code",

@@ -134,7 +134,7 @@ describe('github-copilot-chat transcript', () => {
   })
 
   it('returns prompts and actions with empty outputs when the chatSessions file is missing', async () => {
-    const dir = await mkdtemp(path.join(tmpdir(), 'conduct-transcript-'))
+    const dir = await mkdtemp(path.join(tmpdir(), 'probity-transcript-'))
     onTestFinished(async () => {
       await rm(dir, { recursive: true, force: true })
     })

@@ -2,7 +2,7 @@
   "session_id": "019dc044-d25f-7313-833b-077b6298f1b4",
   "turn_id": "019dc046-8359-7092-bb35-3dd4913b3d2b",
   "transcript_path": "/tmp/codex-rollout.jsonl",
-  "cwd": "/workspaces/conduct",
+  "cwd": "/workspaces/probity",
   "hook_event_name": "UserPromptSubmit",
   "model": "gpt-5.4",
   "permission_mode": "default",

@@ -14,7 +14,7 @@ import type { ResponseShape as CodexResponse } from '../../src/vendors/codex/ada
 
 const CONFIG_FIXTURE = 'test/fixtures/configs/kebab-only.config.ts'
 
-describe('conduct cli (integration)', () => {
+describe('probity cli (integration)', () => {
   it('blocks a write that violates the configured rules', async () => {
     const { getResponse } = await setup({
       payloadFixture: 'test/fixtures/claude-code/write-new-file.json',
@@ -106,11 +106,11 @@ describe('conduct cli (integration)', () => {
   )
 
   it('runs main() when invoked via a symlink (the npx case)', async () => {
-    const dir = await mkdtemp(path.join(tmpdir(), 'conduct-bin-link-'))
+    const dir = await mkdtemp(path.join(tmpdir(), 'probity-bin-link-'))
     onTestFinished(async () => {
       await rm(dir, { recursive: true, force: true })
     })
-    const link = path.join(dir, 'conduct')
+    const link = path.join(dir, 'probity')
     symlinkSync(path.resolve('dist/bin.js'), link)
 
     const { getRawStdout } = await setup({
@@ -127,10 +127,10 @@ describe('conduct cli (integration)', () => {
     const filePath = path.join(example, 'src', 'foo.ts')
     await mkdir(path.dirname(filePath), { recursive: true })
 
-    const configPath = path.join(projectRoot, 'conduct.config.ts')
+    const configPath = path.join(projectRoot, 'probity.config.ts')
     await writeFile(
       configPath,
-      buildConductConfig(`[{
+      buildProbityConfig(`[{
         files: ['example/src/**'],
         rules: [forbidContentPattern({ match: /./, reason: 'edge-case rule fired' })],
       }]`),
@@ -211,7 +211,7 @@ function resolvePayload(options: SetupOptions): string {
 // Wraps a `defineConfig({...})` body in the boilerplate every test
 // config needs (the import line + the default export). The argument is
 // the rule entries — usually a `RuleEntry[]` literal as text.
-function buildConductConfig(rules: string): string {
+function buildProbityConfig(rules: string): string {
   const dist = path.resolve('dist/index.js')
   return `import { defineConfig, enforceFilenameCasing, enforceTdd, forbidCommandPattern, forbidContentPattern } from '${dist}'
 
@@ -235,7 +235,7 @@ function buildClaudeCodeWritePayload(opts: {
 }
 
 async function createScratchDir(): Promise<string> {
-  const root = await mkdtemp(path.join(tmpdir(), 'conduct-e2e-'))
+  const root = await mkdtemp(path.join(tmpdir(), 'probity-e2e-'))
   onTestFinished(async () => {
     await rm(root, { recursive: true, force: true })
   })

@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to Conduct. Contributions of all kinds are welcome and appreciated, whether it's fixing a bug, improving documentation, or proposing a new feature.
+Thank you for your interest in contributing to Probity. Contributions of all kinds are welcome and appreciated, whether it's fixing a bug, improving documentation, or proposing a new feature.
 
 These guidelines exist to help your contributions land smoothly and increase the chances of your work being merged quickly.
 

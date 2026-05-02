@@ -24,14 +24,14 @@ const PACKAGE_JSON = JSON.parse(
 
 const VERSION = PACKAGE_JSON.version
 
-const HELP = `conduct ${VERSION}
+const HELP = `probity ${VERSION}
 ${PACKAGE_JSON.description ?? 'Process discipline for coding agents.'}
 
 Usage:
-  conduct --agent <vendor> < <hook-payload-json>
+  probity --agent <vendor> < <hook-payload-json>
 
 Reads a hook payload from stdin, dispatches it through the rules
-configured in conduct.config.ts, and writes the vendor's response
+configured in probity.config.ts, and writes the vendor's response
 format to stdout.
 
 Vendors:
@@ -40,11 +40,11 @@ Vendors:
 Options:
   --agent <vendor>  Required. The host coding agent.
   --config <path>   Load rules from <path> instead of auto-discovering
-                    conduct.config.ts.
+                    probity.config.ts.
   --version         Print the package version and exit.
   --help            Print this help and exit.
 
-Repo: ${PACKAGE_JSON.homepage ?? 'https://github.com/nizos/conduct'}
+Repo: ${PACKAGE_JSON.homepage ?? 'https://github.com/nizos/probity'}
 `
 
 export type MainResult = {
@@ -85,11 +85,11 @@ export async function main(args: {
     const reason = error instanceof Error ? error.message : String(error)
     const block = entry.adapter.toResponse({
       kind: 'block',
-      reason: `conduct: ${reason}`,
+      reason: `probity: ${reason}`,
     })
     return {
       stdout: block,
-      stderr: `conduct: ${reason}\n`,
+      stderr: `probity: ${reason}\n`,
       exitCode: 0,
     }
   }

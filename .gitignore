@@ -31,8 +31,8 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
-# Conduct session state (runtime-only)
-.conduct/
+# Probity session state (runtime-only)
+.probity/
 
 # Internal docs (vision, plans, design notes, scratch)
 docs/internal/

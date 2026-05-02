@@ -5,12 +5,12 @@
   "transcript_path": "/tmp/copilot-chat-transcript.jsonl",
   "tool_name": "run_in_terminal",
   "tool_input": {
-    "command": "cd /workspaces/conduct && npm test -- --run src/shopping-cart.test.ts",
+    "command": "cd /workspaces/probity && npm test -- --run src/shopping-cart.test.ts",
     "explanation": "Run the initial Vitest test to see the first failure before implementing the shopping cart.",
     "goal": "Execute first TDD cycle test",
     "mode": "sync",
     "timeout": 100000
   },
   "tool_use_id": "call_uezznjZjW7Nb1EYdiG7wwPvV",
-  "cwd": "/workspaces/conduct"
+  "cwd": "/workspaces/probity"
 }

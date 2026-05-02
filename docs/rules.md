@@ -1,6 +1,6 @@
 # Rules
 
-Conduct ships four built-in rules. Each is a factory called with its options in `conduct.config.ts`.
+Probity ships four built-in rules. Each is a factory called with its options in `probity.config.ts`.
 
 ## enforceTdd
 

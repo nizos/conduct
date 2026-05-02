@@ -1,6 +1,6 @@
-# Conduct Development Container
+# Probity Development Container
 
-A consistent dev environment for working on Conduct.
+A consistent dev environment for working on Probity.
 
 ## What's Inside
 

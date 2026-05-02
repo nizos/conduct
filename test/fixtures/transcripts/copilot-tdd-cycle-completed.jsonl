@@ -1,10 +1,10 @@
 {"type":"session.start","data":{"sessionId":"integration-cycle-completed"}}
 {"type":"user.message","data":{"content":"Build a calculator module with an add function. Follow TDD."}}
-{"type":"tool.execution_start","data":{"toolCallId":"call_create_test","toolName":"create","arguments":{"path":"/workspaces/conduct/src/calculator.test.ts","file_text":"import { describe, it, expect } from 'vitest';\nimport { add } from '../src/calculator';\n\ndescribe('calculator', () => {\n  it('adds two numbers', () => {\n    expect(add(2, 3)).toBe(5);\n  });\n});\n"}}}
+{"type":"tool.execution_start","data":{"toolCallId":"call_create_test","toolName":"create","arguments":{"path":"/workspaces/probity/src/calculator.test.ts","file_text":"import { describe, it, expect } from 'vitest';\nimport { add } from '../src/calculator';\n\ndescribe('calculator', () => {\n  it('adds two numbers', () => {\n    expect(add(2, 3)).toBe(5);\n  });\n});\n"}}}
 {"type":"tool.execution_complete","data":{"toolCallId":"call_create_test","result":{"content":"Created file src/calculator.test.ts"}}}
 {"type":"tool.execution_start","data":{"toolCallId":"call_test_red","toolName":"bash","arguments":{"command":"npm test"}}}
 {"type":"tool.execution_complete","data":{"toolCallId":"call_test_red","result":{"content":"FAIL src/calculator.test.ts\n  calculator > adds two numbers\n    Error: Cannot find module './calculator'\n\n Test Files 1 failed\n      Tests 1 failed"}}}
-{"type":"tool.execution_start","data":{"toolCallId":"call_create_impl","toolName":"create","arguments":{"path":"/workspaces/conduct/src/calculator.ts","file_text":"export function add(a: number, b: number): number {\n  return a + b;\n}\n"}}}
+{"type":"tool.execution_start","data":{"toolCallId":"call_create_impl","toolName":"create","arguments":{"path":"/workspaces/probity/src/calculator.ts","file_text":"export function add(a: number, b: number): number {\n  return a + b;\n}\n"}}}
 {"type":"tool.execution_complete","data":{"toolCallId":"call_create_impl","result":{"content":"Created file src/calculator.ts"}}}
 {"type":"tool.execution_start","data":{"toolCallId":"call_test_green","toolName":"bash","arguments":{"command":"npm test"}}}
 {"type":"tool.execution_complete","data":{"toolCallId":"call_test_green","result":{"content":"PASS src/calculator.test.ts\n  calculator > adds two numbers\n\n Test Files 1 passed\n      Tests 1 passed"}}}

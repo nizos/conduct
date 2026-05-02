@@ -21,11 +21,11 @@ type Payload = {
 describe('codex adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
     const result = parseAction({
-      cwd: '/workspaces/conduct',
+      cwd: '/workspaces/probity',
       tool_name: 'apply_patch',
       tool_input: {
         command:
-          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+          '*** Begin Patch\n*** Add File: /workspaces/probity/src/UpperCase.ts\n+x\n*** End Patch\n',
       },
     })
 
@@ -33,9 +33,9 @@ describe('codex adapter', () => {
       ok: true,
       action: {
         kind: 'write',
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         content:
-          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+          '*** Begin Patch\n*** Add File: /workspaces/probity/src/UpperCase.ts\n+x\n*** End Patch\n',
       },
     })
   })
@@ -94,7 +94,7 @@ describe('codex adapter', () => {
 
     expect(action.kind).toBe('write')
     if (action.kind !== 'write') throw new Error('expected write')
-    expect(action.path).toBe('/workspaces/conduct/src/calculator.ts')
+    expect(action.path).toBe('/workspaces/probity/src/calculator.ts')
     expect(action.content).toContain('*** Begin Patch')
     expect(action.content).toContain('*** Add File:')
   })
@@ -102,18 +102,18 @@ describe('codex adapter', () => {
   it('preserves an absolute apply_patch header path emitted by the agent', () => {
     const action = ok(
       parseAction({
-        cwd: '/workspaces/conduct',
+        cwd: '/workspaces/probity',
         tool_name: 'apply_patch',
         tool_input: {
           command:
-            '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+            '*** Begin Patch\n*** Add File: /workspaces/probity/src/UpperCase.ts\n+x\n*** End Patch\n',
         },
       }),
     )
 
     expect(action).toMatchObject({
       kind: 'write',
-      path: '/workspaces/conduct/src/UpperCase.ts',
+      path: '/workspaces/probity/src/UpperCase.ts',
     })
   })
 
@@ -122,7 +122,7 @@ describe('codex adapter', () => {
       tool_name: 'apply_patch',
       tool_input: {
         command:
-          '*** Begin Patch\n*** Add File: /workspaces/conduct/src/UpperCase.ts\n+x\n*** End Patch\n',
+          '*** Begin Patch\n*** Add File: /workspaces/probity/src/UpperCase.ts\n+x\n*** End Patch\n',
       },
     })
 

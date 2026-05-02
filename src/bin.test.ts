@@ -48,7 +48,7 @@ describe('bin main', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toMatch(/Usage:/)
-    expect(result.stdout).toContain('github.com/nizos/conduct')
+    expect(result.stdout).toContain('github.com/nizos/probity')
   })
 
   it('lists --config in the --help output', async () => {

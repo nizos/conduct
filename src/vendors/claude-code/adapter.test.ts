@@ -26,10 +26,10 @@ type Payload = {
 describe('claude-code adapter', () => {
   it('parseAction returns an ok result with the typed action for a valid payload', () => {
     const result = parseAction({
-      cwd: '/workspaces/conduct',
+      cwd: '/workspaces/probity',
       tool_name: 'Write',
       tool_input: {
-        file_path: '/workspaces/conduct/src/UpperCase.ts',
+        file_path: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -38,7 +38,7 @@ describe('claude-code adapter', () => {
       ok: true,
       action: {
         kind: 'write',
-        path: '/workspaces/conduct/src/UpperCase.ts',
+        path: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -48,7 +48,7 @@ describe('claude-code adapter', () => {
     const { action } = setup('write-new-file.json')
 
     expect(action).toMatchObject({
-      path: '/workspaces/conduct/src/userProfile.ts',
+      path: '/workspaces/probity/src/userProfile.ts',
     })
   })
 
@@ -85,16 +85,16 @@ describe('claude-code adapter', () => {
   it('extracts the file path from an Edit payload as an absolute POSIX path', () => {
     const { action } = setup('edit-file.json')
 
-    expect(action).toMatchObject({ path: '/workspaces/conduct/README.md' })
+    expect(action).toMatchObject({ path: '/workspaces/probity/README.md' })
   })
 
   it('preserves an absolute file_path emitted by the agent', () => {
     const action = ok(
       parseAction({
-        cwd: '/workspaces/conduct',
+        cwd: '/workspaces/probity',
         tool_name: 'Write',
         tool_input: {
-          file_path: '/workspaces/conduct/src/UpperCase.ts',
+          file_path: '/workspaces/probity/src/UpperCase.ts',
           content: 'x',
         },
       }),
@@ -102,7 +102,7 @@ describe('claude-code adapter', () => {
 
     expect(action).toMatchObject({
       kind: 'write',
-      path: '/workspaces/conduct/src/UpperCase.ts',
+      path: '/workspaces/probity/src/UpperCase.ts',
     })
   })
 
@@ -110,7 +110,7 @@ describe('claude-code adapter', () => {
     const result = parseAction({
       tool_name: 'Write',
       tool_input: {
-        file_path: '/workspaces/conduct/src/UpperCase.ts',
+        file_path: '/workspaces/probity/src/UpperCase.ts',
         content: 'x',
       },
     })
@@ -121,7 +121,7 @@ describe('claude-code adapter', () => {
   it('preserves an absolute file_path even when it sits outside cwd', () => {
     const action = ok(
       parseAction({
-        cwd: '/workspaces/conduct',
+        cwd: '/workspaces/probity',
         tool_name: 'Write',
         tool_input: { file_path: '/etc/passwd', content: 'x' },
       }),

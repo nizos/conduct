@@ -10,7 +10,7 @@ import { parseAs } from '../../src/utils/parse-as.js'
 import type { ResponseShape as ClaudeCodeResponse } from '../../src/vendors/claude-code/adapter.js'
 import { expectDecision } from './expect-decision.js'
 
-const runAi = process.env.CONDUCT_INTEGRATION_AI === '1'
+const runAi = process.env.PROBITY_INTEGRATION_AI === '1'
 
 describe.skipIf(!runAi)('enforce-tdd (integration with real AI)', () => {
   it('allows clean TDD with minimal implementation', async () => {
@@ -83,7 +83,7 @@ async function setup(opts: {
   const payload = JSON.stringify({
     session_id: 'integration',
     transcript_path: opts.transcript,
-    cwd: '/workspaces/conduct',
+    cwd: '/workspaces/probity',
     hook_event_name: 'PreToolUse',
     tool_name: 'Write',
     tool_input: { file_path: filePath, content: opts.pendingContent },

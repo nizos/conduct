@@ -1,14 +1,14 @@
 # Configuration
 
-Conduct loads its config from a `conduct.config` file in your project. The file declares the active rules and, optionally, overrides the AI validator.
+Probity loads its config from a `probity.config` file in your project. The file declares the active rules and, optionally, overrides the AI validator.
 
 ## File location
 
-Conduct looks for a `conduct.config` file at your project root, walking up from the current directory. Supported extensions are `.ts`, `.mts`, `.js`, and `.mjs`. If none is found, conduct fails closed and the action is blocked.
+Probity looks for a `probity.config` file at your project root, walking up from the current directory. Supported extensions are `.ts`, `.mts`, `.js`, and `.mjs`. If none is found, probity fails closed and the action is blocked.
 
 ```ts
-// conduct.config.ts
-import { defineConfig, enforceTdd } from '@nizos/conduct'
+// probity.config.ts
+import { defineConfig, enforceTdd } from '@nizos/probity'
 
 export default defineConfig({
   rules: [
@@ -29,16 +29,16 @@ See [Rules](rules.md) for the built-in catalog.
 
 ## The `ai` override
 
-Conduct's default AI validator pairs with the agent selected by `--agent` (e.g. the Claude Agent SDK for `claude-code`) and piggybacks on the user's logged-in session. To use a different model or provider, set `ai` on the config; the value must implement `{ reason: (prompt: string) => Promise<Verdict> }`.
+Probity's default AI validator pairs with the agent selected by `--agent` (e.g. the Claude Agent SDK for `claude-code`) and piggybacks on the user's logged-in session. To use a different model or provider, set `ai` on the config; the value must implement `{ reason: (prompt: string) => Promise<Verdict> }`.
 
 The host coding agent itself is selected by the `--agent` CLI flag, not by the config — that keeps the same config portable across vendors.
 
 ## Overriding the file location
 
-Pass `--config` to point conduct at a specific file instead of using walk-up resolution:
+Pass `--config` to point probity at a specific file instead of using walk-up resolution:
 
 ```
-conduct --agent claude-code --config ./tooling/conduct.config.ts < payload.json
+probity --agent claude-code --config ./tooling/probity.config.ts < payload.json
 ```
 
 The path is resolved against the current working directory.
@@ -48,8 +48,8 @@ The path is resolved against the current working directory.
 A rule is a function from action and context to result. Listed flat in `rules`, it runs against every action (writes and commands) and self-filters; wrapped in a `{ files, rules }` block, the `files` glob narrows writes by path.
 
 ```ts
-// conduct.config.ts
-import { defineConfig, type Rule } from '@nizos/conduct'
+// probity.config.ts
+import { defineConfig, type Rule } from '@nizos/probity'
 
 const noTodoComments: Rule = (action) => {
   if (action.kind !== 'write') return { kind: 'pass' }

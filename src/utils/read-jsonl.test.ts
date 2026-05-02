@@ -31,7 +31,7 @@ describe('readJsonl', () => {
 })
 
 async function setupTempDir(): Promise<string> {
-  const dir = await mkdtemp(path.join(tmpdir(), 'conduct-read-jsonl-'))
+  const dir = await mkdtemp(path.join(tmpdir(), 'probity-read-jsonl-'))
   onTestFinished(async () => {
     await rm(dir, { recursive: true, force: true })
   })

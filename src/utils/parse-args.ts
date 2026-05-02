@@ -13,7 +13,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   if (agentIdx === -1) {
     return {
       kind: 'error',
-      stderr: 'conduct: --agent is missing\n',
+      stderr: 'probity: --agent is missing\n',
       exitCode: 2,
     }
   }
@@ -22,7 +22,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     const known = Object.keys(vendors).join(', ')
     return {
       kind: 'error',
-      stderr: `conduct: --agent ${String(agentArg)} is not a known agent. Expected one of: ${known}\n`,
+      stderr: `probity: --agent ${String(agentArg)} is not a known agent. Expected one of: ${known}\n`,
       exitCode: 2,
     }
   }
@@ -32,7 +32,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     if (next === undefined || next.startsWith('--')) {
       return {
         kind: 'error',
-        stderr: 'conduct: --config is missing its path\n',
+        stderr: 'probity: --config is missing its path\n',
         exitCode: 2,
       }
     }

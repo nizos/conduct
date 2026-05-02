@@ -5,10 +5,10 @@
   "transcript_path": "/tmp/copilot-chat-transcript.jsonl",
   "tool_name": "replace_string_in_file",
   "tool_input": {
-    "filePath": "/workspaces/conduct/src/shopping-cart.test.ts",
+    "filePath": "/workspaces/probity/src/shopping-cart.test.ts",
     "oldString": "describe('ShoppingCart', () => {\n  it('starts empty with zero subtotal and zero total', () => {\n    const cart = new ShoppingCart()\n\n    expect(cart.items()).toEqual([])\n    expect(cart.subtotal()).toBe(0)\n    expect(cart.total()).toBe(0)\n  })\n})\n",
     "newString": "describe('ShoppingCart', () => {\n  it('starts empty with zero subtotal and zero total', () => {\n    const cart = new ShoppingCart()\n\n    expect(cart.items()).toEqual([])\n    expect(cart.subtotal()).toBe(0)\n    expect(cart.total()).toBe(0)\n  })\n\n  it('can add an item and compute subtotal', () => {\n    const cart = new ShoppingCart()\n\n    cart.addItem({\n      productId: 'book-1',\n      name: 'Book',\n      price: 29.99,\n      quantity: 3,\n    })\n\n    expect(cart.items()).toEqual([\n      {\n        productId: 'book-1',\n        name: 'Book',\n        price: 29.99,\n        quantity: 3,\n      },\n    ])\n    expect(cart.subtotal()).toBeCloseTo(89.97)\n    expect(cart.total()).toBeCloseTo(89.97)\n  })\n})\n"
   },
   "tool_use_id": "call_bqYAQ7UsUGLU0a1LzawpVKSN",
-  "cwd": "/workspaces/conduct"
+  "cwd": "/workspaces/probity"
 }

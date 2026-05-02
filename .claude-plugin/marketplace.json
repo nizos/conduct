@@ -1,11 +1,11 @@
 {
-  "name": "conduct",
+  "name": "probity",
   "owner": {
     "name": "Nizar Selander"
   },
   "plugins": [
     {
-      "name": "conduct",
+      "name": "probity",
       "source": "./",
       "description": "Process discipline for AI coding agents — TDD enforcement and policies."
     }

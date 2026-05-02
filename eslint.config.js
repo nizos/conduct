@@ -11,7 +11,7 @@ export default [
       parserOptions: {
         projectService: {
           allowDefaultProject: [
-            'conduct.config.ts',
+            'probity.config.ts',
             'eslint.config.js',
             'vitest.config.ts',
           ],

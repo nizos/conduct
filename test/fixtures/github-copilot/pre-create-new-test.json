@@ -1,7 +1,7 @@
 {
   "sessionId": "56c13b41-a711-40e3-a16d-e911c1340791",
   "timestamp": 1777047481179,
-  "cwd": "/workspaces/conduct",
+  "cwd": "/workspaces/probity",
   "toolName": "create",
-  "toolArgs": "{\"path\":\"/workspaces/conduct/test/calculator.test.ts\",\"file_text\":\"import { describe, it, expect } from 'vitest';\\nimport { add } from '../src/calculator';\\n\\ndescribe('calculator', () => {\\n  it('adds two numbers', () => {\\n    expect(add(1, 2)).toBe(3);\\n  });\\n});\\n\"}"
+  "toolArgs": "{\"path\":\"/workspaces/probity/test/calculator.test.ts\",\"file_text\":\"import { describe, it, expect } from 'vitest';\\nimport { add } from '../src/calculator';\\n\\ndescribe('calculator', () => {\\n  it('adds two numbers', () => {\\n    expect(add(1, 2)).toBe(3);\\n  });\\n});\\n\"}"
 }

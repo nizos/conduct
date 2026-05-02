@@ -1,5 +1,5 @@
 {
-  "name": "Conduct",
+  "name": "Probity",
   "build": {
     "dockerfile": "Dockerfile"
   },
@@ -12,7 +12,7 @@
     }
   },
   "mounts": [
-    "source=conduct-claude-config-${devcontainerId},target=/home/node/.claude,type=volume"
+    "source=probity-claude-config-${devcontainerId},target=/home/node/.claude,type=volume"
   ],
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/node/.claude"

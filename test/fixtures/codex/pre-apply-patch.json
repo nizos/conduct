@@ -2,13 +2,13 @@
   "session_id": "019dc40e-f504-7a10-b9f7-2a2ecc35451e",
   "turn_id": "019dc40f-164a-7751-b250-9c06f6368ed1",
   "transcript_path": "/tmp/codex-rollout.jsonl",
-  "cwd": "/workspaces/conduct",
+  "cwd": "/workspaces/probity",
   "hook_event_name": "PreToolUse",
   "model": "gpt-5.5",
   "permission_mode": "default",
   "tool_name": "apply_patch",
   "tool_input": {
-    "command": "*** Begin Patch\n*** Add File: /workspaces/conduct/src/calculator.ts\n+export function add(a: number, b: number): number {\n+  return a + b\n+}\n*** End Patch\n"
+    "command": "*** Begin Patch\n*** Add File: /workspaces/probity/src/calculator.ts\n+export function add(a: number, b: number): number {\n+  return a + b\n+}\n*** End Patch\n"
   },
   "tool_use_id": "call_fVGx6krVSkCy0zxxsl9Ndxd0"
 }

@@ -1,22 +1,22 @@
 # Setup
 
-Install conduct as a dev dependency, then wire it into your agent's hook system. Each vendor's section below shows the config to add.
+Install probity as a dev dependency, then wire it into your agent's hook system. Each vendor's section below shows the config to add.
 
 ```
-npm install -D @nizos/conduct
+npm install -D @nizos/probity
 ```
 
-For non-Node projects (C++, PHP, Python, etc.), install globally with `npm install -g @nizos/conduct` instead.
+For non-Node projects (C++, PHP, Python, etc.), install globally with `npm install -g @nizos/probity` instead.
 
 ## Claude Code
 
 ### Recommended: install via plugin
 
-Two commands wire conduct into Claude Code's hook system, no manual config edit:
+Two commands wire probity into Claude Code's hook system, no manual config edit:
 
 ```
-/plugin marketplace add nizos/conduct
-/plugin install conduct@conduct
+/plugin marketplace add nizos/probity
+/plugin install probity@probity
 ```
 
 The plugin ships the `PreToolUse` hook with the matcher `Bash|Write|Edit`, which covers commands and file modifications.
@@ -34,7 +34,7 @@ If you'd rather wire the hook yourself, add a `PreToolUse` entry to `.claude/set
         "hooks": [
           {
             "type": "command",
-            "command": "npx @nizos/conduct --agent claude-code"
+            "command": "npx @nizos/probity --agent claude-code"
           }
         ]
       }
@@ -67,7 +67,7 @@ Then add a `PreToolUse` hook in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "npx @nizos/conduct --agent codex"
+            "command": "npx @nizos/probity --agent codex"
           }
         ]
       }
@@ -82,7 +82,7 @@ Further reading: [Codex's hooks documentation](https://developers.openai.com/cod
 
 ## GitHub Copilot Chat
 
-The Copilot Chat extension (VS Code) reads hooks from `.github/hooks/conduct.json` in your project root — the same location the CLI uses. Create the file with:
+The Copilot Chat extension (VS Code) reads hooks from `.github/hooks/probity.json` in your project root — the same location the CLI uses. Create the file with:
 
 ```json
 {
@@ -91,18 +91,18 @@ The Copilot Chat extension (VS Code) reads hooks from `.github/hooks/conduct.jso
     "preToolUse": [
       {
         "type": "command",
-        "bash": "npx @nizos/conduct --agent github-copilot-chat"
+        "bash": "npx @nizos/probity --agent github-copilot-chat"
       }
     ]
   }
 }
 ```
 
-Every tool call fires the hook; conduct's rules pass through non-write actions. The Chat adapter accepts `run_in_terminal`, `create_file`, and `replace_string_in_file` payloads.
+Every tool call fires the hook; probity's rules pass through non-write actions. The Chat adapter accepts `run_in_terminal`, `create_file`, and `replace_string_in_file` payloads.
 
 ## GitHub Copilot CLI
 
-GitHub Copilot CLI reads hooks from the same `.github/hooks/conduct.json` — the cloud agent also reads it from your repo's default branch. The shape is identical to Chat; only the `--agent` value changes:
+GitHub Copilot CLI reads hooks from the same `.github/hooks/probity.json` — the cloud agent also reads it from your repo's default branch. The shape is identical to Chat; only the `--agent` value changes:
 
 ```json
 {
@@ -111,23 +111,23 @@ GitHub Copilot CLI reads hooks from the same `.github/hooks/conduct.json` — th
     "preToolUse": [
       {
         "type": "command",
-        "bash": "npx @nizos/conduct --agent github-copilot"
+        "bash": "npx @nizos/probity --agent github-copilot"
       }
     ]
   }
 }
 ```
 
-Every tool call fires the hook; conduct's rules pass through non-write actions. Conduct accepts Copilot's `bash`, `create`, and `edit` tool payloads.
+Every tool call fires the hook; probity's rules pass through non-write actions. Probity accepts Copilot's `bash`, `create`, and `edit` tool payloads.
 
 Further reading: [GitHub Copilot's hooks reference](https://docs.github.com/en/copilot/reference/hooks-configuration).
 
 ## CLI
 
-The `conduct` bin is what each vendor's hook command invokes. You can also run it directly — for testing rule changes, scripting CI checks, or pointing at a config that lives outside the repo.
+The `probity` bin is what each vendor's hook command invokes. You can also run it directly — for testing rule changes, scripting CI checks, or pointing at a config that lives outside the repo.
 
 ```bash
-npx @nizos/conduct --agent <vendor> < hook-payload.json
+npx @nizos/probity --agent <vendor> < hook-payload.json
 ```
 
 The bin reads a hook payload from stdin (capped at 10 MiB) and writes the vendor's response JSON to stdout.
