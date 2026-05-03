@@ -9,12 +9,12 @@ Process discipline for coding agents. A vendor-agnostic policy engine that sits 
 
 ## Layout
 
-- `src/types.ts` — canonical types (Action, Decision, Agent, Verdict, SessionEvent)
+- `src/types.ts` — canonical types (Action, Decision, Agent, Verdict, RawSessionEvent, SessionEvent)
 - `src/rules/` — built-in rules + `contract.ts` (Rule type); `rules/utils/` holds shared rule helpers
 - `src/utils/` — cross-cutting helpers (json-string, parse-args, parse-as, read-capped, read-jsonl)
-- `src/vendors/<vendor>/{adapter,agent,transcript}.ts` — per-vendor pieces (agents may be shared via the registry)
+- `src/vendors/<vendor>/{adapter,agent,event,transcript}.ts` — per-vendor pieces (agents may be shared via the registry; `event.ts` classifies raw events to canonical)
 - `src/vendors/{adapter,to-verdict}.ts` — adapter contract and AI verdict parser
-- `src/registry.ts` — vendor entries (adapter + agent + transcript per vendor)
+- `src/registry.ts` — vendor entries (adapter + agent + transcript + canonical-event classifier per vendor)
 - `src/{cli,bin,config,engine,index}.ts` — application wiring
 - `test/fixtures/` — captured hook payloads and transcript fixtures
 - `test/integration/` — integration tests (gated on `PROBITY_INTEGRATION_AI=1`)
