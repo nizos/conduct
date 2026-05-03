@@ -15,6 +15,15 @@ export function toCanonical(event: RawSessionEvent): SessionEvent {
       output: event.output,
     }
   }
+  if (event.tool === 'Edit') {
+    const input = event.input as { file_path: string; new_string: string }
+    return {
+      kind: 'write',
+      path: input.file_path,
+      content: input.new_string,
+      output: event.output,
+    }
+  }
   return {
     kind: 'other',
     tool: event.tool,

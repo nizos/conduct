@@ -42,6 +42,27 @@ describe('toCanonical (claude-code)', () => {
     })
   })
 
+  it('classifies an Edit action as a write event using new_string as content', () => {
+    const result = toCanonical({
+      kind: 'action',
+      tool: 'Edit',
+      input: {
+        file_path: '/abs/src/calc.ts',
+        old_string: 'old',
+        new_string: 'new',
+      },
+      output: 'edited',
+      toolUseId: 'tu_edit',
+    })
+
+    expect(result).toEqual({
+      kind: 'write',
+      path: '/abs/src/calc.ts',
+      content: 'new',
+      output: 'edited',
+    })
+  })
+
   it('classifies an unrecognized tool as an other event, preserving raw input', () => {
     const result = toCanonical({
       kind: 'action',
