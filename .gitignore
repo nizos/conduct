@@ -24,8 +24,9 @@ pnpm-debug.log*
 .DS_Store
 *.swp
 
-# Claude Code (local agent state, plugin settings, tdd-guard data)
-.claude/
+# Claude Code (local agent state, personal settings, tdd-guard data)
+.claude/*
+!.claude/settings.json
 
 # Testing
 coverage/
