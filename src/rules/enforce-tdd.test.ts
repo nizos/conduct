@@ -174,13 +174,13 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toContain('export const previous = 1')
   })
 
-  it('renders JSON-string event inputs as objects (no escape noise)', async () => {
+  it('renders object event inputs without escape noise', async () => {
     const s = setup({
       rawHistory: [
         {
           kind: 'action',
           tool: 'shell',
-          input: '{"command":"npx vitest run"}',
+          input: { command: 'npx vitest run' },
           output: '1 test passed',
           toolUseId: 'tu_1',
         },

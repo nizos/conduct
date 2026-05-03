@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { RawSessionEvent } from '../../types.js'
+import { JsonString } from '../../utils/json-string.js'
 import { readJsonl } from '../../utils/read-jsonl.js'
 
 const UserMessageSchema = z.object({
@@ -17,7 +18,7 @@ const FunctionCallSchema = z.object({
   payload: z.object({
     type: z.literal('function_call'),
     name: z.string(),
-    arguments: z.string(),
+    arguments: JsonString,
     call_id: z.string(),
   }),
 })

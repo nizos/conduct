@@ -104,17 +104,7 @@ function formatEvent(event: RawSessionEvent): string {
 }
 
 function formatInput(input: unknown): string {
-  // Some vendors (e.g. codex) carry tool args as a JSON-encoded string;
-  // unwrap so the validator sees `{"command":"x"}` instead of escaped
-  // `"{\"command\":\"x\"}"`. Non-JSON strings (e.g. patch envelopes)
-  // pass through verbatim.
-  if (typeof input === 'string') {
-    try {
-      return JSON.stringify(JSON.parse(input))
-    } catch {
-      return input
-    }
-  }
+  if (typeof input === 'string') return input
   return JSON.stringify(input)
 }
 
