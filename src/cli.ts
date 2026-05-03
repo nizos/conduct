@@ -31,7 +31,7 @@ async function dispatch(
   rules: readonly RuleEntry[],
   agent: Agent,
 ): Promise<string> {
-  const parsed = parsePayload(entry, rawPayload)
+  const parsed = await parsePayload(entry, rawPayload)
   if (parsed.kind === 'invalid') {
     return entry.adapter.toResponse(parsed.decision)
   }
@@ -57,7 +57,10 @@ type ParseResult =
     }
   | { kind: 'invalid'; decision: Decision }
 
-function parsePayload(entry: VendorEntry, rawPayload: string): ParseResult {
+async function parsePayload(
+  entry: VendorEntry,
+  rawPayload: string,
+): Promise<ParseResult> {
   let json: unknown
   try {
     json = JSON.parse(rawPayload)
@@ -65,7 +68,7 @@ function parsePayload(entry: VendorEntry, rawPayload: string): ParseResult {
     return invalid(error instanceof Error ? error.message : String(error))
   }
 
-  const action = entry.adapter.parseAction(json)
+  const action = await entry.adapter.parseAction(json)
   if (!action.ok) return invalid(action.reason)
 
   const sessionPath = entry.adapter.sessionPath?.(json)

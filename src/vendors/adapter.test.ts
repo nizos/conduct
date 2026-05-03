@@ -5,26 +5,26 @@ import type { Action } from '../types.js'
 import { fromSchema, passthroughFor } from './adapter.js'
 
 describe('fromSchema', () => {
-  it('wraps a Zod schema into a parseAction returning {ok: true, action} for valid input', () => {
+  it('wraps a Zod schema into a parseAction returning {ok: true, action} for valid input', async () => {
     const schema = z
       .object({ kind: z.literal('command'), command: z.string() })
       .transform((d): Action => ({ kind: 'command', command: d.command }))
 
     const parse = fromSchema(schema)
 
-    expect(parse({ kind: 'command', command: 'echo hi' })).toEqual({
+    expect(await parse({ kind: 'command', command: 'echo hi' })).toEqual({
       ok: true,
       action: { kind: 'command', command: 'echo hi' },
     })
   })
 
-  it('returns {ok: false, reason} formed from the joined Zod issue messages on invalid input', () => {
+  it('returns {ok: false, reason} formed from the joined Zod issue messages on invalid input', async () => {
     const schema = z
       .object({ kind: z.literal('command'), command: z.string() })
       .transform((d): Action => ({ kind: 'command', command: d.command }))
 
     const parse = fromSchema(schema)
-    const result = parse({ kind: 'wrong' })
+    const result = await parse({ kind: 'wrong' })
 
     expect(result.ok).toBe(false)
     if (result.ok) throw new Error('unreachable')

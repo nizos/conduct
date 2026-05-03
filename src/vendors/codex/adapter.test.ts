@@ -19,8 +19,8 @@ type Payload = {
 }
 
 describe('codex adapter', () => {
-  it('parseAction returns an ok result with the typed action for a valid payload', () => {
-    const result = parseAction({
+  it('parseAction returns an ok result with the typed action for a valid payload', async () => {
+    const result = await parseAction({
       cwd: '/workspaces/probity',
       tool_name: 'apply_patch',
       tool_input: {
@@ -40,14 +40,14 @@ describe('codex adapter', () => {
     })
   })
 
-  it('tags the action type as command for a Bash payload', () => {
-    const { action } = setup('pre-bash-pwd.json')
+  it('tags the action type as command for a Bash payload', async () => {
+    const { action } = await setup('pre-bash-pwd.json')
 
     expect(action.kind).toBe('command')
   })
 
-  it('extracts the command text from a Bash payload', () => {
-    const { action, payload } = setup('pre-bash-pwd.json')
+  it('extracts the command text from a Bash payload', async () => {
+    const { action, payload } = await setup('pre-bash-pwd.json')
 
     expect(action).toMatchObject({ command: payload.tool_input.command })
   })
@@ -67,8 +67,8 @@ describe('codex adapter', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
-  it('rejects a malformed apply_patch payload (missing command field)', () => {
-    const result = parseAction({
+  it('rejects a malformed apply_patch payload (missing command field)', async () => {
+    const result = await parseAction({
       tool_name: 'apply_patch',
       tool_input: { patch: 'diff' },
     })
@@ -76,8 +76,8 @@ describe('codex adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('rejects an apply_patch command without an Add/Update/Delete File header', () => {
-    const result = parseAction({
+  it('rejects an apply_patch command without an Add/Update/Delete File header', async () => {
+    const result = await parseAction({
       tool_name: 'apply_patch',
       tool_input: { command: 'just a string with no header' },
     })
@@ -85,12 +85,12 @@ describe('codex adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('maps an apply_patch payload to a write action with absolute POSIX path + patch content', () => {
+  it('maps an apply_patch payload to a write action with absolute POSIX path + patch content', async () => {
     const payload = parseAs<Payload>(
       readFileSync('test/fixtures/codex/pre-apply-patch.json', 'utf8'),
     )
 
-    const action = ok(parseAction(payload))
+    const action = ok(await parseAction(payload))
 
     expect(action.kind).toBe('write')
     if (action.kind !== 'write') throw new Error('expected write')
@@ -99,9 +99,9 @@ describe('codex adapter', () => {
     expect(action.content).toContain('*** Add File:')
   })
 
-  it('preserves an absolute apply_patch header path emitted by the agent', () => {
+  it('preserves an absolute apply_patch header path emitted by the agent', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         cwd: '/workspaces/probity',
         tool_name: 'apply_patch',
         tool_input: {
@@ -117,8 +117,8 @@ describe('codex adapter', () => {
     })
   })
 
-  it('fails closed when an apply_patch payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    const result = parseAction({
+  it('fails closed when an apply_patch payload omits cwd (vendors reliably emit it; absence is malformed)', async () => {
+    const result = await parseAction({
       tool_name: 'apply_patch',
       tool_input: {
         command:
@@ -129,9 +129,9 @@ describe('codex adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
+  it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         tool_name: 'some_future_tool',
         tool_input: { whatever: true },
       }),
@@ -147,11 +147,11 @@ describe('codex adapter', () => {
   })
 })
 
-function setup(fixtureName: string) {
+async function setup(fixtureName: string) {
   const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/codex/${fixtureName}`, 'utf8'),
   )
-  const action = ok(parseAction(payload))
+  const action = ok(await parseAction(payload))
   return { action, payload }
 }
 

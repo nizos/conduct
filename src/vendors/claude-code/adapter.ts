@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises'
+
 import type { PreToolUseHookSpecificOutput } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
 
@@ -28,17 +30,20 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
       tool_name: z.literal('Edit'),
       tool_input: z.object({
         file_path: z.string(),
+        old_string: z.string(),
         new_string: z.string(),
       }),
       cwd: z.string().min(1),
     })
-    .transform(
-      (d): Action => ({
-        kind: 'write',
-        path: posixAbsolute(d.cwd, d.tool_input.file_path),
-        content: d.tool_input.new_string,
-      }),
-    ),
+    .transform(async (d): Promise<Action> => {
+      const path = posixAbsolute(d.cwd, d.tool_input.file_path)
+      const content = await computeEditedContent(
+        path,
+        d.tool_input.old_string,
+        d.tool_input.new_string,
+      )
+      return { kind: 'write', path, content }
+    }),
   z
     .object({
       tool_name: z.literal('Write'),
@@ -90,4 +95,22 @@ export function toResponse(decision: Decision): string {
   // permission flow take over. Returning permissionDecision: 'allow' would
   // skip the user's confirmation prompt for every non-blocked action.
   return ''
+}
+
+// Reads the current file and applies the Edit substitution so the
+// canonical Action carries the full post-edit content. If the file
+// can't be read (missing, unreadable), falls back to the new_string
+// alone — preserves the previous "partial content" behaviour as a
+// graceful degradation rather than a parse failure.
+async function computeEditedContent(
+  filePath: string,
+  oldString: string,
+  newString: string,
+): Promise<string> {
+  try {
+    const current = await readFile(filePath, 'utf8')
+    return current.replace(oldString, newString)
+  } catch {
+    return newString
+  }
 }

@@ -15,12 +15,15 @@ export type ParseActionResult =
  * Wraps a Zod schema as the `parseAction` function the contract
  * requires. Adapters keep their schemas internal and expose
  * `parseAction` via this helper, so consumers don't see Zod's API.
+ * Uses `safeParseAsync` so schemas with async transforms (e.g. an
+ * Edit transform that reads the current file to compute the full
+ * post-edit content) work alongside fully-sync schemas.
  */
 export function fromSchema(
   schema: z.ZodType<Action>,
-): (payload: unknown) => ParseActionResult {
-  return (payload) => {
-    const parsed = schema.safeParse(payload)
+): (payload: unknown) => Promise<ParseActionResult> {
+  return async (payload) => {
+    const parsed = await schema.safeParseAsync(payload)
     if (parsed.success) return { ok: true, action: parsed.data }
     return {
       ok: false,
@@ -61,7 +64,7 @@ export function passthroughFor(
  * `ctx.rawHistory` to rules.
  */
 export type Adapter = {
-  parseAction: (payload: unknown) => ParseActionResult
+  parseAction: (payload: unknown) => Promise<ParseActionResult>
   toResponse: (decision: Decision) => string
   sessionPath?: (payload: unknown) => string | undefined
 }

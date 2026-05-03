@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, onTestFinished } from 'vitest'
 
 import type { Action } from '../../types.js'
 import { parseAs } from '../../utils/parse-as.js'
@@ -24,8 +27,8 @@ type Payload = {
 }
 
 describe('claude-code adapter', () => {
-  it('parseAction returns an ok result with the typed action for a valid payload', () => {
-    const result = parseAction({
+  it('parseAction returns an ok result with the typed action for a valid payload', async () => {
+    const result = await parseAction({
       cwd: '/workspaces/probity',
       tool_name: 'Write',
       tool_input: {
@@ -44,53 +47,75 @@ describe('claude-code adapter', () => {
     })
   })
 
-  it('extracts the file path from a Write payload as an absolute POSIX path', () => {
-    const { action } = setup('write-new-file.json')
+  it('extracts the file path from a Write payload as an absolute POSIX path', async () => {
+    const { action } = await setup('write-new-file.json')
 
     expect(action).toMatchObject({
       path: '/workspaces/probity/src/userProfile.ts',
     })
   })
 
-  it('tags the action type as write for a Write payload', () => {
-    const { action } = setup('write-new-file.json')
+  it('tags the action type as write for a Write payload', async () => {
+    const { action } = await setup('write-new-file.json')
 
     expect(action.kind).toBe('write')
   })
 
-  it('extracts the content from a Write payload', () => {
-    const { action, payload } = setup('write-new-file.json')
+  it('extracts the content from a Write payload', async () => {
+    const { action, payload } = await setup('write-new-file.json')
 
     expect(action).toMatchObject({ content: payload.tool_input.content })
   })
 
-  it('tags the action type as command for a Bash payload', () => {
-    const { action } = setup('bash-npm-install.json')
+  it('tags the action type as command for a Bash payload', async () => {
+    const { action } = await setup('bash-npm-install.json')
 
     expect(action.kind).toBe('command')
   })
 
-  it('extracts the command text from a Bash payload', () => {
-    const { action, payload } = setup('bash-npm-install.json')
+  it('extracts the command text from a Bash payload', async () => {
+    const { action, payload } = await setup('bash-npm-install.json')
 
     expect(action).toMatchObject({ command: payload.tool_input.command })
   })
 
-  it('maps the Edit new_string to the content on the action', () => {
-    const { action, payload } = setup('edit-file.json')
+  it('Edit action carries the full post-edit file content (replace old_string with new_string)', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'edit-content-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const filePath = path.join(dir, 'foo.ts')
+    await writeFile(filePath, 'before\nMARKER\nafter\n')
 
-    expect(action).toMatchObject({ content: payload.tool_input.new_string })
+    const result = await parseAction({
+      cwd: dir,
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: filePath,
+        old_string: 'MARKER',
+        new_string: 'REPLACED',
+      },
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        kind: 'write',
+        path: filePath,
+        content: 'before\nREPLACED\nafter\n',
+      },
+    })
   })
 
-  it('extracts the file path from an Edit payload as an absolute POSIX path', () => {
-    const { action } = setup('edit-file.json')
+  it('extracts the file path from an Edit payload as an absolute POSIX path', async () => {
+    const { action } = await setup('edit-file.json')
 
     expect(action).toMatchObject({ path: '/workspaces/probity/README.md' })
   })
 
-  it('preserves an absolute file_path emitted by the agent', () => {
+  it('preserves an absolute file_path emitted by the agent', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         cwd: '/workspaces/probity',
         tool_name: 'Write',
         tool_input: {
@@ -106,8 +131,8 @@ describe('claude-code adapter', () => {
     })
   })
 
-  it('fails closed when a Write payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    const result = parseAction({
+  it('fails closed when a Write payload omits cwd (vendors reliably emit it; absence is malformed)', async () => {
+    const result = await parseAction({
       tool_name: 'Write',
       tool_input: {
         file_path: '/workspaces/probity/src/UpperCase.ts',
@@ -118,9 +143,9 @@ describe('claude-code adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('preserves an absolute file_path even when it sits outside cwd', () => {
+  it('preserves an absolute file_path even when it sits outside cwd', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         cwd: '/workspaces/probity',
         tool_name: 'Write',
         tool_input: { file_path: '/etc/passwd', content: 'x' },
@@ -152,15 +177,15 @@ describe('claude-code adapter', () => {
     )
   })
 
-  it('rejects a Bash payload missing the command field', () => {
-    const result = parseAction({ tool_name: 'Bash', tool_input: {} })
+  it('rejects a Bash payload missing the command field', async () => {
+    const result = await parseAction({ tool_name: 'Bash', tool_input: {} })
 
     expect(result.ok).toBe(false)
   })
 
-  it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', () => {
+  it('passes through an unsupported tool_name as a no-op so unknown tools are not blocked', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         tool_name: 'MultiEdit',
         tool_input: { file_path: 'x', edits: [] },
       }),
@@ -176,11 +201,11 @@ describe('claude-code adapter', () => {
   })
 })
 
-function setup(fixtureName: string) {
+async function setup(fixtureName: string) {
   const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/claude-code/${fixtureName}`, 'utf8'),
   )
-  const action = ok(parseAction(payload))
+  const action = ok(await parseAction(payload))
   return { action, payload }
 }
 

@@ -24,8 +24,8 @@ type DenyResponse = {
 }
 
 describe('github-copilot-chat adapter', () => {
-  it('parseAction returns an ok result with the typed action for a valid payload', () => {
-    const result = parseAction({
+  it('parseAction returns an ok result with the typed action for a valid payload', async () => {
+    const result = await parseAction({
       cwd: '/workspaces/probity',
       tool_name: 'create_file',
       tool_input: {
@@ -72,26 +72,26 @@ describe('github-copilot-chat adapter', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
-  it('tags the action type as command for a run_in_terminal payload', () => {
-    const { action } = setup('pre-run-in-terminal.json')
+  it('tags the action type as command for a run_in_terminal payload', async () => {
+    const { action } = await setup('pre-run-in-terminal.json')
 
     expect(action.kind).toBe('command')
   })
 
-  it('extracts the command text from a run_in_terminal payload', () => {
-    const { action, payload } = setup('pre-run-in-terminal.json')
+  it('extracts the command text from a run_in_terminal payload', async () => {
+    const { action, payload } = await setup('pre-run-in-terminal.json')
 
     expect(action).toMatchObject({ command: payload.tool_input.command })
   })
 
-  it('tags a create_file payload as a write action', () => {
-    const { action } = setup('pre-create-file.json')
+  it('tags a create_file payload as a write action', async () => {
+    const { action } = await setup('pre-create-file.json')
 
     expect(action.kind).toBe('write')
   })
 
-  it('maps create_file payload filePath (absolute POSIX) + content onto the write action', () => {
-    const { action, payload } = setup('pre-create-file.json')
+  it('maps create_file payload filePath (absolute POSIX) + content onto the write action', async () => {
+    const { action, payload } = await setup('pre-create-file.json')
 
     expect(action).toMatchObject({
       path: '/workspaces/probity/src/shopping-cart.test.ts',
@@ -99,14 +99,14 @@ describe('github-copilot-chat adapter', () => {
     })
   })
 
-  it('tags a replace_string_in_file payload as a write action', () => {
-    const { action } = setup('pre-replace-string-in-file.json')
+  it('tags a replace_string_in_file payload as a write action', async () => {
+    const { action } = await setup('pre-replace-string-in-file.json')
 
     expect(action.kind).toBe('write')
   })
 
-  it('maps replace_string_in_file payload filePath (absolute POSIX) + newString onto the write action', () => {
-    const { action, payload } = setup('pre-replace-string-in-file.json')
+  it('maps replace_string_in_file payload filePath (absolute POSIX) + newString onto the write action', async () => {
+    const { action, payload } = await setup('pre-replace-string-in-file.json')
 
     expect(action).toMatchObject({
       path: '/workspaces/probity/src/shopping-cart.test.ts',
@@ -114,9 +114,9 @@ describe('github-copilot-chat adapter', () => {
     })
   })
 
-  it('preserves an absolute create_file filePath emitted by the agent', () => {
+  it('preserves an absolute create_file filePath emitted by the agent', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         cwd: '/workspaces/probity',
         tool_name: 'create_file',
         tool_input: {
@@ -132,8 +132,8 @@ describe('github-copilot-chat adapter', () => {
     })
   })
 
-  it('fails closed when a create_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    const result = parseAction({
+  it('fails closed when a create_file payload omits cwd (vendors reliably emit it; absence is malformed)', async () => {
+    const result = await parseAction({
       tool_name: 'create_file',
       tool_input: {
         filePath: '/workspaces/probity/src/UpperCase.ts',
@@ -144,8 +144,8 @@ describe('github-copilot-chat adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('fails closed when a replace_string_in_file payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    const result = parseAction({
+  it('fails closed when a replace_string_in_file payload omits cwd (vendors reliably emit it; absence is malformed)', async () => {
+    const result = await parseAction({
       tool_name: 'replace_string_in_file',
       tool_input: {
         filePath: '/workspaces/probity/src/UpperCase.ts',
@@ -156,7 +156,7 @@ describe('github-copilot-chat adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', () => {
+  it('passes through read_file as a no-op so reads are not blocked by an unknown-tool error', async () => {
     const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot-chat/pre-read-file.json',
@@ -164,13 +164,13 @@ describe('github-copilot-chat adapter', () => {
       ),
     )
 
-    expect(ok(parseAction(payload))).toEqual({
+    expect(ok(await parseAction(payload))).toEqual({
       kind: 'command',
       command: '',
     })
   })
 
-  it('passes through list_dir as a no-op so listings are not blocked by an unknown-tool error', () => {
+  it('passes through list_dir as a no-op so listings are not blocked by an unknown-tool error', async () => {
     const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot-chat/pre-list-dir.json',
@@ -178,15 +178,15 @@ describe('github-copilot-chat adapter', () => {
       ),
     )
 
-    expect(ok(parseAction(payload))).toEqual({
+    expect(ok(await parseAction(payload))).toEqual({
       kind: 'command',
       command: '',
     })
   })
 
-  it('passes through any unknown tool_name (catchall, not a hardcoded list of read tools)', () => {
+  it('passes through any unknown tool_name (catchall, not a hardcoded list of read tools)', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         tool_name: 'some_future_tool',
         tool_input: { whatever: true },
       }),
@@ -196,11 +196,11 @@ describe('github-copilot-chat adapter', () => {
   })
 })
 
-function setup(fixtureName: string) {
+async function setup(fixtureName: string) {
   const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/github-copilot-chat/${fixtureName}`, 'utf8'),
   )
-  const action = ok(parseAction(payload))
+  const action = ok(await parseAction(payload))
   return { action, payload }
 }
 

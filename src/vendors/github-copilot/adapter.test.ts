@@ -15,8 +15,8 @@ type Payload = {
 }
 
 describe('github-copilot adapter', () => {
-  it('parseAction returns an ok result with the typed action for a valid payload', () => {
-    const result = parseAction({
+  it('parseAction returns an ok result with the typed action for a valid payload', async () => {
+    const result = await parseAction({
       cwd: '/workspaces/probity',
       toolName: 'create',
       toolArgs: JSON.stringify({
@@ -35,14 +35,14 @@ describe('github-copilot adapter', () => {
     })
   })
 
-  it('tags the action type as command for a bash payload', () => {
-    const { action } = setup('pre-bash-npm-test.json')
+  it('tags the action type as command for a bash payload', async () => {
+    const { action } = await setup('pre-bash-npm-test.json')
 
     expect(action.kind).toBe('command')
   })
 
-  it('extracts the command text from a bash payload', () => {
-    const { action, payload } = setup('pre-bash-npm-test.json')
+  it('extracts the command text from a bash payload', async () => {
+    const { action, payload } = await setup('pre-bash-npm-test.json')
     const toolArgs = parseAs<{ command: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({ command: toolArgs.command })
@@ -63,8 +63,8 @@ describe('github-copilot adapter', () => {
     expect(toResponse({ kind: 'allow' })).toBe('')
   })
 
-  it('rejects a payload whose toolArgs is not a JSON-encoded string', () => {
-    const result = parseAction({
+  it('rejects a payload whose toolArgs is not a JSON-encoded string', async () => {
+    const result = await parseAction({
       toolName: 'bash',
       toolArgs: 'not-valid-json',
     })
@@ -72,14 +72,14 @@ describe('github-copilot adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('tags a create payload as a write action', () => {
-    const { action } = setup('pre-create-new-test.json')
+  it('tags a create payload as a write action', async () => {
+    const { action } = await setup('pre-create-new-test.json')
 
     expect(action.kind).toBe('write')
   })
 
-  it('maps create payload path (absolute POSIX) + file_text onto the write action', () => {
-    const { action, payload } = setup('pre-create-new-test.json')
+  it('maps create payload path (absolute POSIX) + file_text onto the write action', async () => {
+    const { action, payload } = await setup('pre-create-new-test.json')
     const args = parseAs<{ path: string; file_text: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({
@@ -88,8 +88,8 @@ describe('github-copilot adapter', () => {
     })
   })
 
-  it('maps an edit payload path (absolute POSIX) + new_str onto the write action', () => {
-    const { action, payload } = setup('pre-edit-add-subtract.json')
+  it('maps an edit payload path (absolute POSIX) + new_str onto the write action', async () => {
+    const { action, payload } = await setup('pre-edit-add-subtract.json')
     const args = parseAs<{ path: string; new_str: string }>(payload.toolArgs)
 
     expect(action).toMatchObject({
@@ -98,9 +98,9 @@ describe('github-copilot adapter', () => {
     })
   })
 
-  it('preserves an absolute create path emitted by the agent', () => {
+  it('preserves an absolute create path emitted by the agent', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         cwd: '/workspaces/probity',
         toolName: 'create',
         toolArgs: JSON.stringify({
@@ -116,8 +116,8 @@ describe('github-copilot adapter', () => {
     })
   })
 
-  it('fails closed when a create payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    const result = parseAction({
+  it('fails closed when a create payload omits cwd (vendors reliably emit it; absence is malformed)', async () => {
+    const result = await parseAction({
       toolName: 'create',
       toolArgs: JSON.stringify({
         path: '/workspaces/probity/src/UpperCase.ts',
@@ -128,8 +128,8 @@ describe('github-copilot adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('fails closed when an edit payload omits cwd (vendors reliably emit it; absence is malformed)', () => {
-    const result = parseAction({
+  it('fails closed when an edit payload omits cwd (vendors reliably emit it; absence is malformed)', async () => {
+    const result = await parseAction({
       toolName: 'edit',
       toolArgs: JSON.stringify({
         path: '/workspaces/probity/src/UpperCase.ts',
@@ -140,7 +140,7 @@ describe('github-copilot adapter', () => {
     expect(result.ok).toBe(false)
   })
 
-  it('passes through view as a no-op so reads are not blocked by an unknown-tool error', () => {
+  it('passes through view as a no-op so reads are not blocked by an unknown-tool error', async () => {
     const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot/pre-view-calculator.json',
@@ -148,13 +148,13 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(ok(parseAction(payload))).toEqual({
+    expect(ok(await parseAction(payload))).toEqual({
       kind: 'command',
       command: '',
     })
   })
 
-  it('passes through report_intent as a no-op so metadata tools are not blocked', () => {
+  it('passes through report_intent as a no-op so metadata tools are not blocked', async () => {
     const payload = parseAs<Payload>(
       readFileSync(
         'test/fixtures/github-copilot/pre-report-intent.json',
@@ -162,7 +162,7 @@ describe('github-copilot adapter', () => {
       ),
     )
 
-    expect(ok(parseAction(payload))).toEqual({
+    expect(ok(await parseAction(payload))).toEqual({
       kind: 'command',
       command: '',
     })
@@ -185,9 +185,9 @@ describe('github-copilot adapter', () => {
     expect(sessionPath({ sessionId: '../../../etc' })).toBeUndefined()
   })
 
-  it('passes through any unknown toolName (catchall, not a hardcoded list of read tools)', () => {
+  it('passes through any unknown toolName (catchall, not a hardcoded list of read tools)', async () => {
     const action = ok(
-      parseAction({
+      await parseAction({
         toolName: 'some_future_tool',
         toolArgs: JSON.stringify({ whatever: true }),
       }),
@@ -197,11 +197,11 @@ describe('github-copilot adapter', () => {
   })
 })
 
-function setup(fixtureName: string) {
+async function setup(fixtureName: string) {
   const payload = parseAs<Payload>(
     readFileSync(`test/fixtures/github-copilot/${fixtureName}`, 'utf8'),
   )
-  const action = ok(parseAction(payload))
+  const action = ok(await parseAction(payload))
   return { action, payload }
 }
 
