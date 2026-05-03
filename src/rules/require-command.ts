@@ -55,15 +55,6 @@ type Options = {
  *   after: { kind: 'write' },
  *   reason: 'Run lint after every change before committing.',
  * })
- *
- * @example
- * // Only `git add` invalidates; other commands between lint and
- * // commit are fine.
- * requireCommand({
- *   before: { kind: 'command', match: /git commit/ },
- *   command: /npm run lint/,
- *   after: { kind: 'command', match: /git add/ },
- * })
  */
 export function requireCommand(options: Options): Rule {
   return async (action, ctx) => {

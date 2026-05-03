@@ -177,12 +177,4 @@ requireCommand({
   after: { kind: 'write' },
   reason: 'Run lint after every change before committing.',
 })
-
-// Only `git add` invalidates; other commands between lint and commit
-// are fine.
-requireCommand({
-  before: { kind: 'command', match: /git commit/ },
-  command: /npm run lint/,
-  after: { kind: 'command', match: /git add/ },
-})
 ```
