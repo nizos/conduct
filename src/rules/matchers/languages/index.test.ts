@@ -1,0 +1,19 @@
+import { describe, it, expect } from 'vitest'
+
+import { inferLanguage } from './index.js'
+import { javascript } from './javascript.js'
+import { typescript } from './typescript.js'
+
+describe('inferLanguage', () => {
+  it('returns the typescript module for a .ts file', () => {
+    expect(inferLanguage('src/foo.ts')).toBe(typescript)
+  })
+
+  it('returns the typescript module for a .tsx file', () => {
+    expect(inferLanguage('src/foo.tsx')).toBe(typescript)
+  })
+
+  it('returns the javascript module for a .js file', () => {
+    expect(inferLanguage('src/foo.js')).toBe(javascript)
+  })
+})
