@@ -101,4 +101,16 @@ describe('countNewTestNodes (python)', () => {
 
     expect(countNewTestNodes(before, after, python)).toBe(1)
   })
+
+  it('returns 0 when the language has no parser registered (peer-dep missing)', () => {
+    const noParser = { name: 'fake', parser: undefined, patterns: [] }
+
+    expect(
+      countNewTestNodes(
+        'def test_x(): pass',
+        'def test_y(): pass\ndef test_z(): pass',
+        noParser,
+      ),
+    ).toBe(0)
+  })
 })
