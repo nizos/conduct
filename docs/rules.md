@@ -1,6 +1,6 @@
 # Rules
 
-Probity ships four built-in rules. Each is a factory called with its options in `probity.config.ts`.
+Probity ships five built-in rules. Each is a factory called with its options in `probity.config.ts`.
 
 ## enforceTdd
 
@@ -140,4 +140,49 @@ forbidContentPattern({
     }),
   ],
 }
+```
+
+---
+
+## requireCommand
+
+Gates a command action on a prior command appearing in canonical session history. By default the required command must be the most recent event; the optional `after` filter relaxes this by naming the events that invalidate the required command if they appear after it.
+
+- **Applies to:** command actions (bash / shell tool calls)
+- **Supported agents:** Claude Code, OpenAI Codex, GitHub Copilot
+
+### Options
+
+| Option    | Type                                                                 | Default        | Description                                                                                                                                                                                                                                                                                   |
+| --------- | -------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `before`  | `{ kind: 'command'; match: string \| RegExp }`                       | required       | Which actions this rule gates. Only commands whose text matches `before.match` are evaluated; everything else passes through.                                                                                                                                                                 |
+| `command` | `string \| RegExp`                                                   | required       | The prior command pattern that must satisfy the gate. Matched against canonical command events in session history.                                                                                                                                                                            |
+| `after`   | `{ kind: 'write' } \| { kind: 'command'; match?: string \| RegExp }` | any event      | What invalidates the required command if it appears after the most recent matching command. Without `after`, any event after the required command invalidates it (the required command must be the most recent event). With `{ kind: 'command' }`, omit `match` to invalidate on any command. |
+| `reason`  | `string`                                                             | auto-generated | Surfaced when the rule blocks. Defaults to a message naming the required pattern.                                                                                                                                                                                                             |
+
+### Examples
+
+```ts
+// Block commits unless `npm run lint` was the most recent event.
+requireCommand({
+  before: { kind: 'command', match: /git commit/ },
+  command: /npm run lint/,
+})
+
+// Allow non-write events between lint and commit; a write since lint
+// invalidates the gate.
+requireCommand({
+  before: { kind: 'command', match: /git commit/ },
+  command: /npm run lint/,
+  after: { kind: 'write' },
+  reason: 'Run lint after every change before committing.',
+})
+
+// Only `git add` invalidates; other commands between lint and commit
+// are fine.
+requireCommand({
+  before: { kind: 'command', match: /git commit/ },
+  command: /npm run lint/,
+  after: { kind: 'command', match: /git add/ },
+})
 ```
