@@ -1,6 +1,6 @@
 # Probity
 
-Process discipline for coding agents. A vendor-agnostic policy engine that sits between the agent and the codebase, evaluating each attempted action against configurable rules and blocking, modifying, or allowing it, and providing correction and guidance.
+Process discipline for coding agents. A vendor-agnostic policy engine that sits between the agent and the codebase, evaluating each attempted action against configurable rules and blocking or allowing it, and providing correction and guidance.
 
 ## Discipline
 
@@ -10,7 +10,7 @@ Process discipline for coding agents. A vendor-agnostic policy engine that sits 
 ## Layout
 
 - `src/types.ts` — canonical types (Action, Decision, Agent, Verdict, RawSessionEvent, SessionEvent)
-- `src/rules/` — built-in rules + `contract.ts` (Rule type); `rules/utils/` holds shared rule helpers
+- `src/rules/` — built-in rules + `contract.ts` (Rule type); `rules/utils/` holds shared rule helpers; `rules/matchers/` holds the ast-grep-backed test-node diff helper and per-language modules consumed by enforceTdd's fast-path
 - `src/utils/` — cross-cutting helpers (json-string, parse-args, parse-as, read-capped, read-jsonl)
 - `src/vendors/<vendor>/{adapter,agent,event,transcript}.ts` — per-vendor pieces (agents may be shared via the registry; `event.ts` classifies raw events to canonical)
 - `src/vendors/{adapter,to-verdict}.ts` — adapter contract and AI verdict parser
