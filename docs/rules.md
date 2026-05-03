@@ -6,6 +6,8 @@ Probity ships five built-in rules. Each is a factory called with its options in 
 
 Blocks a write unless the session's recent history shows a failing test that the pending implementation would address, and the write is the minimum needed to make that test pass. Uses an AI validator — via the agent's official SDK — to judge the pending action against the transcript and the file's current content.
 
+A deterministic fast-path skips the AI when a write adds exactly one new test node to a recognised language; see [Fast-path](#fast-path) below.
+
 - **Applies to:** write actions
 - **Supported agents:** Claude Code, OpenAI Codex, GitHub Copilot
 
@@ -16,6 +18,7 @@ Blocks a write unless the session's recent history shows a failing test that the
 | `instructions`    | `string \| ((defaults: string) => string)` | built-in three-rule TDD spec | Overrides or extends the default TDD rules text. Pass a string to replace outright, or a function `(defaults) => ...` to extend (e.g. append a project addendum without forking the whole spec). |
 | `maxEvents`       | `number`                                   | `20`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.                                                               |
 | `maxContentChars` | `number`                                   | `4000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges.                                                        |
+| `fastPath`        | `boolean`                                  | `true`                       | When a write to a recognised language adds exactly one new test node, return pass without calling the AI. Set to `false` to AI-validate every matching write.                                    |
 
 ### Examples
 
@@ -38,6 +41,9 @@ enforceTdd({
 Tests must use the project's custom assertion helpers.`,
 })
 
+// AI-validate every write, even single-test additions:
+enforceTdd({ fastPath: false })
+
 // To scope to specific paths, wrap in a `{ files, rules }` block:
 {
   files: ['**/src/**'],
@@ -45,9 +51,26 @@ Tests must use the project's custom assertion helpers.`,
 }
 ```
 
+### Fast-path
+
+When a write to a recognised language adds exactly one new test node, the rule returns pass without consulting the AI — operationalising the rubric's "adding a test is always allowed" line as a deterministic check. Multi-test writes, implementation writes, and unrecognised file types fall through to the AI as before.
+
+| Language   | Extensions    | Test patterns recognised                                       |
+| ---------- | ------------- | -------------------------------------------------------------- |
+| TypeScript | `.ts`, `.tsx` | `it()` / `test()` and their `.skip`, `.only`, `.each` variants |
+| JavaScript | `.js`         | `it()` / `test()` and their `.skip`, `.only`, `.each` variants |
+| Python     | `.py`         | `def test_*` (pytest convention)                               |
+
+Python support requires the optional `@ast-grep/lang-python` package. Install it in the **same scope** you installed Probity in:
+
+- Project-local: `npm install -D @ast-grep/lang-python`
+- Global: `npm install -g @ast-grep/lang-python`
+
+If it's missing (or installed in a different scope from Probity), `.py` writes silently fall through to the AI path — no install, no error, no fast-path.
+
 ### Cost note
 
-Every matching write triggers an AI call. Scope with a `{ files, rules }` block so the rule fires only on the code you care about.
+Matching writes that don't fast-path trigger an AI call. Scope with a `{ files, rules }` block so the rule fires only on the code you care about.
 
 ---
 
