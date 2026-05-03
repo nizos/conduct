@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { countNewTestNodes } from './count-new-test-nodes.js'
 import { javascript } from './languages/javascript.js'
+import { python } from './languages/python.js'
 import { typescript } from './languages/typescript.js'
 
 describe.each([
@@ -90,5 +91,14 @@ describe.each([
     const after = `describe('x', () => { it.each([1, 2])('case %i', (n) => {}) })`
 
     expect(countNewTestNodes(before, after, language)).toBe(1)
+  })
+})
+
+describe('countNewTestNodes (python)', () => {
+  it('counts a def test_*() function as a new test node', () => {
+    const before = ``
+    const after = `def test_addition():\n    assert 1 + 1 == 2\n`
+
+    expect(countNewTestNodes(before, after, python)).toBe(1)
   })
 })

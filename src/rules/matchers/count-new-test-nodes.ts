@@ -1,8 +1,10 @@
-import { parse, type Lang } from '@ast-grep/napi'
+import { parse, type Lang, type NapiConfig } from '@ast-grep/napi'
+
+type LanguageId = Lang | (string & {})
 
 type LanguageHandle = {
-  parser: Lang
-  patterns: readonly string[]
+  parser: LanguageId
+  patterns: readonly (string | NapiConfig)[]
 }
 
 export function countNewTestNodes(
