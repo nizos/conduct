@@ -1,4 +1,4 @@
-import type { Action, Agent, RawSessionEvent } from '../types.js'
+import type { Action, Agent, RawSessionEvent, SessionEvent } from '../types.js'
 
 /**
  * The outcome of a rule evaluating an action.
@@ -17,6 +17,7 @@ export type RuleResult =
  */
 export type RuleContext = {
   agent?: Agent
+  history?: () => Promise<SessionEvent[]>
   rawHistory?: () => Promise<RawSessionEvent[]>
 }
 
