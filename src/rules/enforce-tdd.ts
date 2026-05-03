@@ -48,6 +48,8 @@ tests do not count. Restructuring existing tests is not "adding".
     tests at a new layer (e.g. an e2e covering code already exercised
     by units), pinning tests added before a refactor pulls a seam out
     from under them.
+  - Test-file scaffolding edits (imports, helpers, fixtures) need no
+    failing test on their own.
 
 #### Reaching a clean red
 
