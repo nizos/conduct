@@ -78,6 +78,7 @@ Return shapes:
 The optional second argument carries the engine's context:
 
 - `ctx.agent?.reason(prompt)` — the AI validator the engine wired up (the `ai` override or the vendor's default). Use this for LLM-judged rules. Returns `Promise<Verdict>`.
-- `ctx.history?()` — an async function returning the recent session as a list of `SessionEvent`s. May be undefined when the vendor adapter doesn't supply transcript access. Call it on demand, since reading the transcript can be slow.
+- `ctx.history?()` — an async function returning the recent session as a list of canonical `SessionEvent`s (`prompt`, `command`, `write`, or `other`). May be undefined when the vendor adapter doesn't supply transcript access. Call it on demand, since reading the transcript can be slow.
+- `ctx.rawHistory?()` — same shape but vendor-faithful: `RawSessionEvent`s preserve the original tool name and input. Use this when a rule needs vendor fidelity (e.g. AI-judged rules that build a transcript-like prompt).
 
 Rules can be sync or async; the engine awaits the result either way.
