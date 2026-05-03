@@ -53,3 +53,15 @@ export type RawSessionEvent =
       output: string
       toolUseId: string
     }
+
+/**
+ * The canonical, domain-shaped event a rule sees. Adapters classify
+ * each `RawSessionEvent` into one of these so rules can reason about
+ * "a command ran" or "a write happened" without knowing per-vendor tool
+ * names.
+ */
+export type SessionEvent =
+  | { kind: 'prompt'; text: string }
+  | { kind: 'command'; command: string; output: string }
+  | { kind: 'write'; path: string; content: string; output: string }
+  | { kind: 'other'; tool: string; input: unknown; output: string }
