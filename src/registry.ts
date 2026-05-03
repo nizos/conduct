@@ -6,11 +6,14 @@ import { toCanonical as claudeCodeToCanonical } from './vendors/claude-code/even
 import { readTranscript as readClaudeCodeTranscript } from './vendors/claude-code/transcript.js'
 import { codex } from './vendors/codex/agent.js'
 import * as codexAdapter from './vendors/codex/adapter.js'
+import { toCanonical as codexToCanonical } from './vendors/codex/event.js'
 import { readTranscript as readCodexTranscript } from './vendors/codex/transcript.js'
 import { githubCopilot } from './vendors/github-copilot/agent.js'
 import * as githubCopilotAdapter from './vendors/github-copilot/adapter.js'
+import { toCanonical as githubCopilotToCanonical } from './vendors/github-copilot/event.js'
 import { readTranscript as readGithubCopilotTranscript } from './vendors/github-copilot/transcript.js'
 import * as githubCopilotChatAdapter from './vendors/github-copilot-chat/adapter.js'
+import { toCanonical as githubCopilotChatToCanonical } from './vendors/github-copilot-chat/event.js'
 import { readTranscript as readGithubCopilotChatTranscript } from './vendors/github-copilot-chat/transcript.js'
 
 /**
@@ -39,16 +42,19 @@ export const vendors = {
     adapter: codexAdapter,
     agent: codex,
     readTranscript: readCodexTranscript,
+    toCanonical: codexToCanonical,
   },
   'github-copilot': {
     adapter: githubCopilotAdapter,
     agent: githubCopilot,
     readTranscript: readGithubCopilotTranscript,
+    toCanonical: githubCopilotToCanonical,
   },
   'github-copilot-chat': {
     adapter: githubCopilotChatAdapter,
     agent: githubCopilot,
     readTranscript: readGithubCopilotChatTranscript,
+    toCanonical: githubCopilotChatToCanonical,
   },
 } satisfies Record<string, VendorEntry>
 
