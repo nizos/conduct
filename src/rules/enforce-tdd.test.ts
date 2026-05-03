@@ -244,6 +244,48 @@ describe('enforce-tdd', () => {
     expect(s.agentCalled).toBe(false)
   })
 
+  it('does not fast-path when two new tests are added in one write', async () => {
+    const s = setup()
+
+    await s.rule(
+      writeAction(
+        'src/foo.test.ts',
+        `describe('x', () => { it('a', () => {}); it('b', () => {}) })`,
+      ),
+      s.ctx,
+    )
+
+    expect(s.agentCalled).toBe(true)
+  })
+
+  it('does not fast-path an implementation write (no new test nodes)', async () => {
+    const s = setup()
+
+    await s.rule(
+      writeAction(
+        'src/foo.ts',
+        `export function add(a: number, b: number) { return a + b }`,
+      ),
+      s.ctx,
+    )
+
+    expect(s.agentCalled).toBe(true)
+  })
+
+  it('skips the fast-path when fastPath: false is set, calling AI even for single-test additions', async () => {
+    const s = setup({ fastPath: false })
+
+    await s.rule(
+      writeAction(
+        'src/foo.test.ts',
+        `describe('x', () => { it('a', () => {}) })`,
+      ),
+      s.ctx,
+    )
+
+    expect(s.agentCalled).toBe(true)
+  })
+
   it('labels session, file, and pending-action sections with markdown headings', async () => {
     const s = setup({
       rawHistory: [{ kind: 'prompt', text: 'add a test' }],
@@ -267,6 +309,7 @@ function setup(
     instructions?: string
     maxEvents?: number
     maxContentChars?: number
+    fastPath?: boolean
   } = {},
 ) {
   const verdict = options.verdict ?? { kind: 'pass' as const, reason: '' }
@@ -290,6 +333,7 @@ function setup(
     ...(options.maxContentChars !== undefined && {
       maxContentChars: options.maxContentChars,
     }),
+    ...(options.fastPath !== undefined && { fastPath: options.fastPath }),
   })
   return {
     rule,

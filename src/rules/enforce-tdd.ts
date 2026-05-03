@@ -2,10 +2,10 @@ import { constants } from 'node:fs'
 import { open } from 'node:fs/promises'
 
 import type { Action, RawSessionEvent } from '../types.js'
-import type { RuleContext } from './contract.js'
+import type { RuleContext, RuleResult } from './contract.js'
 import { countNewTestNodes } from './matchers/count-new-test-nodes.js'
 import { inferLanguage } from './matchers/languages/index.js'
-import { trimHistory } from './utils/trim-history.js'
+import { trimHistory, type HistoryWindow } from './utils/trim-history.js'
 
 const DEFAULT_MAX_EVENTS = 20
 const DEFAULT_MAX_CONTENT_CHARS = 4000
@@ -161,9 +161,9 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * Applies to: write actions.
  * Supported agents: Claude Code, Codex, GitHub Copilot.
  *
- * Cost note: every matching write triggers an AI call. Scope with a
- * `{ files, rules }` block so the rule only fires on the code you
- * care about.
+ * Cost note: matching writes trigger an AI call unless the fast-path
+ * applies (see `fastPath`). Scope with a `{ files, rules }` block so
+ * the rule only fires on the code you care about.
  *
  * @param options.instructions — overrides or extends the default TDD
  *   rules text the validator is given. The role, inputs, and response
@@ -179,6 +179,12 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  * @param options.maxContentChars — truncate any single event's
  *   text/output longer than this, with a head + tail + marker
  *   replacement (default 4000).
+ * @param options.fastPath — when a write to a recognized language adds
+ *   exactly one new test node, return pass without calling the AI
+ *   (default true). Operationalises the rubric's "adding a test is
+ *   always allowed" line as a deterministic check, cutting cycle time
+ *   on the happy path. Set to `false` to AI-validate every matching
+ *   write.
  *
  * @example
  * enforceTdd()
@@ -191,41 +197,58 @@ export function enforceTdd(
     instructions?: string | ((defaults: string) => string)
     maxEvents?: number
     maxContentChars?: number
+    fastPath?: boolean
   } = {},
 ) {
   const rules =
     typeof options.instructions === 'function'
       ? options.instructions(DEFAULT_TDD_RULES)
       : (options.instructions ?? DEFAULT_TDD_RULES)
-  const window = {
+  const window: HistoryWindow = {
     maxEvents: options.maxEvents ?? DEFAULT_MAX_EVENTS,
     maxContentChars: options.maxContentChars ?? DEFAULT_MAX_CONTENT_CHARS,
   }
-  return async (action: Action, ctx?: RuleContext) => {
-    if (action.kind !== 'write') return { kind: 'pass' as const }
-    const language = inferLanguage(action.path)
-    if (language) {
-      const beforeContent = (await readBeforeContent(action.path)) ?? ''
-      if (countNewTestNodes(beforeContent, action.content, language) === 1) {
-        return { kind: 'pass' as const }
-      }
-    }
-    if (!ctx?.agent) {
-      return {
-        kind: 'violation' as const,
-        reason:
-          'enforceTdd: no AI agent available; configure Config.ai or use a vendor that ships one.',
-      }
-    }
-    const events = (await ctx.rawHistory?.()) ?? []
-    const windowed = trimHistory(events, window)
-    const historyBlock = windowed.map(formatEvent).join('\n')
+  const fastPath = options.fastPath ?? true
+  return async (action: Action, ctx?: RuleContext): Promise<RuleResult> => {
+    if (action.kind !== 'write') return { kind: 'pass' }
     const beforeContent = await readBeforeContent(action.path)
-    const prompt = buildPrompt(rules, historyBlock, beforeContent, action)
-    const verdict = await ctx.agent.reason(prompt)
-    if (verdict.kind === 'violation') {
-      return { kind: 'violation' as const, reason: verdict.reason }
+    if (fastPath && isSingleNewTest(action, beforeContent)) {
+      return { kind: 'pass' }
     }
-    return { kind: 'pass' as const }
+    return validateWithAi(action, ctx, beforeContent, rules, window)
   }
+}
+
+function isSingleNewTest(
+  action: { path: string; content: string },
+  beforeContent: string | undefined,
+): boolean {
+  const language = inferLanguage(action.path)
+  if (!language) return false
+  return countNewTestNodes(beforeContent ?? '', action.content, language) === 1
+}
+
+async function validateWithAi(
+  action: { path: string; content: string },
+  ctx: RuleContext | undefined,
+  beforeContent: string | undefined,
+  rules: string,
+  window: HistoryWindow,
+): Promise<RuleResult> {
+  if (!ctx?.agent) {
+    return {
+      kind: 'violation',
+      reason:
+        'enforceTdd: no AI agent available; configure Config.ai or use a vendor that ships one.',
+    }
+  }
+  const events = (await ctx.rawHistory?.()) ?? []
+  const windowed = trimHistory(events, window)
+  const historyBlock = windowed.map(formatEvent).join('\n')
+  const prompt = buildPrompt(rules, historyBlock, beforeContent, action)
+  const verdict = await ctx.agent.reason(prompt)
+  if (verdict.kind === 'violation') {
+    return { kind: 'violation', reason: verdict.reason }
+  }
+  return { kind: 'pass' }
 }
