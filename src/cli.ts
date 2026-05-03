@@ -32,13 +32,20 @@ async function dispatch(
   agent: Agent,
 ): Promise<string> {
   const parsed = parsePayload(entry, rawPayload)
-  const decision =
-    parsed.kind === 'invalid'
-      ? parsed.decision
-      : await evaluate(parsed.action, rules, {
-          agent,
-          ...(parsed.rawHistory && { rawHistory: parsed.rawHistory }),
-        })
+  if (parsed.kind === 'invalid') {
+    return entry.adapter.toResponse(parsed.decision)
+  }
+  const rawHistory = parsed.rawHistory
+  const toCanonical = entry.toCanonical
+  const history =
+    rawHistory && toCanonical
+      ? async () => (await rawHistory()).map(toCanonical)
+      : undefined
+  const decision = await evaluate(parsed.action, rules, {
+    agent,
+    ...(rawHistory && { rawHistory }),
+    ...(history && { history }),
+  })
   return entry.adapter.toResponse(decision)
 }
 

@@ -4,8 +4,9 @@ import { describe, it, expect } from 'vitest'
 
 import { run } from './cli.js'
 import type { Config } from './config.js'
-import type { Agent } from './types.js'
+import type { Agent, SessionEvent } from './types.js'
 import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
+import type { Rule } from './rules/contract.js'
 import { parseAs } from './utils/parse-as.js'
 import type { ResponseShape as ClaudeCodeResponse } from './vendors/claude-code/adapter.js'
 
@@ -89,6 +90,32 @@ describe('cli', () => {
     })
 
     expect(raw).toBe('')
+  })
+
+  it('threads canonical session events into ctx.history when a transcript is available', async () => {
+    let captured: SessionEvent[] | undefined
+    const captureRule: Rule = async (_action, ctx) => {
+      captured = await ctx?.history?.()
+      return { kind: 'pass' }
+    }
+    const payload = JSON.stringify({
+      session_id: 'x',
+      transcript_path: 'test/fixtures/transcripts/tdd-clean.jsonl',
+      cwd: '/workspaces/probity',
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'echo hi' },
+      tool_use_id: 'tu_x',
+    })
+
+    await run(payload, {
+      vendor: 'claude-code',
+      loadConfig: () =>
+        Promise.resolve({ rules: [captureRule], ai: stubAgent }),
+    })
+
+    expect(captured).toBeDefined()
+    expect(captured?.some((e) => e.kind === 'command')).toBe(true)
   })
 
   it('returns a deny response when the adapter rejects the payload', async () => {

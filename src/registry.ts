@@ -1,7 +1,8 @@
-import type { Agent, RawSessionEvent } from './types.js'
+import type { Agent, RawSessionEvent, SessionEvent } from './types.js'
 import type { Adapter } from './vendors/adapter.js'
 import { claudeCode } from './vendors/claude-code/agent.js'
 import * as claudeCodeAdapter from './vendors/claude-code/adapter.js'
+import { toCanonical as claudeCodeToCanonical } from './vendors/claude-code/event.js'
 import { readTranscript as readClaudeCodeTranscript } from './vendors/claude-code/transcript.js'
 import { codex } from './vendors/codex/agent.js'
 import * as codexAdapter from './vendors/codex/adapter.js'
@@ -13,17 +14,18 @@ import * as githubCopilotChatAdapter from './vendors/github-copilot-chat/adapter
 import { readTranscript as readGithubCopilotChatTranscript } from './vendors/github-copilot-chat/transcript.js'
 
 /**
- * Each vendor entry bundles the three vendor-specific pieces the
- * engine needs: the adapter (payload/response translation), the agent
- * factory (AI validator — sync, lazy SDK load), and the transcript
- * reader (session log → RawSessionEvent[]). The engine composes them at
- * dispatch — calling adapter.sessionPath to locate the session, then
- * readTranscript to materialise history when a rule asks for it.
+ * Each vendor entry bundles the vendor-specific pieces the engine
+ * needs: the adapter (payload/response translation), the agent factory
+ * (AI validator — sync, lazy SDK load), the transcript reader (session
+ * log → RawSessionEvent[]), and an optional toCanonical that maps a
+ * raw event to its canonical SessionEvent shape (vendors gain this as
+ * their classifier ships).
  */
 export type VendorEntry = {
   adapter: Adapter
   agent: () => Agent
   readTranscript: (path: string) => Promise<RawSessionEvent[]>
+  toCanonical?: (event: RawSessionEvent) => SessionEvent
 }
 
 export const vendors = {
@@ -31,6 +33,7 @@ export const vendors = {
     adapter: claudeCodeAdapter,
     agent: claudeCode,
     readTranscript: readClaudeCodeTranscript,
+    toCanonical: claudeCodeToCanonical,
   },
   codex: {
     adapter: codexAdapter,
