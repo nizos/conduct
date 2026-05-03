@@ -1,7 +1,7 @@
 import { constants } from 'node:fs'
 import { open } from 'node:fs/promises'
 
-import type { Action, SessionEvent } from '../types.js'
+import type { Action, RawSessionEvent } from '../types.js'
 import type { RuleContext } from './contract.js'
 import { trimHistory } from './utils/trim-history.js'
 
@@ -98,7 +98,7 @@ Respond with a single JSON object of exactly this shape:
 {"kind":"pass"|"violation","reason":"<short explanation>"}
 Return JSON only. No prose, no code fences.`
 
-function formatEvent(event: SessionEvent): string {
+function formatEvent(event: RawSessionEvent): string {
   if (event.kind === 'prompt') return `User: ${event.text}`
   return `${event.tool}(${formatInput(event.input)}) → ${event.output}`
 }
@@ -215,7 +215,7 @@ export function enforceTdd(
           'enforceTdd: no AI agent available; configure Config.ai or use a vendor that ships one.',
       }
     }
-    const events = (await ctx.history?.()) ?? []
+    const events = (await ctx.rawHistory?.()) ?? []
     const windowed = trimHistory(events, window)
     const historyBlock = windowed.map(formatEvent).join('\n')
     const beforeContent = await readBeforeContent(action.path)

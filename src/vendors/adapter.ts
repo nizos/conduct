@@ -58,7 +58,7 @@ export function passthroughFor(
  * (e.g. resolved from a `transcript_path` field in the payload, or
  * computed from a `sessionId` plus a vendor home dir). The engine
  * pairs it with the vendor's transcript reader to surface
- * `ctx.history` to rules.
+ * `ctx.rawHistory` to rules.
  */
 export type Adapter = {
   parseAction: (payload: unknown) => ParseActionResult

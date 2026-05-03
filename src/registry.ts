@@ -1,4 +1,4 @@
-import type { Agent, SessionEvent } from './types.js'
+import type { Agent, RawSessionEvent } from './types.js'
 import type { Adapter } from './vendors/adapter.js'
 import { claudeCode } from './vendors/claude-code/agent.js'
 import * as claudeCodeAdapter from './vendors/claude-code/adapter.js'
@@ -16,14 +16,14 @@ import { readTranscript as readGithubCopilotChatTranscript } from './vendors/git
  * Each vendor entry bundles the three vendor-specific pieces the
  * engine needs: the adapter (payload/response translation), the agent
  * factory (AI validator — sync, lazy SDK load), and the transcript
- * reader (session log → SessionEvent[]). The engine composes them at
+ * reader (session log → RawSessionEvent[]). The engine composes them at
  * dispatch — calling adapter.sessionPath to locate the session, then
  * readTranscript to materialise history when a rule asks for it.
  */
 export type VendorEntry = {
   adapter: Adapter
   agent: () => Agent
-  readTranscript: (path: string) => Promise<SessionEvent[]>
+  readTranscript: (path: string) => Promise<RawSessionEvent[]>
 }
 
 export const vendors = {

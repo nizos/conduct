@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SessionEvent } from '../../types.js'
+import type { RawSessionEvent } from '../../types.js'
 import { readJsonl } from '../../utils/read-jsonl.js'
 
 const ContentItemSchema = z.discriminatedUnion('type', [
@@ -29,10 +29,10 @@ const EntrySchema = z.object({
 export async function readTranscript(
   path: string,
   options: { maxBytes?: number } = {},
-): Promise<SessionEvent[]> {
+): Promise<RawSessionEvent[]> {
   const entries = await readJsonl(path, options)
-  const pending = new Map<string, SessionEvent>()
-  const emitted: SessionEvent[] = []
+  const pending = new Map<string, RawSessionEvent>()
+  const emitted: RawSessionEvent[] = []
 
   for (const rawEntry of entries) {
     const entry = EntrySchema.safeParse(rawEntry)
@@ -44,7 +44,7 @@ export async function readTranscript(
       if (!parsed.success) continue
       const item = parsed.data
       if (item.type === 'tool_use') {
-        const action: SessionEvent = {
+        const action: RawSessionEvent = {
           kind: 'action',
           tool: item.name,
           input: item.input,

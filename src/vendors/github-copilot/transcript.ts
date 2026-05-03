@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SessionEvent } from '../../types.js'
+import type { RawSessionEvent } from '../../types.js'
 import { readJsonl } from '../../utils/read-jsonl.js'
 
 const UserMessageSchema = z.object({
@@ -33,10 +33,10 @@ const ToolCompleteSchema = z.object({
 export async function readTranscript(
   path: string,
   options: { maxBytes?: number } = {},
-): Promise<SessionEvent[]> {
+): Promise<RawSessionEvent[]> {
   const entries = await readJsonl(path, options)
-  const pending = new Map<string, SessionEvent>()
-  const emitted: SessionEvent[] = []
+  const pending = new Map<string, RawSessionEvent>()
+  const emitted: RawSessionEvent[] = []
   for (const rawEntry of entries) {
     const user = UserMessageSchema.safeParse(rawEntry)
     if (user.success) {
@@ -45,7 +45,7 @@ export async function readTranscript(
     }
     const start = ToolStartSchema.safeParse(rawEntry)
     if (start.success) {
-      const action: SessionEvent = {
+      const action: RawSessionEvent = {
         kind: 'action',
         tool: start.data.data.toolName,
         input: start.data.data.arguments,

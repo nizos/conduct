@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { describe, it, expect, onTestFinished } from 'vitest'
 
-import type { Action, SessionEvent, Verdict } from '../types.js'
+import type { Action, RawSessionEvent, Verdict } from '../types.js'
 import type { RuleContext } from './contract.js'
 import { enforceTdd } from './enforce-tdd.js'
 
@@ -37,7 +37,7 @@ describe('enforce-tdd', () => {
 
     const result = await rule(
       { kind: 'write', path: 'src/calc.ts', content: 'x' },
-      { history: () => Promise.resolve([]) },
+      { rawHistory: () => Promise.resolve([]) },
     )
 
     expect(result.kind).toBe('violation')
@@ -73,7 +73,7 @@ describe('enforce-tdd', () => {
 
   it('includes recent session history in the AI prompt', async () => {
     const s = setup({
-      history: [
+      rawHistory: [
         {
           kind: 'action',
           tool: 'Bash',
@@ -94,7 +94,7 @@ describe('enforce-tdd', () => {
 
   it('includes tool names and user prompts in the history block', async () => {
     const s = setup({
-      history: [
+      rawHistory: [
         { kind: 'prompt', text: 'add a test for the adder' },
         {
           kind: 'action',
@@ -176,7 +176,7 @@ describe('enforce-tdd', () => {
 
   it('renders JSON-string event inputs as objects (no escape noise)', async () => {
     const s = setup({
-      history: [
+      rawHistory: [
         {
           kind: 'action',
           tool: 'shell',
@@ -193,11 +193,11 @@ describe('enforce-tdd', () => {
   })
 
   it('limits the history block to the last maxEvents events', async () => {
-    const events: SessionEvent[] = Array.from({ length: 15 }, (_, i) => ({
+    const events: RawSessionEvent[] = Array.from({ length: 15 }, (_, i) => ({
       kind: 'prompt' as const,
       text: `event-${i}`,
     }))
-    const s = setup({ history: events, maxEvents: 5 })
+    const s = setup({ rawHistory: events, maxEvents: 5 })
 
     await s.rule(writeAction(), s.ctx)
 
@@ -231,7 +231,7 @@ describe('enforce-tdd', () => {
 
   it('labels session, file, and pending-action sections with markdown headings', async () => {
     const s = setup({
-      history: [{ kind: 'prompt', text: 'add a test' }],
+      rawHistory: [{ kind: 'prompt', text: 'add a test' }],
     })
 
     await s.rule(
@@ -248,7 +248,7 @@ describe('enforce-tdd', () => {
 function setup(
   options: {
     verdict?: Verdict
-    history?: SessionEvent[]
+    rawHistory?: RawSessionEvent[]
     instructions?: string
     maxEvents?: number
     maxContentChars?: number
@@ -256,7 +256,7 @@ function setup(
 ) {
   const verdict = options.verdict ?? { kind: 'pass' as const, reason: '' }
   const state = { agentCalled: false, capturedPrompt: '' }
-  const events = options.history
+  const events = options.rawHistory
   const ctx: RuleContext = {
     agent: {
       reason: (prompt: string) => {
@@ -265,7 +265,7 @@ function setup(
         return Promise.resolve(verdict)
       },
     },
-    ...(events && { history: () => Promise.resolve(events) }),
+    ...(events && { rawHistory: () => Promise.resolve(events) }),
   }
   const rule = enforceTdd({
     ...(options.instructions !== undefined && {

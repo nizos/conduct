@@ -38,11 +38,13 @@ export type Agent = {
 }
 
 /**
- * A normalized event from the agent's recent session — what the agent
- * asked, did, and saw. Adapters translate vendor-specific transcripts
- * into this shape. Rules consume it via `ctx.history()`.
+ * A vendor-shaped event from the agent's recent session — what the
+ * agent asked, did, and saw, with the original tool name and input
+ * preserved. Adapters translate vendor-specific transcripts into this
+ * shape. Rules that need vendor fidelity consume it via
+ * `ctx.rawHistory()`; canonical, domain-shaped events live elsewhere.
  */
-export type SessionEvent =
+export type RawSessionEvent =
   | { kind: 'prompt'; text: string }
   | {
       kind: 'action'

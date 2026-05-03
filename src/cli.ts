@@ -1,4 +1,4 @@
-import type { Action, Agent, Decision, SessionEvent } from './types.js'
+import type { Action, Agent, Decision, RawSessionEvent } from './types.js'
 import {
   findConfig,
   loadConfig,
@@ -37,7 +37,7 @@ async function dispatch(
       ? parsed.decision
       : await evaluate(parsed.action, rules, {
           agent,
-          ...(parsed.history && { history: parsed.history }),
+          ...(parsed.rawHistory && { rawHistory: parsed.rawHistory }),
         })
   return entry.adapter.toResponse(decision)
 }
@@ -46,7 +46,7 @@ type ParseResult =
   | {
       kind: 'ok'
       action: Action
-      history: (() => Promise<SessionEvent[]>) | undefined
+      rawHistory: (() => Promise<RawSessionEvent[]>) | undefined
     }
   | { kind: 'invalid'; decision: Decision }
 
@@ -65,7 +65,9 @@ function parsePayload(entry: VendorEntry, rawPayload: string): ParseResult {
   return {
     kind: 'ok',
     action: action.action,
-    history: sessionPath ? () => entry.readTranscript(sessionPath) : undefined,
+    rawHistory: sessionPath
+      ? () => entry.readTranscript(sessionPath)
+      : undefined,
   }
 }
 

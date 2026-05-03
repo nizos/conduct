@@ -1,4 +1,4 @@
-import type { SessionEvent } from '../../types.js'
+import type { RawSessionEvent } from '../../types.js'
 
 export type HistoryWindow = {
   maxEvents: number
@@ -6,15 +6,15 @@ export type HistoryWindow = {
 }
 
 export function trimHistory(
-  events: SessionEvent[],
+  events: RawSessionEvent[],
   window: HistoryWindow,
-): SessionEvent[] {
+): RawSessionEvent[] {
   return events
     .slice(-window.maxEvents)
     .map((event) => truncate(event, window.maxContentChars))
 }
 
-function truncate(event: SessionEvent, max: number): SessionEvent {
+function truncate(event: RawSessionEvent, max: number): RawSessionEvent {
   if (event.kind === 'prompt') {
     const text = clip(event.text, max)
     return text === event.text ? event : { ...event, text }

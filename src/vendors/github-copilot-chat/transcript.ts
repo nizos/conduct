@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { z } from 'zod'
 
-import type { SessionEvent } from '../../types.js'
+import type { RawSessionEvent } from '../../types.js'
 import { readJsonl } from '../../utils/read-jsonl.js'
 
 /**
@@ -91,7 +91,7 @@ const DeltaSchema = z.discriminatedUnion('kind', [
 type State = Record<string, unknown>
 type PathSegments = ReadonlyArray<string | number>
 type Indexable = Record<string | number, unknown>
-type ActionEvent = Extract<SessionEvent, { kind: 'action' }>
+type ActionEvent = Extract<RawSessionEvent, { kind: 'action' }>
 
 /**
  * Reads a Copilot Chat (VS Code extension) transcript and joins it
@@ -105,8 +105,8 @@ type ActionEvent = Extract<SessionEvent, { kind: 'action' }>
 export async function readTranscript(
   transcriptPath: string,
   options: { maxBytes?: number; chatSessionsPath?: string } = {},
-): Promise<SessionEvent[]> {
-  const events: SessionEvent[] = []
+): Promise<RawSessionEvent[]> {
+  const events: RawSessionEvent[] = []
   const actions = new Map<string, ActionEvent>()
   const entries = await readJsonl(transcriptPath, options)
   for (const entry of entries) {
@@ -127,7 +127,7 @@ export async function readTranscript(
   return events
 }
 
-function parseTimelineEntry(entry: unknown): SessionEvent | undefined {
+function parseTimelineEntry(entry: unknown): RawSessionEvent | undefined {
   const user = UserMessageSchema.safeParse(entry)
   if (user.success) return { kind: 'prompt', text: user.data.data.content }
   const start = ToolStartSchema.safeParse(entry)

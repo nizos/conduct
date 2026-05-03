@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 
-import type { SessionEvent } from '../../types.js'
+import type { RawSessionEvent } from '../../types.js'
 import { trimHistory } from './trim-history.js'
 
 describe('trimHistory', () => {
   it('truncates long action.output with head + marker + tail', () => {
     const longOutput = 'A'.repeat(1500)
-    const events: SessionEvent[] = [
+    const events: RawSessionEvent[] = [
       {
         kind: 'action',
         tool: 'Bash',
@@ -29,7 +29,7 @@ describe('trimHistory', () => {
 
   it('truncates long prompt.text the same way', () => {
     const longText = 'B'.repeat(1500)
-    const events: SessionEvent[] = [{ kind: 'prompt', text: longText }]
+    const events: RawSessionEvent[] = [{ kind: 'prompt', text: longText }]
 
     const [windowed] = trimHistory(events, {
       maxEvents: 10,
@@ -43,7 +43,7 @@ describe('trimHistory', () => {
   })
 
   it('keeps only the last N events when count exceeds maxEvents', () => {
-    const events: SessionEvent[] = [
+    const events: RawSessionEvent[] = [
       { kind: 'prompt', text: 'a' },
       { kind: 'prompt', text: 'b' },
       { kind: 'prompt', text: 'c' },
