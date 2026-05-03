@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import { inferLanguage } from './index.js'
 import { javascript } from './javascript.js'
+import { python } from './python.js'
 import { typescript } from './typescript.js'
 
 describe('inferLanguage', () => {
@@ -15,5 +16,9 @@ describe('inferLanguage', () => {
 
   it('returns the javascript module for a .js file', () => {
     expect(inferLanguage('src/foo.js')).toBe(javascript)
+  })
+
+  it('returns the python module for a .py file', () => {
+    expect(inferLanguage('src/foo.py')).toBe(python)
   })
 })
