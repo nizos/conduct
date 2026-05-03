@@ -39,9 +39,10 @@ tests do not count. Restructuring existing tests is not "adding".
 
   - Adding a test is always allowed and does not require prior test
     output.
-  - A test added to drive new behavior must fail for the right reason
-    (an assertion, not a syntax or import error) before production
-    code may be written to satisfy it.
+  - A test added to drive new behavior must be observed failing for
+    the right reason (an assertion, not a syntax or import error) in
+    a prior test run before production code may be written to satisfy
+    it.
   - A test added to capture existing behavior is allowed to pass
     immediately and must not be blocked for not failing first.
     Examples: characterization tests pinning current implementation,
