@@ -3,6 +3,8 @@ import { open } from 'node:fs/promises'
 
 import type { Action, RawSessionEvent } from '../types.js'
 import type { RuleContext } from './contract.js'
+import { countNewTestNodes } from './matchers/count-new-test-nodes.js'
+import { inferLanguage } from './matchers/languages/index.js'
 import { trimHistory } from './utils/trim-history.js'
 
 const DEFAULT_MAX_EVENTS = 20
@@ -201,6 +203,13 @@ export function enforceTdd(
   }
   return async (action: Action, ctx?: RuleContext) => {
     if (action.kind !== 'write') return { kind: 'pass' as const }
+    const language = inferLanguage(action.path)
+    if (language) {
+      const beforeContent = (await readBeforeContent(action.path)) ?? ''
+      if (countNewTestNodes(beforeContent, action.content, language) === 1) {
+        return { kind: 'pass' as const }
+      }
+    }
     if (!ctx?.agent) {
       return {
         kind: 'violation' as const,

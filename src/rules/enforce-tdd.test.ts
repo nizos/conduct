@@ -229,6 +229,21 @@ describe('enforce-tdd', () => {
     expect(s.capturedPrompt).toMatch(/reason/i)
   })
 
+  it('fast-paths a single-test addition without calling the AI agent', async () => {
+    const s = setup()
+
+    const result = await s.rule(
+      writeAction(
+        'src/foo.test.ts',
+        `describe('x', () => { it('a', () => {}) })`,
+      ),
+      s.ctx,
+    )
+
+    expect(result).toEqual({ kind: 'pass' })
+    expect(s.agentCalled).toBe(false)
+  })
+
   it('labels session, file, and pending-action sections with markdown headings', async () => {
     const s = setup({
       rawHistory: [{ kind: 'prompt', text: 'add a test' }],
