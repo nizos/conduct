@@ -7,8 +7,8 @@ import { countNewTestNodes } from './matchers/count-new-test-nodes.js'
 import { inferLanguage } from './matchers/languages/index.js'
 import { trimHistory, type HistoryWindow } from './utils/trim-history.js'
 
-const DEFAULT_MAX_EVENTS = 20
-const DEFAULT_MAX_CONTENT_CHARS = 4000
+const DEFAULT_MAX_EVENTS = 10
+const DEFAULT_MAX_CONTENT_CHARS = 6000
 const MAX_BEFORE_CONTENT_BYTES = 1024 * 1024
 
 const PROCESS_INSTRUCTIONS = `## Role
@@ -174,11 +174,15 @@ async function readBeforeContent(path: string): Promise<string | undefined> {
  *   covering test-first, one-new-test-per-write, minimum implementation,
  *   clean-red recovery, and refactors under green.
  * @param options.maxEvents — keep at most this many of the most
- *   recent session events when building the prompt (default 20).
- *   Caps token usage when transcripts get long.
+ *   recent session events when building the prompt (default 10).
+ *   Raise it for long-running tasks that span many tool calls; pushing
+ *   it too high crowds the prompt and the model may miss recent
+ *   events or stop following the response format.
  * @param options.maxContentChars — truncate any single event's
  *   text/output longer than this, with a head + tail + marker
- *   replacement (default 4000).
+ *   replacement (default 6000). Raise it when working with large
+ *   files so context isn't lopped mid-region; same caveat as
+ *   maxEvents about over-stuffing the prompt.
  * @param options.fastPath — when a write to a recognized language adds
  *   exactly one new test node, return pass without calling the AI
  *   (default true). Operationalises the rubric's "adding a test is

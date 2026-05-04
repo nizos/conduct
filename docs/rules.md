@@ -16,8 +16,8 @@ A deterministic fast-path skips the AI when a write adds exactly one new test no
 | Option            | Type                                       | Default                      | Description                                                                                                                                                                                      |
 | ----------------- | ------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `instructions`    | `string \| ((defaults: string) => string)` | built-in three-rule TDD spec | Overrides or extends the default TDD rules text. Pass a string to replace outright, or a function `(defaults) => ...` to extend (e.g. append a project addendum without forking the whole spec). |
-| `maxEvents`       | `number`                                   | `20`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.                                                               |
-| `maxContentChars` | `number`                                   | `4000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges.                                                        |
+| `maxEvents`       | `number`                                   | `10`                         | Keep at most this many of the most recent session events when building the validator prompt. Caps token usage on long transcripts.                                                               |
+| `maxContentChars` | `number`                                   | `6000`                       | Truncate any single event's text/output longer than this with a head + marker + tail replacement, so the validator still sees both edges.                                                        |
 | `fastPath`        | `boolean`                                  | `true`                       | When a write to a recognised language adds exactly one new test node, return pass without calling the AI. Set to `false` to AI-validate every matching write.                                    |
 
 ### Examples
@@ -75,6 +75,10 @@ Languages with a "Required pack" entry need the corresponding `@ast-grep/lang-*`
 ### Cost note
 
 Matching writes that don't fast-path trigger an AI call. Scope with a `{ files, rules }` block so the rule fires only on the code you care about.
+
+### Tuning history and content limits
+
+Bump `maxContentChars` when working with large source files so the validator doesn't see context lopped mid-region. Bump `maxEvents` for tasks that span many tool calls. Pushing either too high crowds the prompt — the model may miss recent events or stop producing the JSON verdict format.
 
 ---
 
