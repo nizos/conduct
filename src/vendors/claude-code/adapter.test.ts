@@ -131,9 +131,26 @@ describe('claude-code adapter', () => {
   })
 
   it('extracts the file path from an Edit payload as an absolute POSIX path', async () => {
-    const { action } = await setup('edit-file.json')
+    const dir = await mkdtemp(path.join(tmpdir(), 'edit-path-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const filePath = path.join(dir, 'README.md')
+    await writeFile(filePath, 'Process discipline for AI coding agents.\n')
 
-    expect(action).toMatchObject({ path: '/workspaces/probity/README.md' })
+    const action = ok(
+      await parseAction({
+        cwd: dir,
+        tool_name: 'Edit',
+        tool_input: {
+          file_path: filePath,
+          old_string: 'Process discipline for AI coding agents.',
+          new_string: 'Process discipline for AI coding agents. 🚀',
+        },
+      }),
+    )
+
+    expect(action).toMatchObject({ path: filePath })
   })
 
   it('preserves an absolute file_path emitted by the agent', async () => {
