@@ -52,4 +52,25 @@ describe('toVerdict', () => {
     expect(verdict.kind).toBe('violation')
     expect(verdict.reason).toMatch(/SDK transport failure/)
   })
+
+  it('preserves a useful slice of the validator output in the parse-failure reason (not just the first 200 chars)', async () => {
+    const longProse = 'x'.repeat(2000)
+    const verdict = await toVerdict(() => Promise.resolve(longProse))
+
+    expect(verdict.kind).toBe('violation')
+    expect(verdict.reason).toContain(longProse)
+  })
+
+  it('extracts a verdict object embedded after prose preamble (models often "show their work" before the JSON)', async () => {
+    const proseThenJson =
+      'Looking at this carefully:\n\n## Analysis\n\nThe pending action is fine.\n\n' +
+      '{"kind":"pass","reason":"shape change driven by failing test"}'
+
+    const verdict = await toVerdict(() => Promise.resolve(proseThenJson))
+
+    expect(verdict).toEqual({
+      kind: 'pass',
+      reason: 'shape change driven by failing test',
+    })
+  })
 })

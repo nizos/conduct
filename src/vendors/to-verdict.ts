@@ -33,7 +33,7 @@ function parseVerdict(text: string): Verdict {
   if (parsed === undefined) {
     return {
       kind: 'violation',
-      reason: `could not parse verdict from validator output: ${text.slice(0, 200)}`,
+      reason: `could not parse verdict from validator output: ${text.slice(0, 4000)}`,
     }
   }
   const result = VerdictSchema.safeParse(parsed)
@@ -50,21 +50,62 @@ function parseVerdict(text: string): Verdict {
   return result.data
 }
 
+// Tries the whole text, then the text minus a ```json fence, then
+// scans for a JSON object embedded after prose. Models often "show
+// their work" before the answer; the verdict object lives at the end.
 function tryParseJson(text: string): unknown {
-  // Fast path: most validator responses are already plain JSON.
+  return (
+    safeParse(text.trim()) ??
+    safeParse(stripFence(text)) ??
+    findEmbeddedObject(text)
+  )
+}
+
+function safeParse(text: string): unknown {
   try {
-    return JSON.parse(text.trim())
+    return JSON.parse(text)
   } catch {
-    // Fallback: strip an optional ```json fence and retry.
-    try {
-      return JSON.parse(
-        text
-          .replace(/^```(?:json)?\s*/, '')
-          .replace(/\s*```$/, '')
-          .trim(),
-      )
-    } catch {
-      return undefined
+    return undefined
+  }
+}
+
+function stripFence(text: string): string {
+  return text
+    .replace(/^```(?:json)?\s*/, '')
+    .replace(/\s*```$/, '')
+    .trim()
+}
+
+function findEmbeddedObject(text: string): unknown {
+  const opens = [...text.matchAll(/\{/g)].map((m) => m.index ?? 0).reverse()
+  for (const start of opens) {
+    const span = scanBalanced(text, start)
+    const parsed = span === undefined ? undefined : safeParse(span)
+    if (parsed !== undefined) return parsed
+  }
+  return undefined
+}
+
+// Returns the substring of `text` from `start` (a `{`) up to its
+// matching `}`, or undefined if the braces don't balance.
+function scanBalanced(text: string, start: number): string | undefined {
+  let depth = 0
+  let inString = false
+  let escape = false
+  for (let i = start; i < text.length; i++) {
+    const c = text[i]
+    if (escape) {
+      escape = false
+    } else if (inString) {
+      if (c === '\\') escape = true
+      else if (c === '"') inString = false
+    } else if (c === '"') {
+      inString = true
+    } else if (c === '{') {
+      depth++
+    } else if (c === '}' && --depth === 0) {
+      return text.slice(start, i + 1)
     }
   }
+  return undefined
 }
