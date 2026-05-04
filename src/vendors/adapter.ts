@@ -27,9 +27,18 @@ export function fromSchema(
     if (parsed.success) return { ok: true, action: parsed.data }
     return {
       ok: false,
-      reason: parsed.error.issues.map((i) => i.message).join('; '),
+      reason: parsed.error.issues.flatMap(unwrapIssue).join('; '),
     }
   }
+}
+
+// `invalid_union` issues hide branch-specific messages under
+// `.errors`; drill in so adapter-emitted messages reach the caller.
+function unwrapIssue(issue: z.core.$ZodIssue): string[] {
+  if (issue.code === 'invalid_union') {
+    return issue.errors.flatMap((branch) => branch.flatMap(unwrapIssue))
+  }
+  return [issue.message]
 }
 
 /**

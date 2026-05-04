@@ -1,10 +1,9 @@
-import { readFile } from 'node:fs/promises'
-
 import type { PreToolUseHookSpecificOutput } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 import { fromSchema, passthroughFor } from '../adapter.js'
+import { applyEdit } from '../apply-edit.js'
 import { posixAbsolute } from '../posix-absolute.js'
 
 /**
@@ -35,14 +34,18 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
       }),
       cwd: z.string().min(1),
     })
-    .transform(async (d): Promise<Action> => {
+    .transform(async (d, ctx): Promise<Action> => {
       const path = posixAbsolute(d.cwd, d.tool_input.file_path)
-      const content = await computeEditedContent(
-        path,
-        d.tool_input.old_string,
-        d.tool_input.new_string,
-      )
-      return { kind: 'write', path, content }
+      const result = await applyEdit({
+        filePath: path,
+        oldString: d.tool_input.old_string,
+        newString: d.tool_input.new_string,
+      })
+      if (!result.ok) {
+        ctx.addIssue({ code: 'custom', message: result.reason })
+        return z.NEVER
+      }
+      return { kind: 'write', path, content: result.content }
     }),
   z
     .object({
@@ -95,22 +98,4 @@ export function toResponse(decision: Decision): string {
   // permission flow take over. Returning permissionDecision: 'allow' would
   // skip the user's confirmation prompt for every non-blocked action.
   return ''
-}
-
-// Reads the current file and applies the Edit substitution so the
-// canonical Action carries the full post-edit content. If the file
-// can't be read (missing, unreadable), falls back to the new_string
-// alone — preserves the previous "partial content" behaviour as a
-// graceful degradation rather than a parse failure.
-async function computeEditedContent(
-  filePath: string,
-  oldString: string,
-  newString: string,
-): Promise<string> {
-  try {
-    const current = await readFile(filePath, 'utf8')
-    return current.replace(oldString, newString)
-  } catch {
-    return newString
-  }
 }

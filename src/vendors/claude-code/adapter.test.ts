@@ -107,6 +107,29 @@ describe('claude-code adapter', () => {
     })
   })
 
+  it('Edit fails closed when old_string is not present in the file (no silent no-op)', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'edit-miss-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const filePath = path.join(dir, 'foo.ts')
+    await writeFile(filePath, 'a fresh file with no marker in it\n')
+
+    const result = await parseAction({
+      cwd: dir,
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: filePath,
+        old_string: 'MARKER_THAT_IS_ABSENT',
+        new_string: 'REPLACED',
+      },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.reason).toMatch(/not found|MARKER_THAT_IS_ABSENT/)
+  })
+
   it('extracts the file path from an Edit payload as an absolute POSIX path', async () => {
     const { action } = await setup('edit-file.json')
 

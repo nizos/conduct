@@ -7,8 +7,8 @@
   "tool_name": "Edit",
   "tool_input": {
     "file_path": "/workspaces/probity/README.md",
-    "old_string": "Process discipline for coding agents.",
-    "new_string": "Process discipline for coding agents. \ud83d\ude80"
+    "old_string": "Process discipline for AI coding agents.",
+    "new_string": "Process discipline for AI coding agents. \ud83d\ude80"
   },
   "tool_use_id": "toolu_01ABC789"
 }
