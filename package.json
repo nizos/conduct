@@ -69,6 +69,7 @@
     ]
   },
   "devDependencies": {
+    "@ast-grep/lang-csharp": "^0.0.6",
     "@ast-grep/lang-python": "^0.0.6",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
@@ -87,9 +88,13 @@
     "@anthropic-ai/sdk": "^0.92.0"
   },
   "peerDependencies": {
+    "@ast-grep/lang-csharp": "*",
     "@ast-grep/lang-python": "*"
   },
   "peerDependenciesMeta": {
+    "@ast-grep/lang-csharp": {
+      "optional": true
+    },
     "@ast-grep/lang-python": {
       "optional": true
     }
