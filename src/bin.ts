@@ -123,8 +123,21 @@ async function logExchange(
   response: string | undefined,
 ): Promise<void> {
   if (!logPath || response === undefined) return
-  const entry = `=== ${new Date().toISOString()} ===\n[request]\n${request}\n\n[response]\n${response}\n\n`
+  const entry =
+    JSON.stringify({
+      datetime: new Date().toISOString(),
+      request: tryJsonParse(request),
+      response: tryJsonParse(response),
+    }) + '\n'
   await appendFile(logPath, entry, 'utf8').catch(() => undefined)
+}
+
+function tryJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
 }
 
 function loaderFromPath(

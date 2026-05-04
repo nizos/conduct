@@ -120,7 +120,7 @@ describe('bin main', () => {
     expect(result.stdout).toBe('')
   })
 
-  it('appends the hook payload and the response to --debug <path> for diagnostics', async () => {
+  it('appends each invocation to --debug <path> as a JSONL entry with datetime, request, and response', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'probity-debug-'))
     onTestFinished(() => rm(dir, { recursive: true, force: true }))
     const logPath = path.join(dir, 'probity.log')
@@ -132,9 +132,20 @@ describe('bin main', () => {
     })
 
     const log = await readFile(logPath, 'utf8')
-    expect(log).toContain(KEBAB_PAYLOAD.trim())
-    expect(log).toMatch(/\[request\]/i)
-    expect(log).toMatch(/\[response\]/i)
+    const entries = log
+      .trim()
+      .split('\n')
+      .map((line) =>
+        parseAs<{ datetime: string; request: unknown; response: unknown }>(
+          line,
+        ),
+      )
+    expect(entries).toHaveLength(1)
+    expect(entries[0]?.datetime).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+    expect(entries[0]).toMatchObject({
+      request: { tool_name: 'Write' },
+      response: '',
+    })
   })
 })
 
