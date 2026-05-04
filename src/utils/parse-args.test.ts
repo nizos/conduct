@@ -76,4 +76,22 @@ describe('parseArgs', () => {
       configPath: 'foo.config.ts',
     })
   })
+
+  it('captures --debug <path> in the run result so request/response can be logged for diagnostics', () => {
+    expect(
+      parseArgs([
+        'node',
+        'bin.js',
+        '--agent',
+        'claude-code',
+        '--debug',
+        '/tmp/probity-debug.log',
+      ]),
+    ).toEqual({
+      kind: 'run',
+      vendor: 'claude-code',
+      configPath: undefined,
+      debugLogPath: '/tmp/probity-debug.log',
+    })
+  })
 })

@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, onTestFinished } from 'vitest'
 
 import { main, type MainResult } from './bin.js'
 import type { ConfigLoader } from './cli.js'
@@ -115,6 +118,23 @@ describe('bin main', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stderr).toBeUndefined()
     expect(result.stdout).toBe('')
+  })
+
+  it('appends the hook payload and the response to --debug <path> for diagnostics', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'probity-debug-'))
+    onTestFinished(() => rm(dir, { recursive: true, force: true }))
+    const logPath = path.join(dir, 'probity.log')
+
+    await setup({
+      argv: ['node', 'bin.js', '--agent', 'claude-code', '--debug', logPath],
+      stdin: KEBAB_PAYLOAD,
+      loadConfig: () => Promise.resolve(testConfig),
+    })
+
+    const log = await readFile(logPath, 'utf8')
+    expect(log).toContain(KEBAB_PAYLOAD.trim())
+    expect(log).toMatch(/\[request\]/i)
+    expect(log).toMatch(/\[response\]/i)
   })
 })
 
