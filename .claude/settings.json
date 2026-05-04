@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PROJECT_DIR}/dist/bin.js --agent claude-code"
+            "command": "npx @nizos/probity --agent claude-code"
           }
         ]
       }
