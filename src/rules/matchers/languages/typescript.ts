@@ -2,6 +2,7 @@ import { Lang } from '@ast-grep/napi'
 
 export const typescript = {
   name: 'typescript',
+  extensions: ['.ts', '.tsx'],
   parser: Lang.TypeScript,
   patterns: [
     'it($$$ARGS)',

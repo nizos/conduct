@@ -26,4 +26,12 @@ describe('inferLanguage', () => {
   it('returns the csharp module for a .cs file', () => {
     expect(inferLanguage('src/Foo.cs')).toBe(csharp)
   })
+
+  it('returns a registered language for any extension declared on its module', () => {
+    for (const lang of [typescript, javascript, python, csharp]) {
+      for (const ext of lang.extensions) {
+        expect(inferLanguage(`src/foo${ext}`)).toBe(lang)
+      }
+    }
+  })
 })

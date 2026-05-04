@@ -2,6 +2,7 @@ import { Lang } from '@ast-grep/napi'
 
 export const javascript = {
   name: 'javascript',
+  extensions: ['.js'],
   parser: Lang.JavaScript,
   patterns: [
     'it($$$ARGS)',

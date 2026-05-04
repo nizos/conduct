@@ -2,6 +2,7 @@ import { isRegistered } from './register.js'
 
 export const csharp = {
   name: 'csharp',
+  extensions: ['.cs'],
   parser: isRegistered('csharp') ? 'csharp' : undefined,
   patterns: [
     {
