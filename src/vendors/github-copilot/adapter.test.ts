@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 
 import type { PreToolUseHookOutput } from '@github/copilot/sdk'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, onTestFinished } from 'vitest'
 
 import type { Action } from '../../types.js'
 import { parseAs } from '../../utils/parse-as.js'
@@ -88,14 +91,45 @@ describe('github-copilot adapter', () => {
     })
   })
 
-  it('maps an edit payload path (absolute POSIX) + new_str onto the write action', async () => {
-    const { action, payload } = await setup('pre-edit-add-subtract.json')
-    const args = parseAs<{ path: string; new_str: string }>(payload.toolArgs)
+  it('edit action carries the full post-edit file content (replace old_str with new_str)', async () => {
+    const filePath = await setupFile('before\nMARKER\nafter\n')
 
-    expect(action).toMatchObject({
-      path: '/workspaces/probity/test/calculator.test.ts',
-      content: args.new_str,
+    const result = await parseAction({
+      cwd: '/workspaces/probity',
+      toolName: 'edit',
+      toolArgs: JSON.stringify({
+        path: filePath,
+        old_str: 'MARKER',
+        new_str: 'REPLACED',
+      }),
     })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        kind: 'write',
+        path: filePath,
+        content: 'before\nREPLACED\nafter\n',
+      },
+    })
+  })
+
+  it('edit fails closed when old_str is not present in the file (no silent no-op)', async () => {
+    const filePath = await setupFile('a fresh file with no marker in it\n')
+
+    const result = await parseAction({
+      cwd: '/workspaces/probity',
+      toolName: 'edit',
+      toolArgs: JSON.stringify({
+        path: filePath,
+        old_str: 'MARKER_THAT_IS_ABSENT',
+        new_str: 'REPLACED',
+      }),
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.reason).toMatch(/not found|MARKER_THAT_IS_ABSENT/)
   })
 
   it('preserves an absolute create path emitted by the agent', async () => {
@@ -208,4 +242,12 @@ async function setup(fixtureName: string) {
 function ok(result: ParseActionResult): Action {
   if (!result.ok) throw new Error(`expected ok, got: ${result.reason}`)
   return result.action
+}
+
+async function setupFile(content: string): Promise<string> {
+  const dir = await mkdtemp(path.join(tmpdir(), 'copilot-edit-'))
+  onTestFinished(() => rm(dir, { recursive: true, force: true }))
+  const filePath = path.join(dir, 'foo.ts')
+  await writeFile(filePath, content)
+  return filePath
 }

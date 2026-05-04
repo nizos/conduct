@@ -6,6 +6,7 @@ import { z } from 'zod'
 import type { Action, Decision } from '../../types.js'
 import { JsonString } from '../../utils/json-string.js'
 import { fromSchema, passthroughFor } from '../adapter.js'
+import { applyEdit } from '../apply-edit.js'
 import { posixAbsolute } from '../posix-absolute.js'
 
 const writeToolsSchema = z.discriminatedUnion('toolName', [
@@ -36,17 +37,27 @@ const writeToolsSchema = z.discriminatedUnion('toolName', [
     .object({
       toolName: z.literal('edit'),
       toolArgs: JsonString.pipe(
-        z.object({ path: z.string(), new_str: z.string() }),
+        z.object({
+          path: z.string(),
+          old_str: z.string(),
+          new_str: z.string(),
+        }),
       ),
       cwd: z.string().min(1),
     })
-    .transform(
-      (d): Action => ({
-        kind: 'write',
-        path: posixAbsolute(d.cwd, d.toolArgs.path),
-        content: d.toolArgs.new_str,
-      }),
-    ),
+    .transform(async (d, ctx): Promise<Action> => {
+      const filePath = posixAbsolute(d.cwd, d.toolArgs.path)
+      const result = await applyEdit({
+        filePath,
+        oldString: d.toolArgs.old_str,
+        newString: d.toolArgs.new_str,
+      })
+      if (!result.ok) {
+        ctx.addIssue({ code: 'custom', message: result.reason })
+        return z.NEVER
+      }
+      return { kind: 'write', path: filePath, content: result.content }
+    }),
 ])
 
 // Anything Copilot fires the hook for that we don't explicitly model
