@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import type { Action, Decision } from '../../types.js'
 import { fromSchema, passthroughFor } from '../adapter.js'
+import { applyEdit } from '../apply-edit.js'
 import { posixAbsolute } from '../posix-absolute.js'
 
 export function toResponse(decision: Decision): string {
@@ -42,16 +43,26 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
   z
     .object({
       tool_name: z.literal('replace_string_in_file'),
-      tool_input: z.object({ filePath: z.string(), newString: z.string() }),
+      tool_input: z.object({
+        filePath: z.string(),
+        oldString: z.string(),
+        newString: z.string(),
+      }),
       cwd: z.string().min(1),
     })
-    .transform(
-      (d): Action => ({
-        kind: 'write',
-        path: posixAbsolute(d.cwd, d.tool_input.filePath),
-        content: d.tool_input.newString,
-      }),
-    ),
+    .transform(async (d, ctx): Promise<Action> => {
+      const filePath = posixAbsolute(d.cwd, d.tool_input.filePath)
+      const result = await applyEdit({
+        filePath,
+        oldString: d.tool_input.oldString,
+        newString: d.tool_input.newString,
+      })
+      if (!result.ok) {
+        ctx.addIssue({ code: 'custom', message: result.reason })
+        return z.NEVER
+      }
+      return { kind: 'write', path: filePath, content: result.content }
+    }),
 ])
 
 // Anything we don't explicitly recognise (read_file, list_dir,
