@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { countNewTestNodes } from './count-new-test-nodes.js'
+import { csharp } from './languages/csharp.js'
 import { javascript } from './languages/javascript.js'
 import { python } from './languages/python.js'
 import { typescript } from './languages/typescript.js'
@@ -112,5 +113,48 @@ describe('countNewTestNodes (python)', () => {
         noParser,
       ),
     ).toBe(0)
+  })
+})
+
+describe('countNewTestNodes (csharp)', () => {
+  it('counts a [Fact] method (xUnit) as a new test node', () => {
+    const before = `public class Calc { }`
+    const after = `public class Calc {
+      [Fact]
+      public void Adds() { }
+    }`
+
+    expect(countNewTestNodes(before, after, csharp)).toBe(1)
+  })
+
+  it('counts a [Theory] method (xUnit parameterised) as a new test node', () => {
+    const before = `public class Calc { }`
+    const after = `public class Calc {
+      [Theory]
+      [InlineData(1, 2)]
+      public void Adds(int a, int b) { }
+    }`
+
+    expect(countNewTestNodes(before, after, csharp)).toBe(1)
+  })
+
+  it('counts a [Test] method (NUnit) as a new test node', () => {
+    const before = `public class Calc { }`
+    const after = `public class Calc {
+      [Test]
+      public void Adds() { }
+    }`
+
+    expect(countNewTestNodes(before, after, csharp)).toBe(1)
+  })
+
+  it('counts a [TestMethod] method (MSTest) as a new test node', () => {
+    const before = `public class Calc { }`
+    const after = `public class Calc {
+      [TestMethod]
+      public void Adds() { }
+    }`
+
+    expect(countNewTestNodes(before, after, csharp)).toBe(1)
   })
 })

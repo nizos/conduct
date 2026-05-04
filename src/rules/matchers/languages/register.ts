@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url)
 
 const PEER_DEPS: Record<string, string> = {
   python: '@ast-grep/lang-python',
+  csharp: '@ast-grep/lang-csharp',
 }
 
 const registered = new Set<string>()
