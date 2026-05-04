@@ -10,4 +10,8 @@ describe('register', () => {
   it('reports csharp as registered when @ast-grep/lang-csharp is available', () => {
     expect(isRegistered('csharp')).toBe(true)
   })
+
+  it('reports false for a language that has no peer-dep declared', () => {
+    expect(isRegistered('cobol')).toBe(false)
+  })
 })
