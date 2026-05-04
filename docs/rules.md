@@ -22,17 +22,28 @@ A deterministic fast-path skips the AI when a write adds exactly one new test no
 
 ### Examples
 
-```ts
-enforceTdd()
+Scope to specific paths by wrapping in a `{ files, rules }` block:
 
-// Replace the default rules outright:
+```ts
+{
+  files: ['**/src/**'],
+  rules: [enforceTdd()],
+}
+```
+
+Replace the default rules outright:
+
+```ts
 enforceTdd({
   instructions: `Rules:
 1. Tests must use the project's custom assertion helpers.
 2. ...`,
 })
+```
 
-// Extend the defaults with a project-specific addendum:
+Extend the defaults with a project-specific addendum:
+
+```ts
 enforceTdd({
   instructions: (defaults) => `${defaults}
 
@@ -40,15 +51,12 @@ enforceTdd({
 
 Tests must use the project's custom assertion helpers.`,
 })
+```
 
-// AI-validate every write, even single-test additions:
+AI-validate every write, even single-test additions:
+
+```ts
 enforceTdd({ fastPath: false })
-
-// To scope to specific paths, wrap in a `{ files, rules }` block:
-{
-  files: ['**/src/**'],
-  rules: [enforceTdd()],
-}
 ```
 
 ### Fast-path
@@ -62,7 +70,7 @@ When a write to a recognised language adds exactly one new test node, the rule r
 | Python     | `.py`         | `@ast-grep/lang-python` | `def test_*` (pytest convention)                                         |
 | C#         | `.cs`         | `@ast-grep/lang-csharp` | `[Fact]` / `[Theory]` (xUnit), `[Test]` (NUnit), `[TestMethod]` (MSTest) |
 
-Languages with a "Required pack" entry need the corresponding `@ast-grep/lang-*` package installed in the **same scope** as Probity — `npm install -D <pack>` for project-local or `npm install -g <pack>` for global. Without it, writes in that language silently fall through to the AI path — no install, no error, no fast-path.
+Languages with a "Required pack" entry need the corresponding `@ast-grep/lang-*` package installed in the **same scope** as Probity. Use `npm install -D <pack>` for project-local or `npm install -g <pack>` for global. If the pack isn't installed, writes in that language silently fall through to the AI path (no install, no error, no fast-path).
 
 ### Cost note
 
@@ -143,13 +151,18 @@ Blocks a write whose content matches `match` — a literal substring or a `RegEx
 
 ### Examples
 
+Block timer code in source:
+
 ```ts
 forbidContentPattern({
   match: 'setTimeout',
   reason: 'No timers in source code',
 })
+```
 
-// To scope to specific paths, wrap in a `{ files, rules }` block:
+Scope to specific paths by wrapping in a `{ files, rules }` block:
+
+```ts
 {
   files: ['**/*.md'],
   rules: [
@@ -181,15 +194,18 @@ Gates a command action on a prior command appearing in canonical session history
 
 ### Examples
 
+Block commits unless `npm run lint` was the most recent event:
+
 ```ts
-// Block commits unless `npm run lint` was the most recent event.
 requireCommand({
   before: { kind: 'command', match: /git commit/ },
   command: /npm run lint/,
 })
+```
 
-// Allow non-write events between lint and commit; a write since lint
-// invalidates the gate.
+Allow non-write events between lint and commit; a write since lint invalidates the gate:
+
+```ts
 requireCommand({
   before: { kind: 'command', match: /git commit/ },
   command: /npm run lint/,
