@@ -55,18 +55,14 @@ enforceTdd({ fastPath: false })
 
 When a write to a recognised language adds exactly one new test node, the rule returns pass without consulting the AI — operationalising the rubric's "adding a test is always allowed" line as a deterministic check. Multi-test writes, implementation writes, and unrecognised file types fall through to the AI as before.
 
-| Language   | Extensions    | Test patterns recognised                                       |
-| ---------- | ------------- | -------------------------------------------------------------- |
-| TypeScript | `.ts`, `.tsx` | `it()` / `test()` and their `.skip`, `.only`, `.each` variants |
-| JavaScript | `.js`         | `it()` / `test()` and their `.skip`, `.only`, `.each` variants |
-| Python     | `.py`         | `def test_*` (pytest convention)                               |
+| Language   | Extensions    | Required pack           | Test patterns recognised                                                 |
+| ---------- | ------------- | ----------------------- | ------------------------------------------------------------------------ |
+| TypeScript | `.ts`, `.tsx` | (built-in)              | `it()` / `test()` and their `.skip`, `.only`, `.each` variants           |
+| JavaScript | `.js`         | (built-in)              | `it()` / `test()` and their `.skip`, `.only`, `.each` variants           |
+| Python     | `.py`         | `@ast-grep/lang-python` | `def test_*` (pytest convention)                                         |
+| C#         | `.cs`         | `@ast-grep/lang-csharp` | `[Fact]` / `[Theory]` (xUnit), `[Test]` (NUnit), `[TestMethod]` (MSTest) |
 
-Python support requires the optional `@ast-grep/lang-python` package. Install it in the **same scope** you installed Probity in:
-
-- Project-local: `npm install -D @ast-grep/lang-python`
-- Global: `npm install -g @ast-grep/lang-python`
-
-If it's missing (or installed in a different scope from Probity), `.py` writes silently fall through to the AI path — no install, no error, no fast-path.
+Languages with a "Required pack" entry need the corresponding `@ast-grep/lang-*` package installed in the **same scope** as Probity — `npm install -D <pack>` for project-local or `npm install -g <pack>` for global. Without it, writes in that language silently fall through to the AI path — no install, no error, no fast-path.
 
 ### Cost note
 
