@@ -23,10 +23,10 @@ export type ApplyEditResult =
 export async function applyEdit(
   options: ApplyEditOptions,
 ): Promise<ApplyEditResult> {
-  const { filePath, oldString, newString, replaceAll = false } = options
-  let current: string
+  const { filePath, replaceAll = false } = options
+  let raw: string
   try {
-    current = await readFile(filePath, 'utf8')
+    raw = await readFile(filePath, 'utf8')
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     return {
@@ -34,6 +34,9 @@ export async function applyEdit(
       reason: `could not read ${filePath}: ${message}`,
     }
   }
+  const current = toLF(raw)
+  const oldString = toLF(options.oldString)
+  const newString = toLF(options.newString)
   const occurrences = countOccurrences(current, oldString)
   if (occurrences === 0) {
     return {
@@ -51,6 +54,12 @@ export async function applyEdit(
     ? current.replaceAll(oldString, newString)
     : current.replace(oldString, newString)
   return { ok: true, content }
+}
+
+// Files persisted on Windows commonly use CRLF while agents normalize
+// the JSON payload to LF; matching in LF-space avoids spurious misses.
+function toLF(s: string): string {
+  return s.replace(/\r\n/g, '\n')
 }
 
 function countOccurrences(haystack: string, needle: string): number {

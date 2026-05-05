@@ -107,6 +107,27 @@ describe('claude-code adapter', () => {
     })
   })
 
+  it('Edit succeeds when the on-disk file is CRLF and the agent sent old_string as LF (Windows-typical)', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'edit-crlf-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const filePath = path.join(dir, 'foo.ts')
+    await writeFile(filePath, ['alpha', 'MARKER', 'omega', ''].join('\r\n'))
+
+    const result = await parseAction({
+      cwd: dir,
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: filePath,
+        old_string: 'alpha\nMARKER\nomega',
+        new_string: 'alpha\nREPLACED\nomega',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
   it('Edit fails closed when old_string is not present in the file (no silent no-op)', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'edit-miss-'))
     onTestFinished(async () => {

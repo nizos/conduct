@@ -63,6 +63,36 @@ describe('applyEdit', () => {
     })
   })
 
+  it('matches across CRLF/LF line-ending mismatch (file has CRLF on disk, oldString sent as LF)', async () => {
+    const filePath = await setupFile('first\r\nMARKER\r\nlast\r\n')
+
+    const result = await applyEdit({
+      filePath,
+      oldString: 'first\nMARKER\nlast',
+      newString: 'first\nREPLACED\nlast',
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      content: 'first\nREPLACED\nlast\n',
+    })
+  })
+
+  it('matches across CRLF/LF line-ending mismatch when oldString carries CRLF and the file is LF-only', async () => {
+    const filePath = await setupFile('first\nMARKER\nlast\n')
+
+    const result = await applyEdit({
+      filePath,
+      oldString: 'first\r\nMARKER\r\nlast',
+      newString: 'first\r\nREPLACED\r\nlast',
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      content: 'first\nREPLACED\nlast\n',
+    })
+  })
+
   it('fails closed when the file does not exist (no silent fallback to newString)', async () => {
     const result = await applyEdit({
       filePath: '/tmp/probity-apply-edit-does-not-exist.ts',
