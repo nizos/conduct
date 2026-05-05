@@ -31,6 +31,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         file_path: z.string(),
         old_string: z.string(),
         new_string: z.string(),
+        replace_all: z.boolean().default(false),
       }),
       cwd: z.string().min(1),
     })
@@ -40,6 +41,7 @@ const writeToolsSchema = z.discriminatedUnion('tool_name', [
         filePath: path,
         oldString: d.tool_input.old_string,
         newString: d.tool_input.new_string,
+        replaceAll: d.tool_input.replace_all,
       })
       if (!result.ok) {
         ctx.addIssue({ code: 'custom', message: result.reason })

@@ -128,6 +128,35 @@ describe('claude-code adapter', () => {
     expect(result.ok).toBe(true)
   })
 
+  it('Edit honors replace_all=true when old_string occurs more than once', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'edit-replace-all-'))
+    onTestFinished(async () => {
+      await rm(dir, { recursive: true, force: true })
+    })
+    const filePath = path.join(dir, 'foo.ts')
+    await writeFile(filePath, 'oldName(); oldName();\n')
+
+    const result = await parseAction({
+      cwd: dir,
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: filePath,
+        old_string: 'oldName',
+        new_string: 'newName',
+        replace_all: true,
+      },
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      action: {
+        kind: 'write',
+        path: filePath,
+        content: 'newName(); newName();\n',
+      },
+    })
+  })
+
   it('Edit fails closed when old_string is not present in the file (no silent no-op)', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'edit-miss-'))
     onTestFinished(async () => {
