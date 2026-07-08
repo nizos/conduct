@@ -37,6 +37,17 @@ Rules can be deterministic, matching commands or file content by string or regex
 npm install -D @nizos/probity
 ```
 
+AI-validated rules also need the SDK for the agent you're using, e.g.:
+
+```bash
+npm install -D @openai/codex-sdk
+```
+
+(`@anthropic-ai/claude-agent-sdk` for Claude Code, `@github/copilot-sdk` for
+GitHub Copilot CLI.) These are optional peer dependencies — install only the
+one for your agent. If you supply a custom `config.ai` validator instead of
+relying on the default per-agent one, no SDK install is needed at all.
+
 Create `probity.config.ts` at your project root:
 
 ```ts
