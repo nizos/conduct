@@ -1,7 +1,6 @@
 import type { PermissionHandler } from '@github/copilot-sdk'
 
 import type { Agent } from '../../types.js'
-import { loadSdk } from '../load-sdk.js'
 import { toVerdict } from '../to-verdict.js'
 
 type SessionConfig = {
@@ -79,9 +78,7 @@ async function resolveClient(deps: {
       }),
     }
   }
-  const mod = await loadSdk<typeof import('@github/copilot-sdk')>(
-    '@github/copilot-sdk',
-  )
+  const mod = await import('@github/copilot-sdk')
   return {
     client: new mod.CopilotClient({}),
     onPermissionRequest: deps.onPermissionRequest ?? mod.approveAll,

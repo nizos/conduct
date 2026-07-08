@@ -69,16 +69,13 @@
     ]
   },
   "devDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "0.3.204",
     "@ast-grep/lang-csharp": "^0.0.6",
     "@ast-grep/lang-php": "^0.0.7",
     "@ast-grep/lang-python": "^0.0.6",
     "@ast-grep/lang-ruby": "^0.0.7",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
-    "@github/copilot-sdk": "1.0.5",
     "@nizos/probity": "1.9.0",
-    "@openai/codex-sdk": "0.143.0",
     "@types/node": "^25.6.0",
     "@types/picomatch": "^4.0.3",
     "eslint": "^10.2.1",
@@ -92,18 +89,12 @@
     "vitest": "^4.1.4"
   },
   "peerDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "*",
     "@ast-grep/lang-csharp": "*",
     "@ast-grep/lang-php": "*",
     "@ast-grep/lang-python": "*",
-    "@ast-grep/lang-ruby": "*",
-    "@github/copilot-sdk": "*",
-    "@openai/codex-sdk": "*"
+    "@ast-grep/lang-ruby": "*"
   },
   "peerDependenciesMeta": {
-    "@anthropic-ai/claude-agent-sdk": {
-      "optional": true
-    },
     "@ast-grep/lang-csharp": {
       "optional": true
     },
@@ -115,16 +106,13 @@
     },
     "@ast-grep/lang-ruby": {
       "optional": true
-    },
-    "@github/copilot-sdk": {
-      "optional": true
-    },
-    "@openai/codex-sdk": {
-      "optional": true
     }
   },
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.204",
     "@ast-grep/napi": "^0.42.1",
+    "@github/copilot-sdk": "1.0.5",
+    "@openai/codex-sdk": "0.143.0",
     "jiti": "^2.6.1",
     "picomatch": "^4.0.4",
     "zod": "^4.3.6"
