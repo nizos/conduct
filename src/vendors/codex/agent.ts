@@ -1,6 +1,7 @@
 import type { ThreadOptions } from '@openai/codex-sdk'
 
 import type { Agent } from '../../types.js'
+import { loadSdk } from '../load-sdk.js'
 import { toVerdict } from '../to-verdict.js'
 
 type CodexLike = {
@@ -37,7 +38,8 @@ export function codex(deps: { codex?: CodexLike } = {}): Agent {
 }
 
 async function loadDefaultCodex(): Promise<CodexLike> {
-  const mod = await import('@openai/codex-sdk')
+  const mod =
+    await loadSdk<typeof import('@openai/codex-sdk')>('@openai/codex-sdk')
   return new mod.Codex()
 }
 
