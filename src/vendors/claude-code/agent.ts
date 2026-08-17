@@ -1,6 +1,7 @@
 import type { Options as ClaudeQueryOptions } from '@anthropic-ai/claude-agent-sdk'
 
 import type { Agent } from '../../types.js'
+import { loadSdk } from '../load-sdk.js'
 import { toVerdict } from '../to-verdict.js'
 
 type ClaudeMessage = { type: string; [k: string]: unknown }
@@ -21,7 +22,9 @@ export function claudeCode(deps: { queryFn?: QueryFn } = {}): Agent {
 }
 
 async function loadDefaultQueryFn(): Promise<QueryFn> {
-  const mod = await import('@anthropic-ai/claude-agent-sdk')
+  const mod = await loadSdk<typeof import('@anthropic-ai/claude-agent-sdk')>(
+    '@anthropic-ai/claude-agent-sdk',
+  )
   return mod.query
 }
 
