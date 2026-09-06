@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest'
 import { failClosedResponse, run, type RunResult, type Vendor } from './cli.js'
 import type { Config } from './config.js'
 import type { Agent, SessionEvent } from './types.js'
+import { enforceTdd } from './rules/enforce-tdd.js'
 import { enforceFilenameCasing } from './rules/enforce-filename-casing.js'
 import { forbidContentPattern } from './rules/forbid-content-pattern.js'
 import type { FileContent, Rule } from './rules/contract.js'
@@ -148,6 +149,43 @@ describe('cli', () => {
 
     expect(captured).toBeDefined()
     expect(captured?.some((e) => e.kind === 'command')).toBe(true)
+  })
+
+  it('passes Codex Vitest text-block output to enforceTdd as red evidence', async () => {
+    let capturedPrompt = ''
+    const redAwareAgent: Agent = {
+      reason: (prompt) => {
+        capturedPrompt = prompt
+        const observedRed =
+          prompt.includes('AssertionError: expected undefined to be 5') &&
+          /Test Files\s+1 failed/.test(prompt)
+        return Promise.resolve({
+          kind: observedRed ? 'pass' : 'violation',
+          reason: observedRed ? '' : 'Vitest red evidence was not observed',
+        })
+      },
+    }
+    const payload = JSON.stringify({
+      transcript_path: 'test/fixtures/transcripts/codex-tdd-test-failed.jsonl',
+      cwd: '/workspaces/probity',
+      tool_name: 'apply_patch',
+      tool_input: {
+        command:
+          '*** Begin Patch\n' +
+          '*** Add File: src/calculator.ts\n' +
+          '+export const add = (a: number, b: number) => a + b\n' +
+          '*** End Patch\n',
+      },
+    })
+
+    const { response } = await setup({
+      vendor: 'codex',
+      payload,
+      config: { rules: [enforceTdd({ fastPath: false })], ai: redAwareAgent },
+    })
+
+    expect(capturedPrompt).toContain('npx vitest run src/calculator.test.ts')
+    expect(response).toBe('')
   })
 
   it('threads a ctx.readFile capability into the RuleContext for write actions', async () => {
