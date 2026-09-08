@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { RawSessionEvent } from '../../types.js'
 import { JsonString } from '../../utils/json-string.js'
 import { readJsonl } from '../../utils/read-jsonl.js'
+import { StringOrTextBlocks } from '../string-or-text-blocks.js'
 
 const UserMessageSchema = z.object({
   type: z.literal('response_item'),
@@ -47,7 +48,7 @@ const CustomToolCallOutputSchema = z.object({
   payload: z.object({
     type: z.literal('custom_tool_call_output'),
     call_id: z.string(),
-    output: z.string(),
+    output: StringOrTextBlocks,
   }),
 })
 
